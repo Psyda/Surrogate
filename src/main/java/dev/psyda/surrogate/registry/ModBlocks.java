@@ -123,6 +123,20 @@ public final class ModBlocks {
 	// Countermeasures: the three things you plant on the ground to make a hazard somebody else's problem.
 	/** Sorensen's repeater: hears the pod's band and says it again, for as long as something feeds it. */
 	public static final Block RELAY_MAST = register("relay_mast", new RelayMastBlock(hazard()));
+
+	// The survey tier: a table that draws you the ground, the beacons that decide how much of it, and the
+	// pillar you pour power into when you want the rest (docs/DESIGN-survey.md).
+	/** The table. Reading it is one right-click and the picture is built on the spot. */
+	public static final Block SURVEY_STATION = register("survey_station",
+			new dev.psyda.surrogate.block.SurveyStationBlock(prop(BlockSoundGroup.METAL, true).luminance(state -> 6)));
+	/** A pole with a lamp on it, pushed into the dirt. Green if the network reaches it, red if it does not. */
+	public static final Block SURVEY_BEACON = register("survey_beacon",
+			new dev.psyda.surrogate.block.SurveyBeaconBlock(prop(BlockSoundGroup.METAL, false).noCollision()
+					.luminance(state -> state.get(dev.psyda.surrogate.block.SurveyBeaconBlock.LINKED) ? 9 : 5)));
+	/** The pillar. Range as the square root of everything ever fed into it. */
+	public static final Block LONG_RANGE_SCANNER = register("long_range_scanner",
+			new dev.psyda.surrogate.block.LongRangeScannerBlock(prop(BlockSoundGroup.NETHERITE, true)
+					.luminance(state -> state.get(dev.psyda.surrogate.block.LongRangeScannerBlock.LIT) ? 10 : 0)));
 	/** Tanaka's damper with a cable behind it: holds the rock quiet around a mine that has to stay put. */
 	public static final Block DAMPER_BEACON = register("damper_beacon", new DamperBeaconBlock(hazard()));
 	/** The near end of a bridge nobody has built yet. It remembers which way the span goes. */

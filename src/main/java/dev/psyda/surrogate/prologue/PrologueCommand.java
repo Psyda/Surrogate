@@ -65,7 +65,9 @@ public final class PrologueCommand {
 								.then(CommandManager.literal("ship").executes(context -> assayShip(context.getSource())))
 								.then(CommandManager.literal("status").executes(context -> assayStatus(context.getSource()))))
 						.then(TerrainScan.command())
-						.then(CrawlerCommand.command())));
+						.then(CrawlerCommand.command())
+						.then(dev.psyda.surrogate.errand.ErrandCommand.errandCommand())
+						.then(dev.psyda.surrogate.errand.ErrandCommand.faunaCommand())));
 	}
 
 	private static int start(ServerCommandSource source) throws CommandSyntaxException {

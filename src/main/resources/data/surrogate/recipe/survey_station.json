@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "GGG",
+    "RCR",
+    "PPP"
+  ],
+  "key": {
+    "G": {
+      "item": "surrogate:reinforced_glass"
+    },
+    "R": {
+      "item": "surrogate:data_rack"
+    },
+    "C": {
+      "item": "surrogate:robot_core"
+    },
+    "P": {
+      "item": "surrogate:hull_plating"
+    }
+  },
+  "result": {
+    "id": "surrogate:survey_station",
+    "count": 1
+  }
+}

@@ -145,6 +145,37 @@ public class SurrogateConfig {
 	/** The whole hazard layer: borers, storms, geysers and the belt's rain. */
 	public boolean hazards = true;
 
+	// Fauna: the four animals (docs/DESIGN-fauna.md). None of them is a hazard; two of them are gates on
+	// Ferreira's survey, and all six live specimens are a gate on the full ending.
+	/**
+	 * Whether Sallow has animals on it. Off leaves the wastes empty, which is a legitimate way to play it
+	 * and makes the survey objectives unfinishable, so the objective board hides them when this is off.
+	 */
+	public boolean fauna = true;
+
+	// The survey tier (docs/DESIGN-survey.md): a table, a chain of beacons, and a pillar you feed.
+	/** What the table sees on its own, in blocks. A generous room's worth of valley and no more. */
+	public int surveyStationRadius = 160;
+	/** What one linked beacon adds around itself. */
+	public int surveyBeaconRadius = 140;
+	/** How far apart two beacons, or a beacon and the table, can be and still hear each other. */
+	public int surveyBeaconLinkRange = 220;
+	/**
+	 * How many links deep a chain may go. This is not enforced as a rule so much as used to bound the chunk
+	 * scan that finds beacons at all: past this the search area stops growing.
+	 */
+	public int surveyBeaconChainMax = 8;
+	/** How near the table a long-range pillar has to stand to lend it anything. */
+	public int surveyScannerLinkRange = 12;
+
+	/** What the pillar is worth with nothing in it, and the ceiling however much goes in. */
+	public int longRangeScannerBaseRadius = 0;
+	public int longRangeScannerMaxRadius = 4000;
+	/** Blocks of range per square root of a unit of charge. Range costs more the further you push it. */
+	public double longRangeScannerBlocksPerRoot = 2.0;
+	/** The lump it takes power in, and the unit its readout quotes. */
+	public int longRangeScannerBuffer = 20000;
+
 	// Borers: they hunt vibration through the rock and never come above the line.
 	public int borerDepthY = 8;
 	/** Disturbance one broken block below the line is worth, and what it takes to wake one. */

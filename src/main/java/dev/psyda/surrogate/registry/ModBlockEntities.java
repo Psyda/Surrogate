@@ -54,6 +54,15 @@ public final class ModBlockEntities {
 	public static final BlockEntityType<dev.psyda.surrogate.block.RelayMastBlockEntity> RELAY_MAST = Registry.register(Registries.BLOCK_ENTITY_TYPE, Surrogate.id("relay_mast"),
 			BlockEntityType.Builder.create(dev.psyda.surrogate.block.RelayMastBlockEntity::new, ModBlocks.RELAY_MAST).build(null));
 
+	public static final BlockEntityType<dev.psyda.surrogate.block.SurveyStationBlockEntity> SURVEY_STATION = Registry.register(Registries.BLOCK_ENTITY_TYPE, Surrogate.id("survey_station"),
+			BlockEntityType.Builder.create(dev.psyda.surrogate.block.SurveyStationBlockEntity::new, ModBlocks.SURVEY_STATION).build(null));
+
+	public static final BlockEntityType<dev.psyda.surrogate.block.SurveyBeaconBlockEntity> SURVEY_BEACON = Registry.register(Registries.BLOCK_ENTITY_TYPE, Surrogate.id("survey_beacon"),
+			BlockEntityType.Builder.create(dev.psyda.surrogate.block.SurveyBeaconBlockEntity::new, ModBlocks.SURVEY_BEACON).build(null));
+
+	public static final BlockEntityType<dev.psyda.surrogate.block.LongRangeScannerBlockEntity> LONG_RANGE_SCANNER = Registry.register(Registries.BLOCK_ENTITY_TYPE, Surrogate.id("long_range_scanner"),
+			BlockEntityType.Builder.create(dev.psyda.surrogate.block.LongRangeScannerBlockEntity::new, ModBlocks.LONG_RANGE_SCANNER).build(null));
+
 	public static final BlockEntityType<dev.psyda.surrogate.block.DamperBeaconBlockEntity> DAMPER_BEACON = Registry.register(Registries.BLOCK_ENTITY_TYPE, Surrogate.id("damper_beacon"),
 			BlockEntityType.Builder.create(dev.psyda.surrogate.block.DamperBeaconBlockEntity::new, ModBlocks.DAMPER_BEACON).build(null));
 
@@ -71,6 +80,8 @@ public final class ModBlockEntities {
 		EnergyStorage.SIDED.registerForBlockEntity((tap, direction) -> tap.getEnergyStorage(), GEOTHERMAL_TAP);
 		// The two countermeasures only take: they burn a trickle and give nothing back.
 		EnergyStorage.SIDED.registerForBlockEntity((mast, direction) -> mast.getEnergyStorage(), RELAY_MAST);
+		// The pillar is the only survey block with a hole in it: the table and the beacons run on nothing.
+		EnergyStorage.SIDED.registerForBlockEntity((scanner, direction) -> scanner.getEnergyStorage(), LONG_RANGE_SCANNER);
 		EnergyStorage.SIDED.registerForBlockEntity((beacon, direction) -> beacon.getEnergyStorage(), DAMPER_BEACON);
 	}
 

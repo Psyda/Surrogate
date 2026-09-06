@@ -70,6 +70,8 @@ public class CorrodedMachineBlock extends BlockWithEntity {
 		if (world instanceof ServerWorld server) {
 			AcidRain.clear(server, pos);
 			server.spawnParticles(ParticleTypes.CRIT, pos.getX() + 0.5, pos.getY() + 0.6, pos.getZ() + 0.5, 12, 0.3, 0.3, 0.3, 0.05);
+			// Brandt is counting. He only counts while his errand is open, so this is free the rest of the time.
+			dev.psyda.surrogate.errand.Errands.machineRestored(server.getServer());
 		}
 		world.playSound(null, pos, SoundEvents.BLOCK_ANVIL_USE, SoundCategory.BLOCKS, 0.8f, 1.2f);
 		return ItemActionResult.SUCCESS;

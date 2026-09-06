@@ -395,7 +395,7 @@ public class SurvivorManager extends PersistentState {
 			player.sendMessage(Text.translatable("message.surrogate.shelter.scrubber", percent)
 					.formatted(percent < 60 ? Formatting.RED : Formatting.GOLD), false);
 		}
-		ServerPlayNetworking.send(player, new TerminalPayload("shelter_" + who.key()));
+		ServerPlayNetworking.send(player, new TerminalPayload("shelter_" + who.key(), -1));
 	}
 
 	// ------------------------------------------------------------------ the collar

@@ -1,0 +1,137 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "surrogate:block/survey_beacon",
+    "pole": "surrogate:block/survey_beacon",
+    "lamp": "surrogate:block/survey_beacon_lamp_linked"
+  },
+  "elements": [
+    {
+      "from": [
+        6.5,
+        0,
+        6.5
+      ],
+      "to": [
+        9.5,
+        13,
+        9.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            6,
+            3,
+            10,
+            16
+          ],
+          "texture": "#pole"
+        },
+        "south": {
+          "uv": [
+            6,
+            3,
+            10,
+            16
+          ],
+          "texture": "#pole"
+        },
+        "west": {
+          "uv": [
+            6,
+            3,
+            10,
+            16
+          ],
+          "texture": "#pole"
+        },
+        "east": {
+          "uv": [
+            6,
+            3,
+            10,
+            16
+          ],
+          "texture": "#pole"
+        },
+        "up": {
+          "uv": [
+            6,
+            6,
+            10,
+            10
+          ],
+          "texture": "#pole"
+        }
+      }
+    },
+    {
+      "from": [
+        5.5,
+        13,
+        5.5
+      ],
+      "to": [
+        10.5,
+        16,
+        10.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            5,
+            3
+          ],
+          "texture": "#lamp"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            5,
+            3
+          ],
+          "texture": "#lamp"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            5,
+            3
+          ],
+          "texture": "#lamp"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            5,
+            3
+          ],
+          "texture": "#lamp"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            5,
+            5
+          ],
+          "texture": "#lamp"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            5,
+            5
+          ],
+          "texture": "#lamp"
+        }
+      }
+    }
+  ]
+}

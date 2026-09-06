@@ -82,6 +82,17 @@ public final class ModItems {
 	/** Brandt's pattern at full size, in panels, for the hull that has to live over there. */
 	public static final Item CERAMIC_CLADDING = register("ceramic_cladding", new CrawlerModuleItem(CrawlerModule.CLADDING, new Item.Settings()));
 
+	// Okafor's survey and Brandt's ark. Neither is a countermeasure; both are bays on the same chassis.
+	/** Okafor's probe. Fitted, a chassis can take a reading off anything living by touching it. */
+	public static final Item BIO_SAMPLER = register("bio_sampler", new RobotUpgradeItem(RobotUpgradeItem.Kind.SAMPLER, new Item.Settings()));
+	/** Brandt's crate and padded arm. Fitted, a chassis can pick one of each up without hurting it. */
+	public static final Item SPECIMEN_BAG = register("specimen_bag", new RobotUpgradeItem(RobotUpgradeItem.Kind.COLLECTOR, new Item.Settings()));
+	/**
+	 * The other half of the sampler: without this in a terminal, a reading is a number nobody can read.
+	 * Used on any hub terminal, once.
+	 */
+	public static final Item ANALYSIS_DISK = register("analysis_disk", new dev.psyda.surrogate.item.AnalysisDiskItem(new Item.Settings().maxCount(1)));
+
 	// Blocks
 	public static final Item DIVE_CHAIR = register("dive_chair", new BlockItem(ModBlocks.DIVE_CHAIR, new Item.Settings()));
 	public static final Item CHARGING_DOCK = register("charging_dock", new BlockItem(ModBlocks.CHARGING_DOCK, new Item.Settings()));
@@ -129,6 +140,9 @@ public final class ModItems {
 	public static final Item BUNK = register("bunk", new BlockItem(ModBlocks.BUNK, new Item.Settings()));
 	public static final Item CHEM_DRUM = register("chem_drum", new BlockItem(ModBlocks.CHEM_DRUM, new Item.Settings()));
 	public static final Item SURVEY_MARKER = register("survey_marker", new BlockItem(ModBlocks.SURVEY_MARKER, new Item.Settings()));
+	public static final Item SURVEY_STATION = register("survey_station", new BlockItem(ModBlocks.SURVEY_STATION, new Item.Settings()));
+	public static final Item SURVEY_BEACON = register("survey_beacon", new BlockItem(ModBlocks.SURVEY_BEACON, new Item.Settings()));
+	public static final Item LONG_RANGE_SCANNER = register("long_range_scanner", new BlockItem(ModBlocks.LONG_RANGE_SCANNER, new Item.Settings()));
 	public static final Item PAD_LIGHT = register("pad_light", new BlockItem(ModBlocks.PAD_LIGHT, new Item.Settings()));
 	public static final Item ANTENNA_MAST = register("antenna_mast", new BlockItem(ModBlocks.ANTENNA_MAST, new Item.Settings()));
 	public static final Item SURVEY_STAKE = register("survey_stake", new BlockItem(ModBlocks.SURVEY_STAKE, new Item.Settings()));

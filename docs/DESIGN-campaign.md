@@ -272,6 +272,69 @@ with `SURROGATE_SEED`).
 **Re-run the sweep before changing any terrain constant in `tools/gen_data.py`.** The Rift's width, the
 belt's edge and the cliff gain all move where everything lands, and an old seed is not a promise.
 
+## The optional work
+
+Eight errands, none of them on the critical path, all of them counted by act six. `Errand`, `ErrandState`
+and `Errands` are the whole of it; the design note for the animals two of them need is
+[DESIGN-fauna.md](DESIGN-fauna.md), and for the reward tier three of them unlock,
+[DESIGN-survey.md](DESIGN-survey.md).
+
+Nothing here asks the player to press accept. Each one is offered on the radio when its gate opens and
+finishes when the world says it has, which means a player who wandered into finishing one without noticing
+still gets the credit, because they did the thing.
+
+| Errand | When | Who | What finishes it |
+| --- | --- | --- | --- |
+| **Housewarming** | Early | Okafor and Sorensen | Help them both, then sleep. See below. |
+| **Something Warm** | Early | Sorensen | Cook something and hand it to him before it goes cold |
+| **Okafor's Survey** | Mid | Okafor | A reading of all eight subjects on the table |
+| **Ballast** | Mid | — | The cat has gone. Carry her home. |
+| **Tanaka's Cable** | Mid | Tanaka | A vent has opened under her power run; cap it with a geothermal tap |
+| **Outside Clinic Nine** | Late | Reyes | Carry the body somewhere that is not her window and raise a marker |
+| **Ceramic Row** | Late | Brandt | Three corroded machines in the belt, put back with plates |
+| **Brandt's Ark** | Late | Brandt | One of each living species, alive, in a crate |
+
+### The housewarming
+
+The one that pays for being neighbourly, and the only errand whose gate is another errand rather than an act.
+
+Help Okafor and Sorensen both. The next time you are inside your own base you are told you are further past
+tired than you noticed. Sleep. You wake up with two chassis standing in your pod, because neither of them has
+a body that can walk here and both of them wanted to say thank you in person, near enough.
+
+They have been talking about you. What they have decided is that the orbital platform still has your second
+module in a rack with your habitat's number stencilled on it, that it has been there four hundred days,
+that nobody will send it down for one signature — and that three registered sites requesting the same
+manifest line is a different question entirely.
+
+Then everyone goes outside and watches it come down. `ModuleTwo` builds on the plated slab east of the pod
+that has been empty since the prologue: six bunks, a table, lockers, and a door cut through the pod's east
+wall. That slab has been sitting there the whole game with Halloran's draft of what it was meant to be on the
+terminal beside it.
+
+Six bunks is not a coincidence. Act five brings home six people.
+
+### Marsh's suit
+
+The prologue has Marsh walk from Site Two to the pod and back — two hours outside — and Halloran says out
+loud that his suit is rated for one. Both of those are true and neither is a mistake.
+
+Contractor issue on this contract is the **Tern**: soft suit, one bottle, one hour and a fifteen minute
+reserve you are not supposed to touch. Halloran has one. Sorensen has one. Okafor's is nine years old and has
+been patched twice. Halloran assumed Marsh had one because it is the only kind of suit she has ever seen.
+
+Company personnel travelling on inspection carry the **Kestrel**: sealed hardshell, regenerative scrubber on
+a six-hour cycle rather than a bottle, so the limit is a cartridge and the cartridge recharges off any
+powered rack. Rated six hours, hard ceiling nine.
+
+Both suits were made in the same year in the same yard. The difference is that one man is insured as an asset
+and everybody else here is insured as a schedule. It is the smallest concrete injustice on the planet and it
+is where Marsh starts turning.
+
+It is also the answer to act five. Novak is on the floor of the Rift and getting him up needs a *body* down
+there breathing, not a chassis — and there is exactly one suit on Sallow that can spend that long outside.
+Halloran's reply on the Site Two terminal says so, before anybody asks.
+
 ## What gates what
 
 | Gate | Blocks | Opened by | From |
@@ -325,6 +388,8 @@ Act V
 - [ ] Reyes' blown airlock — Sorensen's is built, hers is not
 - [ ] Novak: the wreck, the mist, the rebreather run, carrying a person — the wreck is on the Rift floor and
       he is in it; nothing can reach him yet
+- [x] Why a body can be down there at all: Marsh's Kestrel, on the Site Two terminal, with Halloran's reply
+      saying out loud that he is going to be the one who can
 
 Act VI
 - [ ] Opinions weighted by what the player did — `ResearchState` already records which errands were done,
@@ -339,6 +404,30 @@ Act VII
 - [ ] Ascent vehicle: kit, courses, scaffold
 - [ ] The cabin: seat ring, name plates, empty seats
 - [ ] Launch cinematic, the window, the nav console, three ending cards
+
+The optional work
+- [x] `Errand`, `ErrandState`, `Errands`: eight errands, offered on their gates, finished by watching the world
+- [x] `/surrogate errand list|start|tp|done|reset|status` and `/surrogate fauna spawn|read`, so none of this
+      has to be reached the long way to be looked at
+- [x] Housewarming: the tiredness, the two chassis, the drop, and `ModuleTwo` on the slab
+- [x] Something Warm, Ballast, Tanaka's Cable, Outside Clinic Nine, Ceramic Row
+- [x] Okafor's survey: bio-sampler, analysis disk, eight subjects, the terminal page in her voice
+- [x] Brandt's ark: the crate bay, six live species, and the count act seven's manifest reads
+- [ ] Act six weighting off `ErrandState.done` — the mask is kept and correct and nothing reads it yet
+- [ ] The ark's crates as real objects on the pad, and a seat each on the rocket — act seven
+
+The animals ([DESIGN-fauna.md](DESIGN-fauna.md))
+- [x] Trundle, slagback, tocker, lantern slug: entities, models, renderers, textures
+- [x] Trundles and tockers on the biome spawner lists; slagbacks by geysers and slugs on cave ceilings placed
+      by `Fauna`, because the vanilla spawner can aim at neither
+- [x] The slagback's fold, its shadow, and the fact that standing on one is how most people meet it
+- [x] The lantern slug dying of the fall rather than the hit
+
+The survey tier ([DESIGN-survey.md](DESIGN-survey.md))
+- [x] Survey station: the scan, the packet, and the wireframe screen
+- [x] Beacons: the chain, the red and green lamp, and the surveyed area being the shape of where you walked
+- [x] Long-range scanner: range as the square root of everything ever fed in
+- [x] The whole-map moment when a network covers every shelter at once
 
 The map
 - [x] `SeedSampler`: score a candidate seed with no world behind it

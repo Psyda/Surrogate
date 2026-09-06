@@ -70,7 +70,8 @@ public class TerminalBlock extends BlockWithEntity {
 		if (world.isClient) return ActionResult.SUCCESS;
 		if (player instanceof ServerPlayerEntity serverPlayer && world.getBlockEntity(pos) instanceof TerminalBlockEntity terminal) {
 			world.playSound(null, pos, SoundEvents.BLOCK_NOTE_BLOCK_BIT.value(), SoundCategory.BLOCKS, 0.4f, 1.9f);
-			ServerPlayNetworking.send(serverPlayer, new TerminalPayload(terminal.getUnit()));
+			dev.psyda.surrogate.errand.ErrandState errands = dev.psyda.surrogate.errand.ErrandState.get(serverPlayer.server);
+			ServerPlayNetworking.send(serverPlayer, new TerminalPayload(terminal.getUnit(), errands.disk ? errands.read : -1));
 		}
 		return ActionResult.SUCCESS;
 	}

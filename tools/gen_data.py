@@ -507,8 +507,34 @@ NO_SPAWNERS = {"monster": [], "creature": [], "ambient": [], "axolotls": [], "mi
                "underground_water_creature": [], "water_ambient": [], "water_creature": []}
 
 
+def spawn(name, weight, lo, hi):
+    return {"type": mid(name), "weight": weight, "minCount": lo, "maxCount": hi}
+
+
+# Nothing lives on Sallow except what grew here (docs/DESIGN-fauna.md). Four animals, none of them a threat
+# in the way an empty monster list is a promise that there are none. Only two of the four come off these
+# lists: a slagback wants to be beside a geyser and a lantern slug wants a cave ceiling, and the vanilla
+# spawner can aim at neither, so Fauna.java places those two itself.
+#
+# The weights are low and the group sizes small on purpose. A trundle should be a thing you notice, not a
+# herd you walk through.
+TRUNDLES = [spawn("trundle", 8, 1, 2)]
+TOCKERS = [spawn("tocker", 6, 1, 3)]
+
+
+def wildlife(*groups):
+    """A spawner block with a creature list in it and every other list still empty."""
+    out = dict(NO_SPAWNERS)
+    creatures = []
+    for g in groups:
+        creatures += g
+    out["creature"] = creatures
+    return out
+
+
 def biome(name, *, temperature, downfall, precipitation, fog, sky, water, water_fog, grass, foliage,
-          vegetal, custom, music="minecraft:music.overworld.desert", particle=None, ores=COMMON_ORES):
+          vegetal, custom, music="minecraft:music.overworld.desert", particle=None, ores=COMMON_ORES,
+          spawners=None):
     effects = {
         "fog_color": fog, "sky_color": sky, "water_color": water, "water_fog_color": water_fog,
         "grass_color": grass, "foliage_color": foliage,
@@ -532,7 +558,7 @@ def biome(name, *, temperature, downfall, precipitation, fog, sky, water, water_
         # in the noise, and Valleys knows exactly where it is.
         "carvers": {"air": ["minecraft:cave", "minecraft:cave_extra_underground"]},
         "features": features,
-        "spawners": dict(NO_SPAWNERS),
+        "spawners": dict(spawners) if spawners else dict(NO_SPAWNERS),
         "spawn_costs": {},
     }
 
@@ -542,24 +568,29 @@ SCRUB = ["minecraft:glow_lichen", "minecraft:patch_dead_bush_2", "minecraft:brow
 write(f"data/{MOD}/worldgen/biome/toxic_desert.json", biome(
     "toxic_desert", temperature=2.0, downfall=0.0, precipitation=False,
     fog=0xC9B85E, sky=0x9FA050, water=0x6E8B2B, water_fog=0x2F4A0F, grass=0x8A8A3A, foliage=0x7A7A2A,
-    vegetal=SCRUB, custom=["sulfur_patch", "scrap_heap"], ores=SALT_ORES))
+    vegetal=SCRUB, custom=["sulfur_patch", "scrap_heap"], ores=SALT_ORES,
+    spawners=wildlife(TRUNDLES, TOCKERS)))
 write(f"data/{MOD}/worldgen/biome/ash_dunes.json", biome(
     "ash_dunes", temperature=1.6, downfall=0.0, precipitation=False,
     fog=0x77746A, sky=0x6E6B5F, water=0x4A5A3A, water_fog=0x1F2A14, grass=0x5C5C40, foliage=0x4E4E36,
     vegetal=["minecraft:glow_lichen"], custom=["sulfur_patch", "scrap_heap", "vent", "geyser_sparse"],
-    particle=("minecraft:white_ash", 0.02)))
+    particle=("minecraft:white_ash", 0.02),
+    spawners=wildlife(TRUNDLES)))
 write(f"data/{MOD}/worldgen/biome/acid_flats.json", biome(
     "acid_flats", temperature=1.0, downfall=0.4, precipitation=True,
     fog=0x9CB35A, sky=0x8E9E4E, water=0x7FBF2A, water_fog=0x3E6A10, grass=0x7D8F3A, foliage=0x6C7D2E,
-    vegetal=["minecraft:glow_lichen", "minecraft:patch_dead_bush_2"], custom=["scrap_heap"], ores=SALT_ORES))
+    vegetal=["minecraft:glow_lichen", "minecraft:patch_dead_bush_2"], custom=["scrap_heap"], ores=SALT_ORES,
+    spawners=wildlife(TOCKERS)))
 write(f"data/{MOD}/worldgen/biome/salt_pans.json", biome(
     "salt_pans", temperature=1.9, downfall=0.0, precipitation=False,
     fog=0xD9D7B0, sky=0xA9AA6E, water=0x86A648, water_fog=0x3B4F1A, grass=0xA0A070, foliage=0x8C8C5E,
-    vegetal=["minecraft:glow_lichen", "minecraft:patch_dead_bush_2"], custom=["sulfur_patch", "scrap_heap", "geyser_sparse"], ores=SALT_ORES))
+    vegetal=["minecraft:glow_lichen", "minecraft:patch_dead_bush_2"], custom=["sulfur_patch", "scrap_heap", "geyser_sparse"], ores=SALT_ORES,
+    spawners=wildlife(TRUNDLES, TOCKERS)))
 write(f"data/{MOD}/worldgen/biome/dead_grove.json", biome(
     "dead_grove", temperature=1.2, downfall=0.3, precipitation=True,
     fog=0xA8A66A, sky=0x8E9450, water=0x6E8B2B, water_fog=0x2F4A0F, grass=0x6B6B2F, foliage=0x5B5B25,
-    vegetal=SCRUB, custom=["scrap_heap", "petrified_tree"], music="minecraft:music.overworld.forest"))
+    vegetal=SCRUB, custom=["scrap_heap", "petrified_tree"], music="minecraft:music.overworld.forest",
+    spawners=wildlife(TRUNDLES, TOCKERS)))
 # The belt, downwind of the vent field: wet floors that nothing has been able to dry out. It rains here, and
 # what falls is not water (docs/DESIGN-hazards.md). The rain itself is the mod's, on the belt's own clock.
 write(f"data/{MOD}/worldgen/biome/caustic_mire.json", biome(
@@ -2056,6 +2087,241 @@ LANG.update({
     "survivor.surrogate.novak.chassis": "A chassis. At least somebody knows where I am now. It will not be lifting me, though. The leg wants hands, and hands have to come down here breathing.",
 })
 print("assay borer line and Novak chassis line done")
+
+# ======================================================================================
+# The animals, the optional work, and the survey tier (2026-09-06)
+# ======================================================================================
+# Blocks: a table with a facing, a beacon with a lamp that is red or green, and a pillar that lights up.
+PICKAXE += [mid("survey_station"), mid("survey_beacon"), mid("long_range_scanner")]
+
+for name in ["survey_station", "survey_beacon", "long_range_scanner"]:
+    write(f"data/{MOD}/loot_table/blocks/{name}.json", self_drop(name))
+
+# The table: a plated box with a glass top, turned to face the player who put it down.
+blockstate("survey_station", {f"facing={d}": {"model": f"{MOD}:block/survey_station", "y": y}
+                              for d, y in (("north", 0), ("east", 90), ("south", 180), ("west", 270))})
+model("block/survey_station", {
+    "parent": "minecraft:block/block",
+    "textures": {
+        "particle": f"{MOD}:block/survey_station_side",
+        "side": f"{MOD}:block/survey_station_side",
+        "top": f"{MOD}:block/survey_station_top",
+        "bottom": f"{MOD}:block/hull_plating",
+    },
+    "elements": [
+        # The table itself, thirteen high, so it reads as something you lean on rather than stand on.
+        {"from": [0, 0, 0], "to": [16, 12, 16], "faces": {
+            "down": {"uv": [0, 0, 16, 16], "texture": "#bottom", "cullface": "down"},
+            "up": {"uv": [0, 0, 16, 16], "texture": "#side"},
+            "north": {"uv": [0, 0, 16, 12], "texture": "#side"},
+            "south": {"uv": [0, 0, 16, 12], "texture": "#side"},
+            "west": {"uv": [0, 0, 16, 12], "texture": "#side"},
+            "east": {"uv": [0, 0, 16, 12], "texture": "#side"}}},
+        # The glass, one pixel proud of it, which is the bit that glows.
+        {"from": [1, 12, 1], "to": [15, 13, 15], "faces": {
+            "down": {"uv": [1, 1, 15, 15], "texture": "#top"},
+            "up": {"uv": [1, 1, 15, 15], "texture": "#top"},
+            "north": {"uv": [1, 0, 15, 1], "texture": "#top"},
+            "south": {"uv": [1, 0, 15, 1], "texture": "#top"},
+            "west": {"uv": [1, 0, 15, 1], "texture": "#top"},
+            "east": {"uv": [1, 0, 15, 1], "texture": "#top"}}},
+    ]})
+model("item/survey_station", {"parent": f"{MOD}:block/survey_station"})
+
+# The beacon: a thin pole with a lamp at the top, in two colours.
+for linked, suffix in ((False, ""), (True, "_linked")):
+    model(f"block/survey_beacon{suffix}", {
+        "parent": "minecraft:block/block",
+        "textures": {"particle": f"{MOD}:block/survey_beacon", "pole": f"{MOD}:block/survey_beacon",
+                     "lamp": f"{MOD}:block/survey_beacon_lamp{suffix}"},
+        "elements": [
+            {"from": [6.5, 0, 6.5], "to": [9.5, 13, 9.5], "faces": {
+                "north": {"uv": [6, 3, 10, 16], "texture": "#pole"},
+                "south": {"uv": [6, 3, 10, 16], "texture": "#pole"},
+                "west": {"uv": [6, 3, 10, 16], "texture": "#pole"},
+                "east": {"uv": [6, 3, 10, 16], "texture": "#pole"},
+                "up": {"uv": [6, 6, 10, 10], "texture": "#pole"}}},
+            {"from": [5.5, 13, 5.5], "to": [10.5, 16, 10.5], "faces": {
+                "north": {"uv": [0, 0, 5, 3], "texture": "#lamp"},
+                "south": {"uv": [0, 0, 5, 3], "texture": "#lamp"},
+                "west": {"uv": [0, 0, 5, 3], "texture": "#lamp"},
+                "east": {"uv": [0, 0, 5, 3], "texture": "#lamp"},
+                "up": {"uv": [0, 0, 5, 5], "texture": "#lamp"},
+                "down": {"uv": [0, 0, 5, 5], "texture": "#lamp"}}},
+        ]})
+blockstate("survey_beacon", {"linked=false": {"model": f"{MOD}:block/survey_beacon"},
+                             "linked=true": {"model": f"{MOD}:block/survey_beacon_linked"}})
+model("item/survey_beacon", {"parent": f"{MOD}:block/survey_beacon"})
+
+# The pillar: a full-height column, banded, with a dish face that lights when it has charge.
+for lit, suffix in ((False, ""), (True, "_lit")):
+    model(f"block/long_range_scanner{suffix}", {
+        "parent": "minecraft:block/cube_bottom_top",
+        "textures": {"top": f"{MOD}:block/long_range_scanner_top",
+                     "bottom": f"{MOD}:block/hull_plating",
+                     "side": f"{MOD}:block/long_range_scanner{suffix}"}})
+blockstate("long_range_scanner", {"lit=false": {"model": f"{MOD}:block/long_range_scanner"},
+                                  "lit=true": {"model": f"{MOD}:block/long_range_scanner_lit"}})
+model("item/long_range_scanner", {"parent": f"{MOD}:block/long_range_scanner"})
+
+# The three loose items.
+for name in ["bio_sampler", "specimen_bag", "analysis_disk"]:
+    model(f"item/{name}", {"parent": "minecraft:item/generated", "textures": {"layer0": f"{MOD}:item/{name}"}})
+
+# Spawn eggs would be a lie: nothing here is bred and there is a command that spawns them for testing.
+# Recipes. The survey tier is late-game kit and priced like it: the table wants a data rack and glass, the
+# beacons are cheap on purpose because the errand is walking them out, and the pillar is a real project.
+shaped("survey_station", ["GGG", "RCR", "PPP"],
+       {"G": mid("reinforced_glass"), "R": mid("data_rack"), "C": mid("robot_core"), "P": mid("hull_plating")},
+       mid("survey_station"), 1, "equipment")
+shaped("survey_beacon", ["L", "C", "P"],
+       {"L": REDSTONE, "C": COPPER, "P": mid("hull_plating")},
+       mid("survey_beacon"), 2, "equipment")
+shaped("long_range_scanner", ["ADA", "PCP", "PPP"],
+       {"A": mid("antenna_mast"), "D": mid("data_rack"), "P": mid("hull_plating"), "C": mid("robot_core")},
+       mid("long_range_scanner"), 1, "equipment")
+shaped("bio_sampler", [" S ", "SCS", " P "],
+       {"S": mid("servo_motor"), "C": mid("robot_core"), "P": mid("hull_plating")},
+       mid("bio_sampler"), 1, "equipment")
+shaped("specimen_bag", ["WWW", "WSW", "PPP"],
+       {"W": "minecraft:white_wool", "S": mid("servo_motor"), "P": mid("hull_plating")},
+       mid("specimen_bag"), 1, "equipment")
+
+LANG.update({
+    # ---- The animals
+    "entity.surrogate.trundle": "Trundle",
+    "entity.surrogate.slagback": "Slagback",
+    "entity.surrogate.tocker": "Tocker",
+    "entity.surrogate.lantern_slug": "Lantern Slug",
+
+    # ---- Okafor's table. The note is what the terminal prints once the disk is in.
+    "specimen.surrogate.trundle.name": "Trundle",
+    "specimen.surrogate.trundle.note": "Grazes the crust for something we have not identified. Sleeps nineteen hours. Rolls away from everything, including me, including the wind. I have never seen one hurry and I have never seen one hurt.",
+    "specimen.surrogate.slagback.name": "Slagback",
+    "specimen.surrogate.slagback.note": "Sits on the vent fields absorbing heat through the dorsal plates and is, in every way that matters, a rock with opinions. Do not stand on one. I have stood on one.",
+    "specimen.surrogate.tocker.name": "Tocker",
+    "specimen.surrogate.tocker.note": "Follows light. Repeats tones back at you, badly, about half a second late. There is no reason for this that I can find. It is not mating, it is not warning, it is not territory. It just answers. Why.",
+    "specimen.surrogate.lantern_slug.name": "Lantern Slug",
+    "specimen.surrogate.lantern_slug.note": "Four photophores, no mouth I can locate, no observed movement in eleven hours. It watches. If you knock one off the ceiling it does not survive the fall, so do not, and I am aware that is not a biological note.",
+    "specimen.surrogate.borer.name": "Borer",
+    "specimen.surrogate.borer.note": "Reading taken at two metres from a live specimen in motion. I will not be repeating the procedure and I would ask that you do not either. Segmented, blind, steers by vibration through rock. The rest of the file is your telemetry and my language.",
+    "specimen.surrogate.cat.name": "Ballast",
+    "specimen.surrogate.cat.note": "Felis catus. Off-world, obviously. Filed because you asked and because she is the only specimen on the table that has ever sat on my keyboard. Nine kilograms. Argumentative.",
+    "specimen.surrogate.seep_water.name": "Seep Water",
+    "specimen.surrogate.seep_water.note": "Not water. A little over a third of it is, and the rest is what the crust has been dissolving into it since before anyone was here. Do not put a bare hand in it and do not put a chassis joint in it twice.",
+    "specimen.surrogate.biomatter.name": "Crust Biomatter",
+    "specimen.surrogate.biomatter.note": "The yellow film on the pan floors. Alive, in the sense that it divides. This is the bottom of the whole column: everything else on this table eats this, or eats something that does.",
+
+    # ---- The sampler, the crate, the disk
+    "item.surrogate.bio_sampler": "Bio-Sampler",
+    "item.surrogate.specimen_bag": "Specimen Crate",
+    "item.surrogate.analysis_disk": "Analysis Disk",
+    "tooltip.surrogate.bio_sampler": "Chassis bay. Touch a living thing to file a reading of it.",
+    "tooltip.surrogate.specimen_bag": "Chassis bay. Takes one of each species, alive, for the manifest.",
+    "tooltip.surrogate.analysis_disk": "Okafor's survey software. Use it on any terminal, once.",
+    "message.surrogate.disk.installed": "Analysis software installed. The survey page is on the terminal.",
+    "message.surrogate.disk.already": "This hub already has the software.",
+    "message.surrogate.survey.filed": "Reading filed: %s (%s of %s)",
+    "message.surrogate.bag.crated": "Crated: %s (%s of %s)",
+    "message.surrogate.bag.already": "There is already a %s in a crate.",
+    "message.surrogate.bag.roused": "Not while it is awake. Wait for it to settle.",
+    "message.surrogate.bag.falling": "It has come off the ceiling. There is nothing to collect.",
+    "message.surrogate.bag.borer": "No. Absolutely not. Brandt was very clear about this.",
+
+    # ---- The survey tier
+    "block.surrogate.survey_station": "Survey Station",
+    "block.surrogate.survey_beacon": "Survey Beacon",
+    "block.surrogate.long_range_scanner": "Long-Range Scanner",
+    "message.surrogate.beacon.linked": "Beacon linked. The ground around it is on the table.",
+    "message.surrogate.beacon.orphan": "Beacon out of range. Plant another between here and the last one.",
+    "message.surrogate.scanner.status": "Scanner: %s units in, %s m of reach.",
+    "message.surrogate.scanner.next": "Another %s units buys about %s m.",
+    "screen.surrogate.survey": "Survey",
+    "screen.surrogate.survey.title": "SURFACE SURVEY — SALLOW",
+    "screen.surrogate.survey.reach": "REACH %s m",
+    "screen.surrogate.survey.hint": "drag to turn · scroll to zoom · esc to close",
+    "station.surrogate.home": "Habitat Seven",
+    "station.surrogate.pad": "Pad",
+    "station.surrogate.beacon": "•",
+    "station.surrogate.orphan": "!",
+    "advancement.surrogate.whole_map.title": "The Whole Map",
+    "advancement.surrogate.whole_map.description": "Every shelter on Sallow, on one table, at one time.",
+
+    # ---- The optional work
+    "message.surrogate.errand.offered": "New: %s",
+    "message.surrogate.errand.received": "Received: %s",
+    "message.surrogate.errand.done": "Done: %s",
+
+    "errand.surrogate.housewarming.title": "Housewarming",
+    "errand.surrogate.housewarming.brief": "You have helped both of them. Go home and get some sleep.",
+    "errand.surrogate.housewarming.tired": "You are further past tired than you noticed. The bunk is right there.",
+    "errand.surrogate.housewarming.thanks": "There is a room on the slab now. It has six beds in it and none of them are yours.",
+
+    "errand.surrogate.hot_meal.title": "Something Warm",
+    "errand.surrogate.hot_meal.brief": "Sorensen has been eating out of foil for fourteen months. Cook something and carry it to him before it goes cold.",
+    "errand.surrogate.hot_meal.thanks": "He did not say anything for a while. Then he asked whether there was any more.",
+
+    "errand.surrogate.survey.title": "Okafor's Survey",
+    "errand.surrogate.survey.brief": "A reading of everything alive on this planet. She has given you the sampler and the software; you have to find the rest.",
+    "errand.surrogate.survey.thanks": "The table is full. She has already started arguing with it.",
+
+    "errand.surrogate.ballast.title": "Ballast",
+    "errand.surrogate.ballast.brief": "The cat is out. She has been out for some hours. Bring her back.",
+    "errand.surrogate.ballast.picked_up": "She permits it.",
+    "errand.surrogate.ballast.thanks": "She walks in ahead of you as though it was all arranged.",
+
+    "errand.surrogate.vent_clear.title": "Tanaka's Cable",
+    "errand.surrogate.vent_clear.brief": "A vent has opened under the Sulfur Works' power run and is cooking the insulation. Cap it before it takes the line out.",
+    "errand.surrogate.vent_clear.thanks": "Capped, and the line is holding. She says the heat is welcome now it is going somewhere.",
+
+    "errand.surrogate.burial.title": "Outside Clinic Nine",
+    "errand.surrogate.burial.brief": "There is a body fifteen metres from Reyes' airlock. She has been looking at it through the window for nine weeks and her chassis has been dead for eleven.",
+    "errand.surrogate.burial.name": "Petrov",
+    "errand.surrogate.burial.lifted": "He weighs almost nothing. The suit is most of it.",
+    "errand.surrogate.burial.too_close": "Not here. She can see this window.",
+    "errand.surrogate.burial.thanks": "She watched from the window and did not say anything, and then she said thank you, and then she closed the shutter.",
+
+    "errand.surrogate.corroded.title": "Ceramic Row",
+    "errand.surrogate.corroded.brief": "Three of Brandt's neighbours' machines have been eaten by the rain. He has the plates. He does not have a chassis that can stand in it.",
+    "errand.surrogate.corroded.progress": "That is one back together.",
+    "errand.surrogate.corroded.thanks": "Brandt says the row is quieter with them running. He means it as a good thing.",
+
+    "errand.surrogate.ark.title": "Brandt's Ark",
+    "errand.surrogate.ark.brief": "One of each, alive, in a crate. He has watched them through a window for eleven years and he is not going to be the last person who ever sees one.",
+    "errand.surrogate.ark.thanks": "Six crates on the pad, and the old man will not go inside until he has counted them twice.",
+
+    # ---- The housewarming, in full
+    "cinematic.surrogate.housewarming.wake_1": "There you are. Do not panic, it is only us, and only the chassis. Mikkel has been in your kitchen.",
+    "cinematic.surrogate.housewarming.wake_2": "I have been standing in your kitchen. There is a difference and you will not convince anyone of it.",
+    "cinematic.surrogate.housewarming.wake_3": "We let ourselves in. Your airlock has been keyed to both of us since the day you got the port working, which you would know if you ever read what you sign.",
+    "cinematic.surrogate.housewarming.offer_1": "We have been talking. About you, mostly, and about that slab out the east side that has had nothing on it since you landed.",
+    "cinematic.surrogate.housewarming.offer_2": "There is a module in a rack on the platform with your habitat's number stencilled on it. It has been there four hundred days. Nobody will send it down for one signature.",
+    "cinematic.surrogate.housewarming.offer_3": "Three signatures, though. Three registered sites, all requesting the same manifest line. That, they will answer. We sent it an hour ago. Come outside.",
+    "cinematic.surrogate.housewarming.wait_1": "Any minute. It is a heavy thing on a cheap parachute and the platform does not aim so much as let go.",
+    "cinematic.surrogate.housewarming.wait_2": "There. That light, low, coming up out of the west. That is yours.",
+    "cinematic.surrogate.housewarming.landed_1": "On the slab. Near enough on the slab. That is four hundred days of paperwork settling into your garden.",
+    "cinematic.surrogate.housewarming.landed_2": "Six bunks in there. Which is six more than anyone on this planet has spare.",
+    "cinematic.surrogate.housewarming.goodbye": "We are going to go and be in our own kitchens now. Sleep in your own bed tonight, not the new ones. They are not for you.",
+})
+print("fauna, errand and survey data done")
+
+LANG.update({
+    # The survey page on any hub terminal that has had the disk put in it.
+    "terminal.surrogate.survey.title": "SURVEY",
+    "terminal.surrogate.survey.header": "OKAFOR / XENOBIOLOGY — %s of %s subjects filed",
+    "terminal.surrogate.survey.unread": "No reading on file.",
+
+    # ---- Marsh's suit.
+    #
+    # The prologue has him walk from Site Two to the pod and back, which is two hours outside, and Halloran
+    # says out loud that his suit is rated for one. Both of those are true and neither is a mistake: she is
+    # looking at a contractor's suit because it is the only kind she has ever seen. His is not one.
+    "terminal.surrogate.site02.4.title": "KESTREL — ISSUE NOTE",
+    "terminal.surrogate.site02.4.body": "Company Field Standard 11-C, and every word of it matters if you are the one wearing it.\n\nContractor issue on this contract is the Tern: soft suit, single bottle, one hour of exposure and a fifteen minute reserve you are not supposed to touch. Halloran has a Tern. Sorensen has a Tern. Okafor's is nine years old and has been patched twice.\n\nCompany personnel travelling on inspection carry the Kestrel. Sealed hardshell. Regenerative scrubber on a six hour cycle rather than a bottle, so the limit is the cartridge and the cartridge recharges off any powered rack. Rated exposure six hours, hard ceiling nine.\n\nThe difference is not technology. Both suits were made in the same year, in the same yard. The difference is that one of us is insured as an asset and the rest of you are insured as a schedule.\n\n— T. Marsh",
+    "terminal.surrogate.site02.5.title": "RE: KESTREL",
+    "terminal.surrogate.site02.5.body": "Teo,\n\nYou walked here in a suit I assumed would kill you and you let me think that for four hours because you did not want to explain what was on your back.\n\nI have read the note. I understand why you did not want to explain it.\n\nWhen we get to the part of this where somebody has to go down somewhere and come back up, you are going to be the one who can. I want you to have thought about that before I ask.\n\n— I.H.",
+})
+print("survey page and Marsh's suit done")
 
 lang_path = os.path.join(ASSETS, "lang", "en_us.json")
 with open(lang_path, encoding="utf-8") as f:

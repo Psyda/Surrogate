@@ -100,6 +100,12 @@ public class SurvivorEntity extends PathAwareEntity {
 			say(serverPlayer, who.line(driving ? "chassis" : "plea"));
 			return ActionResult.CONSUME;
 		}
+		// Something warm, carried the whole way. Checked before the standing need, because the need is a
+		// crate of parts and this is a bowl, and neither should be mistaken for the other.
+		if (dev.psyda.surrogate.errand.Errands.offerMeal(serverPlayer, this, stack)) {
+			say(serverPlayer, who.line("thanks"));
+			return ActionResult.CONSUME;
+		}
 		if (stack.isOf(who.need()) && stack.getCount() >= who.needCount()) {
 			if (!player.getAbilities().creativeMode) stack.decrement(who.needCount());
 			setRescued(true);

@@ -720,6 +720,12 @@ public class RobotEntity extends MobEntity {
 			case SHIELD -> {
 				if (!fitModule(player, RobotModule.SHIELD)) return false;
 			}
+			case SAMPLER -> {
+				if (!fitModule(player, RobotModule.SAMPLER)) return false;
+			}
+			case COLLECTOR -> {
+				if (!fitModule(player, RobotModule.COLLECTOR)) return false;
+			}
 		}
 		if (!player.getAbilities().creativeMode) stack.decrement(1);
 		playSound(SoundEvents.BLOCK_ANVIL_USE, 0.8f, 1.3f);

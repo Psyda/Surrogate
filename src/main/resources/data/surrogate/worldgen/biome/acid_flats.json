@@ -94,7 +94,14 @@
   ],
   "spawners": {
     "monster": [],
-    "creature": [],
+    "creature": [
+      {
+        "type": "surrogate:tocker",
+        "weight": 6,
+        "minCount": 1,
+        "maxCount": 3
+      }
+    ],
     "ambient": [],
     "axolotls": [],
     "misc": [],

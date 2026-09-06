@@ -80,6 +80,41 @@ public final class ModEntities {
 					.trackingTickInterval(1)
 					.build("borer"));
 
+	/**
+	 * The slow one. {@link SpawnGroup#CREATURE} so it comes off the biome lists on world generation and
+	 * stays put after: the wastes should already have some in them the first time a player walks out.
+	 */
+	public static final EntityType<dev.psyda.surrogate.fauna.TrundleEntity> TRUNDLE = Registry.register(Registries.ENTITY_TYPE, Surrogate.id("trundle"),
+			EntityType.Builder.<dev.psyda.surrogate.fauna.TrundleEntity>create(dev.psyda.surrogate.fauna.TrundleEntity::new, SpawnGroup.CREATURE)
+					.dimensions(0.8f, 0.8f)
+					.eyeHeight(0.5f)
+					.maxTrackingRange(8)
+					.build("trundle"));
+
+	/** The rock that is not a rock. Placed by {@link dev.psyda.surrogate.fauna.Fauna}, near geysers. */
+	public static final EntityType<dev.psyda.surrogate.fauna.SlagbackEntity> SLAGBACK = Registry.register(Registries.ENTITY_TYPE, Surrogate.id("slagback"),
+			EntityType.Builder.<dev.psyda.surrogate.fauna.SlagbackEntity>create(dev.psyda.surrogate.fauna.SlagbackEntity::new, SpawnGroup.CREATURE)
+					.dimensions(1.0f, 0.7f)
+					.eyeHeight(0.5f)
+					.maxTrackingRange(8)
+					.build("slagback"));
+
+	/** The one that answers. */
+	public static final EntityType<dev.psyda.surrogate.fauna.TockerEntity> TOCKER = Registry.register(Registries.ENTITY_TYPE, Surrogate.id("tocker"),
+			EntityType.Builder.<dev.psyda.surrogate.fauna.TockerEntity>create(dev.psyda.surrogate.fauna.TockerEntity::new, SpawnGroup.CREATURE)
+					.dimensions(0.5f, 0.7f)
+					.eyeHeight(0.55f)
+					.maxTrackingRange(8)
+					.build("tocker"));
+
+	/** The ceiling. Hung by {@link dev.psyda.surrogate.fauna.Fauna}, because a heightmap has no roofs on it. */
+	public static final EntityType<dev.psyda.surrogate.fauna.LanternSlugEntity> LANTERN_SLUG = Registry.register(Registries.ENTITY_TYPE, Surrogate.id("lantern_slug"),
+			EntityType.Builder.<dev.psyda.surrogate.fauna.LanternSlugEntity>create(dev.psyda.surrogate.fauna.LanternSlugEntity::new, SpawnGroup.CREATURE)
+					.dimensions(0.5f, 0.4f)
+					.eyeHeight(0.2f)
+					.maxTrackingRange(10)
+					.build("lantern_slug"));
+
 	/** Client-side cinematic camera. Never spawned in a world, never saved. */
 	public static final EntityType<CameraEntity> CAMERA = Registry.register(Registries.ENTITY_TYPE, Surrogate.id("camera"),
 			EntityType.Builder.create(CameraEntity::new, SpawnGroup.MISC)
@@ -93,6 +128,10 @@ public final class ModEntities {
 		FabricDefaultAttributeRegistry.register(ROBOT, RobotEntity.createRobotAttributes());
 		FabricDefaultAttributeRegistry.register(SURVIVOR, SurvivorEntity.createSurvivorAttributes());
 		FabricDefaultAttributeRegistry.register(CREW, CrewEntity.createCrewAttributes());
+		FabricDefaultAttributeRegistry.register(TRUNDLE, dev.psyda.surrogate.fauna.TrundleEntity.createAttributes());
+		FabricDefaultAttributeRegistry.register(SLAGBACK, dev.psyda.surrogate.fauna.SlagbackEntity.createAttributes());
+		FabricDefaultAttributeRegistry.register(TOCKER, dev.psyda.surrogate.fauna.TockerEntity.createAttributes());
+		FabricDefaultAttributeRegistry.register(LANTERN_SLUG, dev.psyda.surrogate.fauna.LanternSlugEntity.createAttributes());
 	}
 
 	private ModEntities() {

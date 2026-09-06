@@ -2390,4 +2390,243 @@ for y in range(50, 88, 8):
 save(img, "entity/borer.png")
 print("acid, borer and act one textures done")
 
+# ======================================================================================
+# The four animals (2026-09-06). Layouts must match the models in client/render/fauna/.
+# ======================================================================================
+FIBRE = (108, 104, 92, 255)
+FIBRE_D = (68, 66, 58, 255)
+FIBRE_L = (146, 142, 126, 255)
+BASALT = (58, 56, 60, 255)
+BASALT_D = (36, 35, 38, 255)
+BASALT_L = (86, 84, 88, 255)
+SHELL = (92, 104, 112, 255)
+GLOW = (150, 240, 210, 255)
+GLOW_D = (60, 150, 130, 255)
+FLESH = (128, 116, 132, 255)
+FLESH_D = (88, 78, 92, 255)
+
+
+def fur(img, x, y, w, h, base, strands=40):
+    """A patch of matted fibre: noise, then short vertical strands of a lighter and a darker tone."""
+    panel(img, x, y, w, h, base, noise=0.14, rivets=False, outline=False)
+    for _ in range(strands):
+        sx = x + rng.randrange(w)
+        sy = y + rng.randrange(max(1, h - 3))
+        col = shade(base, rng.choice((0.72, 0.8, 1.18, 1.3)))
+        rect(img, sx, sy, 1, rng.randint(2, 3), col)
+
+
+# ---- Trundle: 64x32. A 10-cube of grey fibre with a 4x2x4 tuft on top.
+img = Image.new("RGBA", (64, 32), (0, 0, 0, 0))
+for (name, (fx, fy, fw, fh)) in box_faces(0, 0, 10, 10, 10).items():
+    fur(img, fx, fy, fw, fh, FIBRE if name != "bottom" else FIBRE_D, strands=22)
+# The underside is packed flat and pale from being sat on all day.
+for (fx, fy, fw, fh) in [box_faces(0, 0, 10, 10, 10)["bottom"]]:
+    panel(img, fx, fy, fw, fh, shade(FIBRE_L, 0.85), noise=0.05, rivets=False, outline=False)
+# A pair of dark eye-spots on the front face, which is decoration: it has no eyes on that side or any other.
+front = box_faces(0, 0, 10, 10, 10)["front"]
+rect(img, front[0] + 2, front[1] + 4, 2, 2, FIBRE_D)
+rect(img, front[0] + 6, front[1] + 4, 2, 2, FIBRE_D)
+for (fx, fy, fw, fh) in box_faces(40, 0, 4, 2, 4).values():
+    fur(img, fx, fy, fw, fh, FIBRE_L, strands=6)
+save(img, "entity/trundle.png")
+
+# ---- Slagback: 64x32. A 14x5x12 shell, four 6x1x6 plates, four 2x4x2 legs.
+img = Image.new("RGBA", (64, 32), (0, 0, 0, 0))
+for (name, (fx, fy, fw, fh)) in box_faces(0, 0, 14, 5, 12).items():
+    base = BASALT_D if name == "bottom" else BASALT
+    panel(img, fx, fy, fw, fh, base, noise=0.20, rivets=False, outline=False)
+    # Crazed basalt: short pale cracks, dense enough to read as stone at two blocks and no further.
+    for _ in range(fw * fh // 6):
+        cx = fx + rng.randrange(fw)
+        cy = fy + rng.randrange(fh)
+        rect(img, cx, cy, rng.randint(1, 2), 1, shade(base, rng.choice((0.62, 1.35))))
+# The top of the shell is where the plates sit, so it is a shade lighter and a little sun-bleached.
+top = box_faces(0, 0, 14, 5, 12)["top"]
+panel(img, top[0], top[1], top[2], top[3], BASALT_L, noise=0.16, rivets=False, outline=False)
+for (fx, fy, fw, fh) in box_faces(0, 20, 6, 1, 6).values():
+    panel(img, fx, fy, fw, fh, BASALT_L, noise=0.18, rivets=False, outline=False)
+# Plate undersides are the one part that is obviously not rock: hot shell, seen only when it is up.
+under = box_faces(0, 20, 6, 1, 6)["bottom"]
+panel(img, under[0], under[1], under[2], under[3], SHELL, noise=0.10, rivets=False, outline=False)
+for (fx, fy, fw, fh) in box_faces(28, 20, 2, 4, 2).values():
+    panel(img, fx, fy, fw, fh, shade(SHELL, 0.75), noise=0.12, rivets=False, outline=False)
+save(img, "entity/slagback.png")
+
+# ---- Tocker: 32x32. A 5-cube body, a 4x4x1 lens, three 1x4x1 legs.
+img = Image.new("RGBA", (32, 32), (0, 0, 0, 0))
+for (name, (fx, fy, fw, fh)) in box_faces(0, 0, 5, 5, 5).items():
+    panel(img, fx, fy, fw, fh, FLESH if name != "bottom" else FLESH_D, noise=0.12, rivets=False, outline=False)
+# Speckle: pale flecks over the back and sides, thickest on top.
+for _ in range(26):
+    rect(img, rng.randrange(20), rng.randrange(10), 1, 1, shade(FLESH, 1.4))
+for (fx, fy, fw, fh) in box_faces(0, 12, 4, 4, 1).values():
+    panel(img, fx, fy, fw, fh, GLOW_D, noise=0.06, rivets=False, outline=False)
+# The lens itself, on the front face of the eye cuboid.
+lens = box_faces(0, 12, 4, 4, 1)["front"]
+rect(img, lens[0], lens[1], 4, 4, GLOW)
+rect(img, lens[0] + 1, lens[1] + 1, 2, 2, (250, 255, 250, 255))
+for i in range(3):
+    for (fx, fy, fw, fh) in box_faces(20 + i * 4, 0, 1, 4, 1).values():
+        panel(img, fx, fy, fw, fh, FLESH_D, noise=0.10, rivets=False, outline=False)
+save(img, "entity/tocker.png")
+
+# The eyes layer: the same sheet with everything but the lens rubbed out. Vanilla's EyesFeatureRenderer
+# draws the whole model a second time with this at full brightness, so anything left opaque here glows.
+img = Image.new("RGBA", (32, 32), (0, 0, 0, 0))
+rect(img, lens[0], lens[1], 4, 4, GLOW)
+rect(img, lens[0] + 1, lens[1] + 1, 2, 2, (255, 255, 255, 255))
+save(img, "entity/tocker_eye.png")
+
+# ---- Lantern slug: 32x16. A 6x2x8 body and a 5x1x2 head with four lights on its front.
+img = Image.new("RGBA", (32, 16), (0, 0, 0, 0))
+for (name, (fx, fy, fw, fh)) in box_faces(0, 0, 6, 2, 8).items():
+    base = FLESH_D if name == "top" else FLESH
+    panel(img, fx, fy, fw, fh, base, noise=0.14, rivets=False, outline=False)
+# A wet sheen down the back, which is the face pressed to the ceiling.
+back_top = box_faces(0, 0, 6, 2, 8)["top"]
+for i in range(back_top[3]):
+    rect(img, back_top[0] + 2, back_top[1] + i, 2, 1, shade(FLESH_D, 1.3))
+for (fx, fy, fw, fh) in box_faces(0, 10, 5, 1, 2).values():
+    panel(img, fx, fy, fw, fh, FLESH, noise=0.10, rivets=False, outline=False)
+head_front = box_faces(0, 10, 5, 1, 2)["front"]
+EYES = [(head_front[0] + x, head_front[1]) for x in (0, 1, 3, 4)]
+for (ex, ey) in EYES:
+    rect(img, ex, ey, 1, 1, GLOW)
+save(img, "entity/lantern_slug.png")
+
+img = Image.new("RGBA", (32, 16), (0, 0, 0, 0))
+for (ex, ey) in EYES:
+    rect(img, ex, ey, 1, 1, GLOW)
+save(img, "entity/lantern_slug_eyes.png")
+print("fauna textures done")
+
+# ======================================================================================
+# The survey tier: a table, a beacon in two colours, and a pillar (2026-09-06)
+# ======================================================================================
+SURVEY_GLASS = (36, 92, 76, 255)
+SURVEY_LINE = (124, 232, 192, 255)
+
+# The table's sides: plated, with a seam and a vent grille where the projector lives.
+img = tex16()
+grain(img, STEEL_DARK, noise=0.07)
+rect(img, 0, 3, 16, 1, shade(STEEL_DARK, 1.35))
+rect(img, 0, 11, 16, 1, shade(STEEL_DARK, 0.65))
+for x in range(4, 12, 2):
+    rect(img, x, 5, 1, 5, shade(STEEL_DARK, 0.55))
+rect(img, 1, 1, 1, 1, shade(STEEL_DARK, 0.5))
+rect(img, 14, 1, 1, 1, shade(STEEL_DARK, 0.5))
+save(img, "block/survey_station_side.png")
+
+# The glass top: a dark pane with a contour lattice etched into it, which is the picture at rest.
+img = tex16()
+grain(img, SURVEY_GLASS, noise=0.05)
+for i in range(0, 16, 4):
+    rect(img, 0, i, 16, 1, shade(SURVEY_GLASS, 1.5))
+    rect(img, i, 0, 1, 16, shade(SURVEY_GLASS, 1.35))
+# A brighter run across the middle: the ridge the table is centred on.
+for (x, y) in ((3, 6), (4, 5), (5, 5), (6, 4), (7, 4), (8, 5), (9, 6), (10, 6), (11, 7), (12, 8)):
+    rect(img, x, y, 1, 1, SURVEY_LINE)
+rect(img, 7, 7, 2, 2, (255, 255, 255, 255))
+save(img, "block/survey_station_top.png")
+
+# The beacon pole: thin, banded, scuffed from being carried in a bag.
+img = tex16()
+grain(img, shade(STEEL, 0.8), noise=0.10)
+for y in (2, 6, 10, 14):
+    rect(img, 0, y, 16, 1, shade(STEEL, 0.55))
+save(img, "block/survey_beacon.png")
+
+# The lamp, twice. Same glass, different bulb, and the difference is the entire interface.
+for (name, core, halo) in (("", PAL["r"], PAL["R"]), ("_linked", PAL["p"], PAL["P"])):
+    img = tex16()
+    grain(img, shade(STEEL_DARK, 0.9), noise=0.06)
+    rect(img, 1, 0, 5, 3, halo)
+    rect(img, 2, 0, 3, 2, core)
+    rect(img, 0, 3, 6, 1, shade(STEEL_DARK, 0.6))
+    save(img, "block/survey_beacon_lamp%s.png" % name)
+
+# The pillar: a tall column of bolted plate with a stack of dish slots up one face.
+for (suffix, glow) in (("", None), ("_lit", CYAN)):
+    img = tex16()
+    grain(img, STEEL, noise=0.09)
+    rect(img, 0, 0, 16, 1, shade(STEEL, 1.3))
+    rect(img, 0, 15, 16, 1, shade(STEEL, 0.6))
+    rect(img, 2, 0, 1, 16, shade(STEEL, 0.7))
+    rect(img, 13, 0, 1, 16, shade(STEEL, 0.7))
+    for y in range(2, 15, 4):
+        rect(img, 4, y, 8, 2, shade(STEEL_DARK, 0.9))
+        if glow:
+            rect(img, 5, y, 6, 1, glow)
+            rect(img, 5, y + 1, 6, 1, shade(glow, 0.6))
+    save(img, "block/long_range_scanner%s.png" % suffix)
+
+img = tex16()
+grain(img, shade(STEEL, 0.85), noise=0.07)
+for r in range(2, 8, 2):
+    rect(img, 8 - r, 8 - r, r * 2, 1, shade(STEEL, 1.25))
+    rect(img, 8 - r, 8 + r - 1, r * 2, 1, shade(STEEL, 0.65))
+rect(img, 7, 7, 2, 2, CYAN)
+save(img, "block/long_range_scanner_top.png")
+
+# ---- The three loose items.
+ITEMS_SURVEY = {}
+ITEMS_SURVEY["bio_sampler"] = [
+    "................",
+    "......kkk.......",
+    ".....kYYYk......",
+    ".....kYwYk......",
+    ".....kYYYk......",
+    "......kmk.......",
+    "......kmk.......",
+    ".....kmmmk......",
+    "....kmlllmk.....",
+    "....kmlnlmk.....",
+    "....kmlllmk.....",
+    "....kmmmmmk.....",
+    ".....kmkmk......",
+    ".....kk.kk......",
+    "................",
+    "................",
+]
+ITEMS_SURVEY["specimen_bag"] = [
+    "................",
+    "....kkkkkkk.....",
+    "...khhhhhhhk....",
+    "...khwwwwwhk....",
+    "..kkhwwwwwhkk...",
+    "..kmkhhhhhkmk...",
+    "..kmmmmmmmmmk...",
+    "..kmlllllllmk...",
+    "..kmlPPPPPlmk...",
+    "..kmlPpppPlmk...",
+    "..kmlPPPPPlmk...",
+    "..kmlllllllmk...",
+    "..kmmmmmmmmmk...",
+    "...kkkkkkkkk....",
+    "................",
+    "................",
+]
+ITEMS_SURVEY["analysis_disk"] = [
+    "................",
+    "..kkkkkkkkkkk...",
+    "..kuuuuuuuuuk...",
+    "..kuUUUUUUUuk...",
+    "..kuUwwwwwUuk...",
+    "..kuUwkkkwUuk...",
+    "..kuUwkakwUuk...",
+    "..kuUwkkkwUuk...",
+    "..kuUwwwwwUuk...",
+    "..kuUUUUUUUuk...",
+    "..kuuuuuuuuuk...",
+    "..kullllllluk...",
+    "..kulhhhhhluk...",
+    "..kulllllllUk...",
+    "..kkkkkkkkkkk...",
+    "................",
+]
+for name, rows in ITEMS_SURVEY.items():
+    save(from_map(rows), "item/%s.png" % name)
+print("survey textures done")
+
 print("done")

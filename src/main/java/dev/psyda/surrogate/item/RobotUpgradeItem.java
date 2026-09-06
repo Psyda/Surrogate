@@ -20,7 +20,9 @@ public class RobotUpgradeItem extends Item {
 		RELAY,
 		DAMPER,
 		COATING,
-		SHIELD
+		SHIELD,
+		SAMPLER,
+		COLLECTOR
 	}
 
 	private final Kind kind;
@@ -47,6 +49,8 @@ public class RobotUpgradeItem extends Item {
 					Math.round(Surrogate.CONFIG.borerDamperFactor * 100.0), Surrogate.CONFIG.borerDepthY).formatted(Formatting.GRAY));
 			case COATING -> tooltip.add(Text.translatable("tooltip.surrogate.acid_coating",
 					Math.round(Surrogate.CONFIG.acidCoatingFactor * 100.0)).formatted(Formatting.GRAY));
+			case SAMPLER -> tooltip.add(Text.translatable("tooltip.surrogate.bio_sampler").formatted(Formatting.GRAY));
+			case COLLECTOR -> tooltip.add(Text.translatable("tooltip.surrogate.specimen_bag").formatted(Formatting.GRAY));
 			case SHIELD -> tooltip.add(Text.translatable("tooltip.surrogate.shielded_uplink",
 					Math.round(Surrogate.CONFIG.stormShieldFactor * 100.0)).formatted(Formatting.GRAY));
 		}

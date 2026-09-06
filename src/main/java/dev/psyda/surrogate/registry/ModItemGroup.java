@@ -36,6 +36,10 @@ public final class ModItemGroup {
 				entries.add(ModItems.ACID_COATING);
 				entries.add(ModItems.SHIELDED_UPLINK);
 				entries.add(ModItems.CERAMIC_CLADDING);
+				// Okafor's survey and Brandt's ark, beside the countermeasures because they share the bays.
+				entries.add(ModItems.BIO_SAMPLER);
+				entries.add(ModItems.SPECIMEN_BAG);
+				entries.add(ModItems.ANALYSIS_DISK);
 				entries.add(ModItems.ROBOT_CORE);
 				entries.add(ModItems.SERVO_MOTOR);
 				entries.add(ModItems.SCRAP_CHASSIS);
@@ -86,6 +90,9 @@ public final class ModItemGroup {
 				entries.add(ModItems.BUNK);
 				entries.add(ModItems.CHEM_DRUM);
 				entries.add(ModItems.SURVEY_MARKER);
+				entries.add(ModItems.SURVEY_STATION);
+				entries.add(ModItems.SURVEY_BEACON);
+				entries.add(ModItems.LONG_RANGE_SCANNER);
 				entries.add(ModItems.PAD_LIGHT);
 				entries.add(ModItems.ANTENNA_MAST);
 				entries.add(ModItems.SURVEY_STAKE);

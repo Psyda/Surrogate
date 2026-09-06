@@ -63,6 +63,8 @@ public class Surrogate implements ModInitializer {
 		Hazards.registerEvents();
 		dev.psyda.surrogate.hazard.AcidRain.registerEvents();
 		NoMonsters.registerEvents();
+		dev.psyda.surrogate.fauna.Fauna.registerEvents();
+		dev.psyda.surrogate.errand.Errands.registerEvents();
 		Transit.registerEvents();
 		CrawlerInterior.registerEvents();
 		LightRefresh.registerEvents();

@@ -85,6 +85,19 @@ public class SurrogateClient implements ClientModInitializer {
 		EntityModelLayerRegistry.registerModelLayer(dev.psyda.surrogate.client.render.BorerEntityModel.LAYER,
 				dev.psyda.surrogate.client.render.BorerEntityModel::getTexturedModelData);
 		EntityRendererRegistry.register(ModEntities.BORER, dev.psyda.surrogate.client.render.BorerEntityRenderer::new);
+		// The four animals. Registered together because they are the same three lines four times over.
+		EntityModelLayerRegistry.registerModelLayer(dev.psyda.surrogate.client.render.fauna.TrundleModel.LAYER,
+				dev.psyda.surrogate.client.render.fauna.TrundleModel::getTexturedModelData);
+		EntityModelLayerRegistry.registerModelLayer(dev.psyda.surrogate.client.render.fauna.SlagbackModel.LAYER,
+				dev.psyda.surrogate.client.render.fauna.SlagbackModel::getTexturedModelData);
+		EntityModelLayerRegistry.registerModelLayer(dev.psyda.surrogate.client.render.fauna.TockerModel.LAYER,
+				dev.psyda.surrogate.client.render.fauna.TockerModel::getTexturedModelData);
+		EntityModelLayerRegistry.registerModelLayer(dev.psyda.surrogate.client.render.fauna.LanternSlugModel.LAYER,
+				dev.psyda.surrogate.client.render.fauna.LanternSlugModel::getTexturedModelData);
+		EntityRendererRegistry.register(ModEntities.TRUNDLE, dev.psyda.surrogate.client.render.fauna.FaunaRenderers.Trundle::new);
+		EntityRendererRegistry.register(ModEntities.SLAGBACK, dev.psyda.surrogate.client.render.fauna.FaunaRenderers.Slagback::new);
+		EntityRendererRegistry.register(ModEntities.TOCKER, dev.psyda.surrogate.client.render.fauna.FaunaRenderers.Tocker::new);
+		EntityRendererRegistry.register(ModEntities.LANTERN_SLUG, dev.psyda.surrogate.client.render.fauna.FaunaRenderers.LanternSlug::new);
 		EntityRendererRegistry.register(ModEntities.ROBOT_WRECK, RobotWreckRenderer::new);
 		EntityRendererRegistry.register(ModEntities.SURVIVOR, SurvivorEntityRenderer::new);
 		EntityRendererRegistry.register(ModEntities.CREW, CrewEntityRenderer::new);
@@ -110,6 +123,10 @@ public class SurrogateClient implements ClientModInitializer {
 
 		ClientPlayNetworking.registerGlobalReceiver(PilotStatusPayload.ID, (payload, context) -> ClientPilotState.update(payload));
 		ClientPlayNetworking.registerGlobalReceiver(TransitPayload.ID, (payload, context) -> TransitClientState.onPayload(payload));
+		// The survey picture arrives whole and opens the screen with it: there is no client-side state to keep,
+		// because the picture is only ever as fresh as the moment somebody leaned on the table.
+		ClientPlayNetworking.registerGlobalReceiver(dev.psyda.surrogate.network.SurveyPayloads.Survey.ID,
+				(payload, context) -> context.client().setScreen(new dev.psyda.surrogate.client.gui.SurveyScreen(payload)));
 		ClientPlayNetworking.registerGlobalReceiver(CinematicPayloads.State.ID, (payload, context) -> CinematicState.onState(payload));
 		ClientPlayNetworking.registerGlobalReceiver(CinematicPayloads.Camera.ID, (payload, context) -> CinematicState.onCamera(payload));
 		ClientPlayNetworking.registerGlobalReceiver(CinematicPayloads.Line.ID, (payload, context) -> CinematicState.onLine(payload));
@@ -117,7 +134,7 @@ public class SurrogateClient implements ClientModInitializer {
 		ClientPlayNetworking.registerGlobalReceiver(CinematicPayloads.Objective.ID, (payload, context) -> CinematicState.onObjective(payload));
 		ClientPlayNetworking.registerGlobalReceiver(CinematicPayloads.Effect.ID, (payload, context) -> CinematicState.onEffect(payload));
 		ClientPlayNetworking.registerGlobalReceiver(CinematicPayloads.Hint.ID, (payload, context) -> CinematicState.onHint(payload));
-		ClientPlayNetworking.registerGlobalReceiver(TerminalPayload.ID, (payload, context) -> context.client().setScreen(new TerminalScreen(payload.unit())));
+		ClientPlayNetworking.registerGlobalReceiver(TerminalPayload.ID, (payload, context) -> context.client().setScreen(new TerminalScreen(payload.unit(), payload.survey())));
 		ClientPlayNetworking.registerGlobalReceiver(CrawlerPayloads.State.ID, (payload, context) -> CrawlerClientState.onState(payload));
 		ClientPlayNetworking.registerGlobalReceiver(CrawlerPayloads.Scan.ID, (payload, context) -> CrawlerClientState.onScan(payload));
 		ClientPlayNetworking.registerGlobalReceiver(CrawlerPayloads.Camera.ID, (payload, context) -> CrawlerClientState.onCamera(payload));

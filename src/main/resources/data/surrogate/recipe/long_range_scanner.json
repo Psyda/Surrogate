@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "ADA",
+    "PCP",
+    "PPP"
+  ],
+  "key": {
+    "A": {
+      "item": "surrogate:antenna_mast"
+    },
+    "D": {
+      "item": "surrogate:data_rack"
+    },
+    "P": {
+      "item": "surrogate:hull_plating"
+    },
+    "C": {
+      "item": "surrogate:robot_core"
+    }
+  },
+  "result": {
+    "id": "surrogate:long_range_scanner",
+    "count": 1
+  }
+}
