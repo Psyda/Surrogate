@@ -220,7 +220,7 @@ def main():
         # The researcher: the first shelter sits within a chassis walk of the pod and has a collar in its west
         # wall and a chassis port in its south wall. A crawler coupled to the collar takes the survivor
         # aboard; coupled at home, they step into the pod. A chassis at the port is handed the blueprint.
-        m = re.search(r"Survivor shelter for okafor at x=(-?\d+), z=(-?\d+)", open(LOG, encoding="utf-8", errors="replace").read())
+        m = re.search(r"Survivor site for okafor at x=(-?\d+), z=(-?\d+)", open(LOG, encoding="utf-8", errors="replace").read())
         check("first shelter placed", m is not None)
         if m:
             sx, sz = int(m.group(1)), int(m.group(2))
@@ -266,8 +266,12 @@ def main():
         rcon.cmd(f"{OW}player Steve look at {port[0] + 0.5} {port[1] + 0.5} {port[2] + 0.5}")
         time.sleep(0.5)
         rcon.cmd(f"{OW}player Steve use once")
-        handed = wait_for_log(r"okafor handed the crawler blueprint to Steve", 8, proc)
-        check("chassis at the port is handed the crawler blueprint", handed is not None)
+        # The line reads "okafor handed <item> to Steve" since there are four handovers rather than one; the
+        # item is named in it, so the check still asserts which one came across and not merely that one did.
+        handed = wait_for_log(r"okafor handed (\S+) to Steve", 8, proc)
+        check("chassis at the port is handed the crawler blueprint",
+              handed is not None and "blueprint" in handed.group(1),
+              handed.group(1) if handed else "no handover line")
         rcon.cmd("execute as Steve run surrogate crawler board")
         rcon.cmd(f"{OW}kill @e[type=surrogate:robot]")
         time.sleep(1)

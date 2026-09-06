@@ -84,7 +84,8 @@ public final class CrawlerDocking {
 		if (state.origin != null) collars.add(new Collar(state.origin.add(HabitatBuilder.DOCK_COLLAR), null, true));
 		if (state.siteTwo != null && state.siteTwoBuilt) collars.add(new Collar(state.siteTwo.add(HabitatBuilder.DOCK_COLLAR), null, false));
 		for (SurvivorManager.Site site : SurvivorManager.get(server).sites()) {
-			if (site.built) collars.add(new Collar(SurvivorShelter.collar(site), site, false));
+			// A wreck on the Rift floor has no collar; whoever is there comes up carried, not driven off.
+			if (site.built && !site.wreck) collars.add(new Collar(SurvivorShelter.collar(site), site, false));
 		}
 		return collars;
 	}

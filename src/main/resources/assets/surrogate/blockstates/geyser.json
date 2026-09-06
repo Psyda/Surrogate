@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "stage=quiet": {
+      "model": "surrogate:block/geyser"
+    },
+    "stage=steam": {
+      "model": "surrogate:block/geyser"
+    },
+    "stage=rumble": {
+      "model": "surrogate:block/geyser_hot"
+    },
+    "stage=erupting": {
+      "model": "surrogate:block/geyser_hot"
+    }
+  }
+}

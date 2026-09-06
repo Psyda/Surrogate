@@ -1,5 +1,6 @@
 package dev.psyda.surrogate.survivor;
 
+import dev.psyda.surrogate.entity.RobotEntity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.goal.LookAroundGoal;
 import net.minecraft.entity.ai.goal.LookAtEntityGoal;
@@ -85,6 +86,18 @@ public class SurvivorEntity extends PathAwareEntity {
 		ItemStack stack = player.getStackInHand(hand);
 		if (isRescued()) {
 			say(serverPlayer, who.line(this.random.nextBoolean() ? "idle.1" : "idle.2"));
+			return ActionResult.CONSUME;
+		}
+		// Novak asks for nothing and cannot walk out, so the plea below would offer him zero of nothing. What
+		// he says depends on what is standing over him: a chassis has no hands for a broken leg and no air to
+		// spend on him, and he says so rather than letting the player wait for a prompt that is not coming.
+		// TODO act five, the Rift floor (docs/DESIGN-campaign.md, "Novak, at the bottom of the Rift"): park at
+		// the ledges, rebreather on, down the scree as a body, use him to pick him up, carry him back up.
+		// Reyes has to be aboard first. Nothing moves him until that exists: his site is a wreck, so it has no
+		// collar and no port, and SurvivorManager.board is only reachable through a collar.
+		if (who.needCount() <= 0) {
+			boolean driving = player.getVehicle() instanceof RobotEntity robot && robot.isPilot(player);
+			say(serverPlayer, who.line(driving ? "chassis" : "plea"));
 			return ActionResult.CONSUME;
 		}
 		if (stack.isOf(who.need()) && stack.getCount() >= who.needCount()) {

@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Boots the dev server on the Toxic Wastes preset, lets the first join place the pod, Site Two and the
 shelters, then asks the mod to scan the straight runs between them for the crawler and to paint a map of the
-valleys. Prints the scan, copies the map to build/terrain_map.png, and exits non-zero if a run is blocked.
+valleys. Prints the scan, copies the map to build/terrain_map.png, and exits non-zero if any run is not what
+the campaign wants: the near-side sites have to be drivable and the three past the Rift have to not be.
 
     python tools/terrain_scan.py [radius] [step]      (default 1024 8)
 """
@@ -103,12 +104,12 @@ def main():
             with open(LOG, encoding="utf-8", errors="replace") as f:
                 text = f.read()
             for line in text.splitlines():
-                if re.search(r"starter habitat at|Site Two \(Halloran\)|Survivor shelter for|Valleys:", line):
+                if re.search(r"starter habitat at|Site Two \(Halloran\)|Survivor site for|Assay: pad site|Valleys:", line):
                     print(line.strip()[:200])
             rcon.sock.settimeout(600)
             if with_scan:
                 scan = rcon.cmd("surrogate terrain scan")
-                ok = "every site is drivable" in scan
+                ok = "every site is as designed" in scan
             if with_map:
                 rcon.cmd(f"surrogate terrain map {radius} {step}")
                 src = os.path.join(RUN, "terrain_map.png")
@@ -142,7 +143,7 @@ def main():
         for l in text.splitlines():
             if "Terrain" in l or "Valleys" in l:
                 print(l.strip()[:300])
-    print("RESULT:", "drivable" if ok else "BLOCKED")
+    print("RESULT:", "as designed" if ok else "WRONG")
     return 0 if ok else 2
 
 

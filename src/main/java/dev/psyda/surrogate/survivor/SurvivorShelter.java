@@ -1,8 +1,10 @@
 package dev.psyda.surrogate.survivor;
 
 import dev.psyda.surrogate.Surrogate;
+import dev.psyda.surrogate.block.BreachedPlatingBlock;
 import dev.psyda.surrogate.block.DiveChairBlock;
 import dev.psyda.surrogate.block.LifeSupportBlock;
+import dev.psyda.surrogate.block.PropBlock;
 import dev.psyda.surrogate.block.TerminalBlock;
 import dev.psyda.surrogate.registry.ModBlocks;
 import dev.psyda.surrogate.registry.ModEntities;
@@ -14,6 +16,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.ChestBlock;
 import net.minecraft.block.DoorBlock;
+import net.minecraft.block.StairsBlock;
 import net.minecraft.block.entity.ChestBlockEntity;
 import net.minecraft.block.enums.BedPart;
 import net.minecraft.block.enums.DoorHinge;
@@ -36,6 +39,9 @@ import java.util.List;
  * west wall with a levelled apron in front of it, so a crawler can back on and take the survivor aboard.
  * Built on the spot the first time the chunk loads.
  *
+ * <p>There are two kits. Everywhere on the near side gets the plating box; the acid belt past the Rift gets
+ * the ceramic one, which is the same room under a sloped roof. Novak has neither: his site is a wreck.
+ *
  * <p>Columns run x = -3..3, rows run z = -3..3 with north at the top.
  */
 public final class SurvivorShelter {
@@ -43,6 +49,11 @@ public final class SurvivorShelter {
 	public static final BlockPos COLLAR = new BlockPos(-3, 1, 0);
 	/** The chassis port, in the south wall east of the airlock. */
 	public static final BlockPos PORT = new BlockPos(2, 1, 3);
+	/**
+	 * The plate over Sorensen's airlock that let go. Only his shelter has it, and it is one of act one's
+	 * errands (docs/DESIGN-campaign.md): until somebody puts a hull plate on it he is holding his breath.
+	 */
+	public static final BlockPos BREACH = new BlockPos(1, 2, 3);
 	private static final int APRON_MIN_X = -15;
 	private static final int APRON_MAX_X = -4;
 	private static final int APRON_HALF_Z = 2;
@@ -81,7 +92,68 @@ public final class SurvivorShelter {
 					"#g###g#",
 					"#######"}};
 
+	/**
+	 * The kit they build with in the belt, where anything the rain lands on is eaten. Same footprint, same
+	 * collar in the west wall, same port by the door, but ceramic instead of plating, a solid roof instead
+	 * of a skylight, a gutter round the eaves and the panels under glass. Brandt built the first one and
+	 * everyone downwind copied it.
+	 */
+	private static final String[][] BELT = {
+			{ // y = 0: floor
+					"#######",
+					"#######",
+					"#######",
+					"#######",
+					"#######",
+					"#######",
+					"#######"},
+			{ // y = 1
+					"CCCLCCC",
+					"CB...XC",
+					"Gb....C",
+					"K..V..C",
+					"G.....C",
+					"CT...cC",
+					"CCCDCPC"},
+			{ // y = 2
+					"CCCCCCC",
+					"C.....C",
+					"G.....C",
+					"k.....C",
+					"G.....C",
+					"C.....C",
+					"CCCdCCC"},
+			{ // y = 3: no skylight; the rain gets nothing
+					"CCCCCCC",
+					"CgCCCgC",
+					"CCCCCCC",
+					"CCCCCCC",
+					"CCCCCCC",
+					"CgCCCgC",
+					"CCCCCCC"},
+			{ // y = 4: the gutter round the eaves, and four panels standing in it
+					"uuuuuuu",
+					"u.....u",
+					"u.A.A.u",
+					"u.....u",
+					"u.A.A.u",
+					"u.....u",
+					"uuuuuuu"},
+			{ // y = 5: the sloped roof, glazed over the panels so they still see the sun
+					"nnnnnnn",
+					"wCCCCCe",
+					"wCGCGCe",
+					"wCCCCCe",
+					"wCGCGCe",
+					"wCCCCCe",
+					"sssssss"}};
+
 	private SurvivorShelter() {
+	}
+
+	/** Which shape goes up here: the belt has its own, and everywhere else has the plating box. */
+	private static String[][] kit(SurvivorManager.Site site) {
+		return site.belt ? BELT : LAYERS;
 	}
 
 	/** The collar door of a built shelter, in world coordinates. */
@@ -116,16 +188,22 @@ public final class SurvivorShelter {
 		HabitatBuilder.plinth(world, origin, APRON_MIN_X, -APRON_HALF_Z, APRON_MAX_X, APRON_HALF_Z, ModBlocks.CAUSTIC_SANDSTONE.getDefaultState(), 5);
 
 		List<Runnable> deferred = new ArrayList<>();
-		for (int y = 0; y < LAYERS.length; y++) {
+		String[][] kit = kit(site);
+		for (int y = 0; y < kit.length; y++) {
 			for (int row = 0; row < 7; row++) {
 				for (int col = 0; col < 7; col++) {
-					char c = LAYERS[y][row].charAt(col);
+					char c = kit[y][row].charAt(col);
 					if (c == ' ') continue;
 					place(world, origin.add(col - 3, y, row - 3), c, site, deferred);
 				}
 			}
 		}
 		deferred.forEach(Runnable::run);
+
+		// Sorensen's outer frame is one plate short. It goes in after the glyphs, over the wall they laid.
+		if (site.survivor() == Survivor.SORENSEN) {
+			set(world, origin.add(BREACH), ModBlocks.BREACHED_PLATING.getDefaultState().with(BreachedPlatingBlock.FACING, Direction.SOUTH));
+		}
 
 		// A few scrap heaps outside: the wreck of whatever brought them here. Not on the apron.
 		Random random = world.getRandom();
@@ -147,6 +225,57 @@ public final class SurvivorShelter {
 			world.spawnEntity(survivor);
 		}
 		Surrogate.LOGGER.info("Built {}'s shelter at {}", site.survivor().key(), origin);
+	}
+
+	/**
+	 * Novak's site, which is not a shelter: no collar, no port, no air. A crawler that went over the edge
+	 * eleven days ago, lying on the floor of the Rift with one lamp still burning off its buffer, and Novak
+	 * beside it. This is only the thing to find.
+	 *
+	 * <p>TODO act five (docs/DESIGN-campaign.md, "Novak, at the bottom of the Rift"): getting him up is the
+	 * rebreather run, on foot, and carrying a person. Until that exists nothing here can move him, and the
+	 * wreck deliberately has no collar and no port for {@code SurvivorManager.board} to work through.
+	 */
+	public static void buildWreck(ServerWorld world, SurvivorManager.Site site) {
+		int top = world.getTopY(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, site.x, site.z);
+		BlockPos origin = new BlockPos(site.x, top - 1, site.z);
+		site.y = origin.getY();
+		BlockState air = Blocks.AIR.getDefaultState();
+		for (int x = -3; x <= 3; x++) {
+			for (int z = -2; z <= 2; z++) {
+				BlockPos floor = origin.add(x, 0, z);
+				if (!world.getBlockState(floor).isSolidBlock(world, floor)) set(world, floor, ModBlocks.CAUSTIC_SANDSTONE.getDefaultState());
+				for (int y = 1; y <= 4; y++) set(world, origin.add(x, y, z), air);
+			}
+		}
+		// The hull on its side, a hull's width of it, torn open along the top.
+		for (int x = -2; x <= 1; x++) {
+			set(world, origin.add(x, 1, -1), ModBlocks.HULL_FRAME.getDefaultState());
+			set(world, origin.add(x, 1, 0), ModBlocks.DECK_PLATING.getDefaultState());
+			set(world, origin.add(x, 1, 1), ModBlocks.HAZARD_PLATING.getDefaultState());
+			set(world, origin.add(x, 2, 0), ModBlocks.HULL_FRAME.getDefaultState());
+		}
+		set(world, origin.add(-2, 2, -1), ModBlocks.SCRAP_HEAP.getDefaultState());
+		set(world, origin.add(1, 2, 1), ModBlocks.SCRAP_HEAP.getDefaultState());
+		set(world, origin.add(2, 1, 0), ModBlocks.PAD_LIGHT.getDefaultState().with(PropBlock.FACING, Direction.EAST));
+		// What came out of it when it rolled, thrown down the scree.
+		Random random = world.getRandom();
+		for (int i = 0; i < 4; i++) {
+			int x = random.nextBetween(-6, 6);
+			int z = random.nextBetween(-6, 6);
+			if (Math.abs(x) <= 2 && Math.abs(z) <= 2) continue;
+			BlockPos surface = world.getTopPosition(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, origin.add(x, 0, z));
+			if (world.getBlockState(surface).isAir() && world.getBlockState(surface.down()).isSolidBlock(world, surface.down())) {
+				set(world, surface, ModBlocks.SCRAP_HEAP.getDefaultState());
+			}
+		}
+		SurvivorEntity survivor = ModEntities.SURVIVOR.create(world);
+		if (survivor != null) {
+			survivor.setCharacter(site.survivor());
+			survivor.refreshPositionAndAngles(origin.getX() + 2.5, origin.getY() + 1, origin.getZ() + 0.5, 90f, 0f);
+			world.spawnEntity(survivor);
+		}
+		Surrogate.LOGGER.info("Laid {}'s wreck on the Rift floor at {}", site.survivor().key(), origin);
 	}
 
 	private static void place(ServerWorld world, BlockPos pos, char c, SurvivorManager.Site site, List<Runnable> deferred) {
@@ -172,8 +301,21 @@ public final class SurvivorShelter {
 			case 'd' -> deferred.add(() -> set(world, pos, door(DoubleBlockHalf.UPPER)));
 			case 'K' -> deferred.add(() -> set(world, pos, HabitatBuilder.dockDoor(DoubleBlockHalf.LOWER)));
 			case 'k' -> deferred.add(() -> set(world, pos, HabitatBuilder.dockDoor(DoubleBlockHalf.UPPER)));
+			// The belt kit. Fired clay holds where plating does not, and the roof runs the water off it.
+			case 'C' -> set(world, pos, Blocks.BRICKS.getDefaultState());
+			case 'u' -> set(world, pos, Blocks.BRICK_SLAB.getDefaultState());
+			case 'A' -> set(world, pos, ModBlocks.SOLAR_COLLECTOR.getDefaultState());
+			case 'n' -> set(world, pos, roof(Direction.NORTH));
+			case 'e' -> set(world, pos, roof(Direction.EAST));
+			case 's' -> set(world, pos, roof(Direction.SOUTH));
+			case 'w' -> set(world, pos, roof(Direction.WEST));
 			default -> throw new IllegalArgumentException("Unknown shelter glyph " + c);
 		}
+	}
+
+	/** A course of the sloped roof, falling away towards {@code towards}. */
+	private static BlockState roof(Direction towards) {
+		return Blocks.BRICK_STAIRS.getDefaultState().with(StairsBlock.FACING, towards);
 	}
 
 	private static BlockState door(DoubleBlockHalf half) {

@@ -1,0 +1,15 @@
+{
+  "replace": false,
+  "values": [
+    "surrogate:solar_collector",
+    "surrogate:power_conduit",
+    "surrogate:charging_dock",
+    "surrogate:life_support",
+    "surrogate:terminal",
+    "surrogate:relay_mast",
+    "surrogate:damper_beacon",
+    "surrogate:geothermal_tap",
+    "surrogate:vehicle_fabricator",
+    "surrogate:antenna_mast"
+  ]
+}

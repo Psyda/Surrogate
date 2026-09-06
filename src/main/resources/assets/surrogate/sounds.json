@@ -212,6 +212,90 @@
     ],
     "subtitle": "subtitles.surrogate.dock_error"
   },
+  "hazard.storm_wash": {
+    "sounds": [
+      {
+        "name": "surrogate:hazard/storm_wash"
+      }
+    ],
+    "subtitle": "subtitles.surrogate.storm_wash"
+  },
+  "hazard.storm_crack": {
+    "sounds": [
+      {
+        "name": "surrogate:hazard/storm_crack"
+      }
+    ],
+    "subtitle": "subtitles.surrogate.storm_crack"
+  },
+  "hazard.geyser_rumble": {
+    "sounds": [
+      {
+        "name": "surrogate:hazard/geyser_rumble"
+      }
+    ],
+    "subtitle": "subtitles.surrogate.geyser_rumble"
+  },
+  "hazard.geyser_erupt": {
+    "sounds": [
+      {
+        "name": "surrogate:hazard/geyser_erupt"
+      }
+    ],
+    "subtitle": "subtitles.surrogate.geyser_erupt"
+  },
+  "hazard.tap_cap": {
+    "sounds": [
+      {
+        "name": "surrogate:hazard/tap_cap"
+      }
+    ],
+    "subtitle": "subtitles.surrogate.tap_cap"
+  },
+  "weather.storm_wind": {
+    "sounds": [
+      {
+        "name": "surrogate:weather/storm_wind",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.surrogate.storm_wind"
+  },
+  "weather.acid_rain": {
+    "sounds": [
+      {
+        "name": "surrogate:weather/acid_rain",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.surrogate.acid_rain"
+  },
+  "weather.link_hiss": {
+    "sounds": [
+      {
+        "name": "surrogate:weather/link_hiss",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.surrogate.link_hiss"
+  },
+  "hazard.borer_grind": {
+    "sounds": [
+      {
+        "name": "surrogate:hazard/borer_grind",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.surrogate.borer_grind"
+  },
+  "hazard.borer_lunge": {
+    "sounds": [
+      {
+        "name": "surrogate:hazard/borer_lunge"
+      }
+    ],
+    "subtitle": "subtitles.surrogate.borer_lunge"
+  },
   "voice.halloran.radio.1": {
     "sounds": [
       {

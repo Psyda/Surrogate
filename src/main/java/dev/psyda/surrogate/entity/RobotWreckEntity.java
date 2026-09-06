@@ -36,6 +36,8 @@ public class RobotWreckEntity extends Entity {
 	private static final TrackedData<Integer> BATTERY = DataTracker.registerData(RobotWreckEntity.class, TrackedDataHandlerRegistry.INTEGER);
 	private static final TrackedData<Integer> CARGO_TIER = DataTracker.registerData(RobotWreckEntity.class, TrackedDataHandlerRegistry.INTEGER);
 	private static final TrackedData<Boolean> FABRICATOR = DataTracker.registerData(RobotWreckEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+	/** The dead chassis' module mask, carried whole so a rebuild keeps every countermeasure it was paid for. */
+	private static final TrackedData<Integer> MODULES = DataTracker.registerData(RobotWreckEntity.class, TrackedDataHandlerRegistry.INTEGER);
 
 	private final SimpleInventory inventory = new SimpleInventory(45) {
 		@Override
@@ -58,15 +60,17 @@ public class RobotWreckEntity extends Entity {
 		builder.add(BATTERY, 0);
 		builder.add(CARGO_TIER, 0);
 		builder.add(FABRICATOR, false);
+		builder.add(MODULES, 0);
 	}
 
-	public void setSalvageData(UUID robotUuid, int plating, int battery, int cargoTier, boolean fabricator, @Nullable Text robotName) {
+	public void setSalvageData(UUID robotUuid, int plating, int battery, int cargoTier, boolean fabricator, int modules, @Nullable Text robotName) {
 		this.robotUuid = robotUuid;
 		this.robotName = robotName;
 		this.dataTracker.set(PLATING, plating);
 		this.dataTracker.set(BATTERY, battery);
 		this.dataTracker.set(CARGO_TIER, cargoTier);
 		this.dataTracker.set(FABRICATOR, fabricator);
+		this.dataTracker.set(MODULES, modules);
 		if (robotName != null) {
 			setCustomName(Text.translatable("entity.surrogate.robot_wreck.named", robotName));
 		}
@@ -151,6 +155,7 @@ public class RobotWreckEntity extends Entity {
 		data.putInt("Battery", this.dataTracker.get(BATTERY));
 		data.putInt("CargoTier", this.dataTracker.get(CARGO_TIER));
 		data.putBoolean("Fabricator", this.dataTracker.get(FABRICATOR));
+		data.putInt("Modules", this.dataTracker.get(MODULES));
 		if (robotName != null) data.putString("RobotName", Text.Serialization.toJsonString(robotName, getRegistryManager()));
 		scrap.set(ModComponents.ROBOT_DATA, data);
 		dropStack(scrap);
@@ -166,6 +171,7 @@ public class RobotWreckEntity extends Entity {
 		this.dataTracker.set(BATTERY, nbt.getInt("Battery"));
 		this.dataTracker.set(CARGO_TIER, nbt.getInt("CargoTier"));
 		this.dataTracker.set(FABRICATOR, nbt.getBoolean("Fabricator"));
+		this.dataTracker.set(MODULES, nbt.getInt("Modules"));
 		robotUuid = nbt.containsUuid("RobotUuid") ? nbt.getUuid("RobotUuid") : null;
 		robotName = nbt.contains("RobotName", NbtElement.STRING_TYPE)
 				? Text.Serialization.fromJson(nbt.getString("RobotName"), getRegistryManager()) : null;
@@ -178,6 +184,7 @@ public class RobotWreckEntity extends Entity {
 		nbt.putInt("Battery", this.dataTracker.get(BATTERY));
 		nbt.putInt("CargoTier", this.dataTracker.get(CARGO_TIER));
 		nbt.putBoolean("Fabricator", this.dataTracker.get(FABRICATOR));
+		nbt.putInt("Modules", this.dataTracker.get(MODULES));
 		if (robotUuid != null) nbt.putUuid("RobotUuid", robotUuid);
 		if (robotName != null) nbt.putString("RobotName", Text.Serialization.toJsonString(robotName, getRegistryManager()));
 	}

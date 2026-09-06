@@ -1,8 +1,16 @@
 # Design: mesa valleys, base towers and the crawler
 
-Status: steps 1 to 5 and 7 of the order of work below are built and checked headlessly (2026-09-05); step 6
-lacks only the survivors' needs at home. This note records the direction agreed on 2026-09-05 so the surface work (Site Two, the
-module-two slab, the docking collar) points the right way. See "What exists" at the end for the code.
+Status: every step of the order of work below is built and checked headlessly. Steps 1 to 5 and 7 landed
+2026-09-05; step 6's remainder — beds, food and water for the people who come home — is act seven of
+[DESIGN-campaign.md](DESIGN-campaign.md) and is tracked on that note's checklist instead of here. This note
+records the direction agreed on 2026-09-05 so the surface work (Site Two, the module-two slab, the docking
+collar) points the right way. See "What exists" at the end for the code.
+
+Two things have changed under it since: the valley floors are now cut by **the Rift**, a continuous chasm in
+the noise that the reachability grid refuses to cross (which is what makes act five a gate rather than a
+long drive), and `minecraft:canyon` is out of the biomes' carvers, because it was cutting real chasms across
+drives that `/surrogate terrain scan` called drivable. See [DESIGN-hazards.md](DESIGN-hazards.md) for the
+rest of what is out there now.
 
 ## The idea
 
@@ -86,14 +94,17 @@ Two parts, so the outside and the inside are different things:
 5. Docking from the rear seat; the schematic terminal. **Done**: the rear camera with a reticle, zooming in
    as the ring closes; a range beep that quickens and goes steady inside the window; W backs the hull up, a
    click locks, S pulls away; a clunk for a click off the collar or for sliding back out of the window.
-6. The cat, chests and beds inside; survivors boarding. **Mostly**: the cat comes along, the room is the
+6. The cat, chests and beds inside; survivors boarding. **Done**: the cat comes along, the room is the
    crew's to build in, the chassis bay deploys and recalls; a survivor boards when the crawler couples to
-   their shelter's collar and steps into the pod when it couples at home. Beds, food and water for them are
-   still to come.
-7. The researcher. **Done** as a first slice: the first shelter is within a chassis walk of the pod, every
-   shelter has a chassis port (a chassis talks to the room through a terminal, nobody opens a door) and the
-   researcher hands the crawler blueprint over it; the kit recipe needs the blueprint on the bench. The radar
-   on the sonar shows bases within two hundred blocks.
+   their shelter's collar and steps into the pod when it couples at home. Beds, food and water for them
+   moved to act seven of [DESIGN-campaign.md](DESIGN-campaign.md), where housing and feeding eight people is
+   an objective rather than a nicety.
+7. The researcher. **Done**, and now six of them: the first shelter is within a chassis walk of the pod,
+   every shelter has a chassis port (a chassis talks to the room through a terminal, nobody opens a door)
+   and the researcher hands the crawler blueprint over it; the kit recipe needs the blueprint on the bench.
+   The radar on the sonar shows bases within two hundred blocks.
+8. Modules. **Started**: the hull carries a module bitmask and its first fitting, the ceramic cladding that
+   makes the acid belt survivable. Everything the crawler needs in act five hangs off that.
 
 ## What exists
 

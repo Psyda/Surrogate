@@ -1,6 +1,7 @@
 package dev.psyda.surrogate.world;
 
 import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.arguments.LongArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import dev.psyda.surrogate.Surrogate;
 import dev.psyda.surrogate.survivor.SurvivorManager;
@@ -42,16 +43,28 @@ public final class TerrainScan {
 	 * between the ends; {@code path} is null when there was no drive to check and the line is straight.
 	 */
 	public record Profile(String name, int fromX, int fromZ, int toX, int toZ, int straight, int length, int walls, int longestRun, int water, int climbs,
-						  int minY, int maxY, @Nullable List<BlockPos> path) {
+						  int minY, int maxY, @Nullable List<BlockPos> path, boolean gated) {
 		/** No step a crawler could not take, no acid, and never off the floor. */
 		public boolean drivable() {
 			return path != null && walls == 0 && water == 0 && climbs == 0;
 		}
 
+		/**
+		 * Whether this run is the way it is meant to be. Most sites have to be drivable from day one; the
+		 * three past the Rift have to NOT be, because being unreachable until somebody builds a bridge is
+		 * the whole of act five. A gated site the crawler can already drive to is as much a fault as a
+		 * near-side one it cannot.
+		 */
+		public boolean asDesigned() {
+			return gated != drivable();
+		}
+
 		public String describe() {
 			String route = path == null ? "no drive found, straight line" : "drive of " + length + " blocks";
+			String verdict = drivable() ? (gated ? "DRIVABLE (should be behind the Rift)" : "DRIVABLE")
+					: (gated ? "gated, as designed" : "blocked");
 			return String.format("%s: %d blocks from %d,%d to %d,%d, %s; %d walls (longest clear run %d), %d acid columns, %d off the floor, ground %d..%d: %s",
-					name, straight, fromX, fromZ, toX, toZ, route, walls, longestRun, water, climbs, minY, maxY, drivable() ? "DRIVABLE" : "blocked");
+					name, straight, fromX, fromZ, toX, toZ, route, walls, longestRun, water, climbs, minY, maxY, verdict);
 		}
 	}
 
@@ -60,6 +73,11 @@ public final class TerrainScan {
 
 	/** Reads the ground along a polyline, one column per block along each leg's longer axis. */
 	public static Profile profile(ServerWorld world, String name, List<BlockPos> points, @Nullable List<BlockPos> path) {
+		return profile(world, name, points, path, false);
+	}
+
+	/** As above, for a site that is supposed to be out of reach until act five bridges the Rift. */
+	public static Profile profile(ServerWorld world, String name, List<BlockPos> points, @Nullable List<BlockPos> path, boolean gated) {
 		ChunkGenerator generator = world.getChunkManager().getChunkGenerator();
 		NoiseConfig config = world.getChunkManager().getNoiseConfig();
 		int previous = Integer.MIN_VALUE;
@@ -102,7 +120,7 @@ public final class TerrainScan {
 		BlockPos from = points.get(0);
 		BlockPos to = points.get(points.size() - 1);
 		int straight = (int) Math.round(Math.hypot(to.getX() - from.getX(), to.getZ() - from.getZ()));
-		return new Profile(name, from.getX(), from.getZ(), to.getX(), to.getZ(), straight, length, walls, longest, water, climbs, minY, maxY, path);
+		return new Profile(name, from.getX(), from.getZ(), to.getX(), to.getZ(), straight, length, walls, longest, water, climbs, minY, maxY, path, gated);
 	}
 
 	/**
@@ -110,12 +128,16 @@ public final class TerrainScan {
 	 * spliced onto its ends), otherwise the straight line, which is then reported as no drive.
 	 */
 	public static Profile drive(ServerWorld world, String name, @Nullable Valleys.Reach reach, BlockPos from, int toX, int toZ) {
+		return drive(world, name, reach, from, toX, toZ, false);
+	}
+
+	public static Profile drive(ServerWorld world, String name, @Nullable Valleys.Reach reach, BlockPos from, int toX, int toZ, boolean gated) {
 		List<BlockPos> path = reach == null ? null : reach.pathTo(toX, toZ);
 		List<BlockPos> points = new ArrayList<>();
 		points.add(new BlockPos(from.getX(), 0, from.getZ()));
 		if (path != null) points.addAll(path);
 		points.add(new BlockPos(toX, 0, toZ));
-		return profile(world, name, points, path);
+		return profile(world, name, points, path, gated);
 	}
 
 	/** The pod to Site Two and to every shelter, along the drives the reachability grid finds. */
@@ -127,7 +149,7 @@ public final class TerrainScan {
 		Valleys.Reach reach = Valleys.reach(world, state.origin.getX(), state.origin.getZ(), reachRadius(server, state));
 		if (state.siteTwo != null) profiles.add(drive(world, "site02", reach, state.origin, state.siteTwo.getX(), state.siteTwo.getZ()));
 		for (SurvivorManager.Site site : SurvivorManager.get(server).sites()) {
-			profiles.add(drive(world, site.survivor().key(), reach, state.origin, site.x, site.z));
+			profiles.add(drive(world, site.survivor().key(), reach, state.origin, site.x, site.z, site.gated()));
 		}
 		return profiles;
 	}
@@ -257,7 +279,54 @@ public final class TerrainScan {
 						.then(CommandManager.argument("radius", IntegerArgumentType.integer(64, 8192))
 								.executes(context -> map(context.getSource(), IntegerArgumentType.getInteger(context, "radius"), 8))
 								.then(CommandManager.argument("step", IntegerArgumentType.integer(1, 64))
-										.executes(context -> map(context.getSource(), IntegerArgumentType.getInteger(context, "radius"), IntegerArgumentType.getInteger(context, "step"))))));
+										.executes(context -> map(context.getSource(), IntegerArgumentType.getInteger(context, "radius"), IntegerArgumentType.getInteger(context, "step"))))))
+				.then(CommandManager.literal("seeds")
+						.executes(context -> seeds(context.getSource(), 32, 1L))
+						.then(CommandManager.argument("count", IntegerArgumentType.integer(1, 4096))
+								.executes(context -> seeds(context.getSource(), IntegerArgumentType.getInteger(context, "count"), 1L))
+								.then(CommandManager.argument("from", LongArgumentType.longArg())
+										.executes(context -> seeds(context.getSource(), IntegerArgumentType.getInteger(context, "count"), LongArgumentType.getLong(context, "from"))))));
+	}
+
+	/**
+	 * Scores a run of candidate seeds without creating a world for any of them and prints the best of them,
+	 * worst last. The whole map comes out of the seed, so this is how one gets chosen
+	 * (docs/DESIGN-campaign.md, "The map"); tools/seed_search.py drives it and reads back the json.
+	 */
+	private static int seeds(ServerCommandSource source, int count, long from) {
+		MinecraftServer server = source.getServer();
+		long started = System.nanoTime();
+		List<SeedSearch.Candidate> ranked;
+		try {
+			ranked = SeedSearch.sweep(server, from, count);
+		} catch (RuntimeException e) {
+			source.sendError(Text.literal("Seed sweep failed: " + e));
+			Surrogate.LOGGER.error("Seed sweep failed", e);
+			return 0;
+		}
+		double seconds = (System.nanoTime() - started) / 1.0e9;
+		String header = "Seeds: " + count + " from " + from + " in " + Math.round(seconds * 10.0) / 10.0 + "s, " + SeedSearch.fidelity();
+		Surrogate.LOGGER.info(header);
+		source.sendFeedback(() -> Text.literal(header), false);
+		for (String line : SeedSearch.table(ranked, 12)) {
+			Surrogate.LOGGER.info("Seeds {}", line);
+			source.sendFeedback(() -> Text.literal(line), false);
+		}
+		if (ranked.isEmpty()) {
+			source.sendFeedback(() -> Text.literal("Seeds: nothing scored"), false);
+			return 0;
+		}
+		String paste = SeedSearch.paste(ranked.get(0));
+		Surrogate.LOGGER.info(paste);
+		source.sendFeedback(() -> Text.literal(paste), false);
+		Path out = server.getRunDirectory().resolve("seed_search.json");
+		try {
+			SeedSearch.write(out, from, count, seconds, ranked);
+			source.sendFeedback(() -> Text.literal("Seeds: written to " + out.getFileName()), false);
+		} catch (IOException e) {
+			source.sendError(Text.literal("Could not write the sweep: " + e.getMessage()));
+		}
+		return 1;
 	}
 
 	private static int scan(ServerCommandSource source) {
@@ -267,19 +336,21 @@ public final class TerrainScan {
 			return 0;
 		}
 		List<Profile> profiles = scanSites(server);
-		int blocked = 0;
+		int wrong = 0;
+		int gated = 0;
 		for (Profile profile : profiles) {
 			String line = profile.describe();
 			Surrogate.LOGGER.info("Terrain {}", line);
 			source.sendFeedback(() -> Text.literal(line), false);
-			if (!profile.drivable()) blocked++;
+			if (!profile.asDesigned()) wrong++;
+			else if (profile.gated()) gated++;
 		}
 		String verdict = profiles.isEmpty() ? "Terrain: no sites to scan"
-				: blocked == 0 ? "Terrain: every site is drivable from the pod (" + profiles.size() + " runs)"
-				: "Terrain: " + blocked + " of " + profiles.size() + " runs blocked";
+				: wrong == 0 ? "Terrain: every site is as designed (" + (profiles.size() - gated) + " drivable, " + gated + " gated behind the Rift)"
+				: "Terrain: " + wrong + " of " + profiles.size() + " runs wrong";
 		Surrogate.LOGGER.info(verdict);
 		source.sendFeedback(() -> Text.literal(verdict), false);
-		return blocked == 0 ? 1 : 0;
+		return wrong == 0 ? 1 : 0;
 	}
 
 	private static int here(ServerCommandSource source) {

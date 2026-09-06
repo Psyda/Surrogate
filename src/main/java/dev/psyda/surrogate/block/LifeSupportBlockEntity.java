@@ -6,6 +6,7 @@ import dev.psyda.surrogate.atmosphere.Atmosphere;
 import dev.psyda.surrogate.atmosphere.Exposure;
 import dev.psyda.surrogate.atmosphere.SealedVolume;
 import dev.psyda.surrogate.entity.RobotEntity;
+import dev.psyda.surrogate.hazard.AcidRain;
 import dev.psyda.surrogate.pilot.PilotManager;
 import dev.psyda.surrogate.registry.ModBlockEntities;
 import dev.psyda.surrogate.registry.ModTags;
@@ -131,7 +132,9 @@ public class LifeSupportBlockEntity extends BlockEntity {
 
 		float quality = unit.volume.quality;
 		if (!unit.volume.sealed) quality -= perTick(cfg.airLeakSeconds);
-		else if (powered) quality += perTick(cfg.airRecoverySeconds);
+		// The belt goes for the scrubbers first: a corroded unit draws the same and gives back less, so a
+		// plant left out under the rain slowly stops keeping up with the room behind it.
+		else if (powered) quality += perTick(cfg.airRecoverySeconds) * AcidRain.output(world, pos);
 		else quality -= perTick(cfg.airStaleSeconds);
 		quality -= unit.volume.contaminationDrain;
 		unit.volume.quality = MathHelper.clamp(quality, 0f, 1f);

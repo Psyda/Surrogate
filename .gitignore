@@ -6,3 +6,4 @@ run/
 .vscode/
 bin/
 !data/
+__pycache__/

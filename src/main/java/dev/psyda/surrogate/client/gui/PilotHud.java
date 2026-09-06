@@ -2,6 +2,7 @@ package dev.psyda.surrogate.client.gui;
 
 import dev.psyda.surrogate.atmosphere.Exposure;
 import dev.psyda.surrogate.client.ClientPilotState;
+import dev.psyda.surrogate.client.HazardClientState;
 import dev.psyda.surrogate.client.SurrogateClient;
 import dev.psyda.surrogate.client.cinematic.CinematicOverlay;
 import dev.psyda.surrogate.client.cinematic.CinematicState;
@@ -205,7 +206,7 @@ public final class PilotHud {
 		};
 	}
 
-	private static void fillGradientHorizontal(DrawContext context, int x1, int y1, int x2, int y2, int left, int right) {
+	static void fillGradientHorizontal(DrawContext context, int x1, int y1, int x2, int y2, int left, int right) {
 		int steps = 12;
 		int step = Math.max(1, (x2 - x1) / steps);
 		for (int x = x1; x < x2; x += step) {
@@ -247,7 +248,8 @@ public final class PilotHud {
 		int x = 6;
 		int y = CinematicState.objectiveState != CinematicPayloads.OBJECTIVE_CLEAR ? CinematicOverlay.objectiveHeight : 6;
 		int panelWidth = 170;
-		context.fill(x - 3, y - 3, x + panelWidth, y + 84, PANEL);
+		boolean weather = HazardClientState.warning || HazardClientState.stormReading() > 0f || HazardClientState.seismicReading() > 0f;
+		context.fill(x - 3, y - 3, x + panelWidth, y + (weather ? 96 : 84), PANEL);
 
 		context.drawTextWithShadow(font, robot.getName().copy().formatted(Formatting.AQUA), x, y, 0xFFFFFFFF);
 		Text stateText = Text.translatable(robot.getState().translationKey()).formatted(Formatting.GREEN);
@@ -275,6 +277,11 @@ public final class PilotHud {
 		bar(context, x, y, 90, grime, 0xFF2E2A14, grime >= 0.6f ? AMBER : 0xFFA3A34A);
 		context.drawTextWithShadow(font, Text.translatable("hud.surrogate.contamination", Math.round(grime * 100)), x + 96, y - 1, 0xFFDDDDDD);
 
+		if (weather) {
+			y += 12;
+			renderWeatherRow(context, font, x, y, age);
+		}
+
 		y += 12;
 		context.drawTextWithShadow(font, bodyLine(age), x, y - 1, 0xFFFFFFFF);
 
@@ -291,6 +298,26 @@ public final class PilotHud {
 		} else if (blink && hullFraction < 0.34f) {
 			context.drawCenteredTextWithShadow(font, Text.translatable("hud.surrogate.hull_critical").formatted(Formatting.RED, Formatting.BOLD), width / 2, 30, 0xFFFFFFFF);
 		}
+	}
+
+	/**
+	 * The mast's two readings, side by side: how hard the sky is pushing on the link, and how close the
+	 * nearest borer is. The seismic half is only there while something under the floor is moving.
+	 */
+	private static void renderWeatherRow(DrawContext context, TextRenderer font, int x, int y, int age) {
+		// Through the run-up there is no storm to measure yet, so the mast shows its own rising twitch.
+		float pulse = 0.5f + 0.5f * MathHelper.sin(age * 0.2f);
+		float storm = HazardClientState.stormReading();
+		float mag = storm > 0f ? storm : HazardClientState.warning ? 0.1f + 0.15f * pulse : 0f;
+		bar(context, x, y, 28, mag, 0xFF3A2E10, mag >= 0.6f ? RED : AMBER);
+		context.drawTextWithShadow(font, Text.translatable("hud.surrogate.mag", Math.round(mag * 100))
+				.formatted(mag >= 0.6f ? Formatting.RED : Formatting.GOLD), x + 32, y - 1, 0xFFFFFFFF);
+
+		float seismic = HazardClientState.seismicReading();
+		if (seismic <= 0f) return;
+		bar(context, x + 82, y, 28, seismic, 0xFF3A1010, seismic >= 0.6f ? RED : AMBER);
+		context.drawTextWithShadow(font, Text.translatable("hud.surrogate.seismic", Math.round(seismic * 100))
+				.formatted(seismic >= 0.6f ? Formatting.RED : Formatting.GOLD), x + 114, y - 1, 0xFFFFFFFF);
 	}
 
 	private static void bar(DrawContext context, int x, int y, int width, float fraction, int background, int fill) {

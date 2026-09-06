@@ -45,6 +45,21 @@ public final class ModBlockEntities {
 	public static final BlockEntityType<dev.psyda.surrogate.block.VehicleFabricatorBlockEntity> VEHICLE_FABRICATOR = Registry.register(Registries.BLOCK_ENTITY_TYPE, Surrogate.id("vehicle_fabricator"),
 			BlockEntityType.Builder.create(dev.psyda.surrogate.block.VehicleFabricatorBlockEntity::new, ModBlocks.VEHICLE_FABRICATOR).build(null));
 
+	public static final BlockEntityType<dev.psyda.surrogate.block.GeyserBlockEntity> GEYSER = Registry.register(Registries.BLOCK_ENTITY_TYPE, Surrogate.id("geyser"),
+			BlockEntityType.Builder.create(dev.psyda.surrogate.block.GeyserBlockEntity::new, ModBlocks.GEYSER).build(null));
+
+	public static final BlockEntityType<dev.psyda.surrogate.block.GeothermalTapBlockEntity> GEOTHERMAL_TAP = Registry.register(Registries.BLOCK_ENTITY_TYPE, Surrogate.id("geothermal_tap"),
+			BlockEntityType.Builder.create(dev.psyda.surrogate.block.GeothermalTapBlockEntity::new, ModBlocks.GEOTHERMAL_TAP).build(null));
+
+	public static final BlockEntityType<dev.psyda.surrogate.block.RelayMastBlockEntity> RELAY_MAST = Registry.register(Registries.BLOCK_ENTITY_TYPE, Surrogate.id("relay_mast"),
+			BlockEntityType.Builder.create(dev.psyda.surrogate.block.RelayMastBlockEntity::new, ModBlocks.RELAY_MAST).build(null));
+
+	public static final BlockEntityType<dev.psyda.surrogate.block.DamperBeaconBlockEntity> DAMPER_BEACON = Registry.register(Registries.BLOCK_ENTITY_TYPE, Surrogate.id("damper_beacon"),
+			BlockEntityType.Builder.create(dev.psyda.surrogate.block.DamperBeaconBlockEntity::new, ModBlocks.DAMPER_BEACON).build(null));
+
+	public static final BlockEntityType<dev.psyda.surrogate.block.CorrodedMachineBlockEntity> CORRODED_MACHINE = Registry.register(Registries.BLOCK_ENTITY_TYPE, Surrogate.id("corroded_machine"),
+			BlockEntityType.Builder.create(dev.psyda.surrogate.block.CorrodedMachineBlockEntity::new, ModBlocks.CORRODED_MACHINE).build(null));
+
 	public static void register() {
 		// Any Team Reborn Energy producer or cable can push power into a dock or life support unit from any side.
 		EnergyStorage.SIDED.registerForBlockEntity((dock, direction) -> dock.getEnergyStorage(), CHARGING_DOCK);
@@ -52,6 +67,11 @@ public final class ModBlockEntities {
 		EnergyStorage.SIDED.registerForBlockEntity((conduit, direction) -> conduit.getEnergyStorage(), POWER_CONDUIT);
 		// Solar collectors only give: cables can pull from them, nothing can push in.
 		EnergyStorage.SIDED.registerForBlockEntity((solar, direction) -> solar.getEnergyStorage(), SOLAR_COLLECTOR);
+		// So does a geothermal tap, and it does not care what the sky is doing.
+		EnergyStorage.SIDED.registerForBlockEntity((tap, direction) -> tap.getEnergyStorage(), GEOTHERMAL_TAP);
+		// The two countermeasures only take: they burn a trickle and give nothing back.
+		EnergyStorage.SIDED.registerForBlockEntity((mast, direction) -> mast.getEnergyStorage(), RELAY_MAST);
+		EnergyStorage.SIDED.registerForBlockEntity((beacon, direction) -> beacon.getEnergyStorage(), DAMPER_BEACON);
 	}
 
 	private ModBlockEntities() {

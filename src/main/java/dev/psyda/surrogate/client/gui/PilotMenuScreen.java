@@ -1,6 +1,7 @@
 package dev.psyda.surrogate.client.gui;
 
 import dev.psyda.surrogate.entity.RobotEntity;
+import dev.psyda.surrogate.entity.RobotModule;
 import dev.psyda.surrogate.network.PilotActionPayload;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -9,8 +10,11 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.screen.ScreenTexts;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+
+import java.util.List;
 
 /** Opened with the pilot menu key while linked: the fabricator, or leave the chassis running, or shut it down. */
 @Environment(EnvType.CLIENT)
@@ -47,6 +51,24 @@ public class PilotMenuScreen extends Screen {
 		context.drawCenteredTextWithShadow(this.textRenderer, this.title, this.width / 2, this.height / 2 - 72, 0xFFFFFFFF);
 		context.drawCenteredTextWithShadow(this.textRenderer, Text.translatable("screen.surrogate.pilot_menu.hint").formatted(Formatting.GRAY),
 				this.width / 2, this.height / 2 - 56, 0xFFFFFFFF);
+		context.drawCenteredTextWithShadow(this.textRenderer, modules().formatted(Formatting.DARK_AQUA),
+				this.width / 2, this.height / 2 - 44, 0xFFFFFFFF);
+	}
+
+	/** What the chassis is carrying, listed as one line: the pilot's own inventory of countermeasures. */
+	private MutableText modules() {
+		if (this.client == null || this.client.player == null
+				|| !(this.client.player.getVehicle() instanceof RobotEntity robot)) {
+			return Text.translatable("screen.surrogate.pilot_menu.no_modules");
+		}
+		List<RobotModule> fitted = robot.getModules();
+		if (fitted.isEmpty()) return Text.translatable("screen.surrogate.pilot_menu.no_modules");
+		MutableText list = Text.empty();
+		for (int i = 0; i < fitted.size(); i++) {
+			if (i > 0) list.append(Text.literal(", "));
+			list.append(Text.translatable(fitted.get(i).translationKey()));
+		}
+		return Text.translatable("screen.surrogate.pilot_menu.modules", list);
 	}
 
 	@Override

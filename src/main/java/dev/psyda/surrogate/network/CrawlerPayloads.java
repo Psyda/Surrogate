@@ -12,10 +12,12 @@ public final class CrawlerPayloads {
 
 	/**
 	 * Server to client: the hull as the cabin sees it. {@code seat} is the console the player is at (0 none,
-	 * 1 helm, 2 docking); {@code lost} means the hull could not be reached this tick.
+	 * 1 helm, 2 docking); {@code lost} means the hull could not be reached this tick; {@code cladding} is
+	 * whether the ceramic is on, which is the difference between a dash into the belt and a walk home; and
+	 * {@code wear} is how far the rain has got with the hull, 0 to 100, which is the gauge beside the charge.
 	 */
-	public record State(int seat, boolean lost, float heading, float speed, int charge, boolean docked, boolean collar, float dockOffset, float dockAngle)
-			implements CustomPayload {
+	public record State(int seat, boolean lost, float heading, float speed, int charge, boolean docked, boolean collar, float dockOffset, float dockAngle,
+			boolean cladding, int wear) implements CustomPayload {
 		public static final Id<State> ID = new Id<>(Surrogate.id("crawler_state"));
 		public static final PacketCodec<RegistryByteBuf, State> CODEC = PacketCodec.of((value, buf) -> {
 			buf.writeVarInt(value.seat);
@@ -27,11 +29,13 @@ public final class CrawlerPayloads {
 			buf.writeBoolean(value.collar);
 			buf.writeFloat(value.dockOffset);
 			buf.writeFloat(value.dockAngle);
+			buf.writeBoolean(value.cladding);
+			buf.writeVarInt(value.wear);
 		}, buf -> new State(buf.readVarInt(), buf.readBoolean(), buf.readFloat(), buf.readFloat(), buf.readVarInt(), buf.readBoolean(), buf.readBoolean(),
-				buf.readFloat(), buf.readFloat()));
+				buf.readFloat(), buf.readFloat(), buf.readBoolean(), buf.readVarInt()));
 
 		public static State none() {
-			return new State(0, false, 0f, 0f, 0, false, false, 0f, 0f);
+			return new State(0, false, 0f, 0f, 0, false, false, 0f, 0f, false, 0);
 		}
 
 		@Override

@@ -25,6 +25,11 @@ import dev.psyda.surrogate.block.PosterBlock;
 import dev.psyda.surrogate.block.ReinforcedGlassBlock;
 import dev.psyda.surrogate.block.SolarCollectorBlock;
 import dev.psyda.surrogate.block.VentBlock;
+import dev.psyda.surrogate.block.GeyserBlock;
+import dev.psyda.surrogate.block.GeothermalTapBlock;
+import dev.psyda.surrogate.block.DamperBeaconBlock;
+import dev.psyda.surrogate.block.RelayMastBlock;
+import dev.psyda.surrogate.block.SpanAnchorBlock;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.ColoredFallingBlock;
@@ -97,11 +102,35 @@ public final class ModBlocks {
 	public static final Block VENT = register("vent", new VentBlock(AbstractBlock.Settings.create()
 			.mapColor(MapColor.BLACK).instrument(NoteBlockInstrument.BASEDRUM).requiresTool().strength(2.0f, 6.0f).sounds(BlockSoundGroup.BASALT)
 			.luminance(state -> 3)));
+	/** The fumaroles that still work. Ninety seconds of clock and eight of column (docs/DESIGN-hazards.md). */
+	public static final Block GEYSER = register("geyser", new GeyserBlock(AbstractBlock.Settings.create()
+			.mapColor(MapColor.BLACK).instrument(NoteBlockInstrument.BASEDRUM).requiresTool().strength(2.5f, 6.0f).sounds(BlockSoundGroup.BASALT)
+			.luminance(state -> switch (state.get(GeyserBlock.STAGE)) {
+				case QUIET -> 3;
+				case STEAM -> 5;
+				case RUMBLE -> 8;
+				case ERUPTING -> 13;
+			})));
+	/** The cap that turns one of them into a hundred solar collectors, and stops the sulfur. */
+	public static final Block GEOTHERMAL_TAP = register("geothermal_tap", new GeothermalTapBlock(AbstractBlock.Settings.create()
+			.mapColor(MapColor.IRON_GRAY).strength(4.0f, 12.0f).requiresTool().sounds(BlockSoundGroup.NETHERITE).luminance(state -> 6)));
 
 	// The vehicle fabricator: where the crawler, and later the ship, get built.
 	public static final Block VEHICLE_FABRICATOR = register("vehicle_fabricator", new VehicleFabricatorBlock(AbstractBlock.Settings.create()
 			.mapColor(MapColor.IRON_GRAY).strength(4.0f, 12.0f).requiresTool().sounds(BlockSoundGroup.NETHERITE).nonOpaque()
 			.luminance(state -> state.get(VehicleFabricatorBlock.BUILDING) ? 12 : 3)));
+
+	// Countermeasures: the three things you plant on the ground to make a hazard somebody else's problem.
+	/** Sorensen's repeater: hears the pod's band and says it again, for as long as something feeds it. */
+	public static final Block RELAY_MAST = register("relay_mast", new RelayMastBlock(hazard()));
+	/** Tanaka's damper with a cable behind it: holds the rock quiet around a mine that has to stay put. */
+	public static final Block DAMPER_BEACON = register("damper_beacon", new DamperBeaconBlock(hazard()));
+	/** The near end of a bridge nobody has built yet. It remembers which way the span goes. */
+	public static final Block SPAN_ANCHOR = register("span_anchor", new SpanAnchorBlock(hazard()));
+	/** What the belt leaves of a machine that stood in its rain. Not a full cube, so it is also a hole. */
+	public static final Block CORRODED_MACHINE = register("corroded_machine", new dev.psyda.surrogate.block.CorrodedMachineBlock(
+			AbstractBlock.Settings.create().mapColor(MapColor.TERRACOTTA_GREEN).strength(1.5f, 3.0f).requiresTool()
+					.sounds(BlockSoundGroup.COPPER).nonOpaque()));
 
 	// Props: the furniture of a habitat. Full cubes stay opaque; anything smaller is see-through.
 	public static final Block SUPPLY_CRATE = register("supply_crate", new PropBlock(prop(BlockSoundGroup.COPPER, true), PropBlock.Mount.FACING));
@@ -139,6 +168,9 @@ public final class ModBlocks {
 			Block.createCuboidShape(4, 0, 4, 12, 5, 12)));
 	public static final Block ANTENNA_MAST = register("antenna_mast", new PropBlock(prop(BlockSoundGroup.CHAIN, false), PropBlock.Mount.FIXED,
 			Block.createCuboidShape(6, 0, 6, 10, 16, 10)));
+	/** The wind count's stake: planting one tells the research arc where it is (docs/DESIGN-campaign.md, act I). */
+	public static final Block SURVEY_STAKE = register("survey_stake", new dev.psyda.surrogate.block.SurveyStakeBlock(
+			prop(BlockSoundGroup.METAL, false).noCollision(), Block.createCuboidShape(5, 0, 5, 11, 16, 11)));
 
 	// Ores of Sallow: cinnabar in the mesa beds, rock salt near the surface, cobalt in the stone, tellurium deep down.
 	public static final Block CINNABAR_ORE = register("cinnabar_ore", new ExperienceDroppingBlock(UniformIntProvider.create(1, 3), ore(BlockSoundGroup.TUFF, 3.0f)));
@@ -163,6 +195,15 @@ public final class ModBlocks {
 				.requiresTool()
 				.sounds(BlockSoundGroup.METAL)
 				.nonOpaque();
+	}
+
+	/** A countermeasure planted outdoors: a machine's steel, but a full cube, because it is mostly ballast. */
+	private static AbstractBlock.Settings hazard() {
+		return AbstractBlock.Settings.create()
+				.mapColor(MapColor.IRON_GRAY)
+				.strength(3.0f, 6.0f)
+				.requiresTool()
+				.sounds(BlockSoundGroup.METAL);
 	}
 
 	private static Block register(String name, Block block) {

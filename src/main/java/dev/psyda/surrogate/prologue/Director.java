@@ -84,6 +84,15 @@ public abstract class Director {
 		if (onStage == this) onStage = null;
 	}
 
+	/**
+	 * Take whatever is on stage off it, camera and all. Only the dev commands want this: a jump into the
+	 * middle of one arc while another is running would otherwise reset the state and then refuse to start,
+	 * leaving the world reading as an arc that is waiting for a beat nobody is playing.
+	 */
+	public static void clearStage() {
+		if (onStage != null) onStage.leaveStage();
+	}
+
 	// ------------------------------------------------------------------ what a script needs from its world
 
 	@Nullable

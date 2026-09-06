@@ -4,8 +4,10 @@ import dev.psyda.surrogate.Surrogate;
 import dev.psyda.surrogate.entity.CompanyShipEntity;
 import dev.psyda.surrogate.registry.ModEntities;
 import dev.psyda.surrogate.entity.RobotEntity;
+import dev.psyda.surrogate.entity.RobotModule;
 import dev.psyda.surrogate.entity.RobotPaint;
 import dev.psyda.surrogate.entity.RocketEntity;
+import dev.psyda.surrogate.hazard.Borers;
 import dev.psyda.surrogate.item.RocketKitItem;
 import net.minecraft.util.math.Box;
 import dev.psyda.surrogate.network.CinematicPayloads;
@@ -15,6 +17,7 @@ import dev.psyda.surrogate.prologue.Crew;
 import dev.psyda.surrogate.prologue.CrewEntity;
 import dev.psyda.surrogate.prologue.Director;
 import dev.psyda.surrogate.prologue.Prologue;
+import dev.psyda.surrogate.research.ResearchState;
 import dev.psyda.surrogate.registry.ModBlocks;
 import dev.psyda.surrogate.registry.ModItems;
 import dev.psyda.surrogate.registry.ModSounds;
@@ -80,6 +83,10 @@ public final class Assay extends Director {
 	private boolean skippedApron;
 	private boolean skippedCore;
 	private boolean ignited;
+	// Stage three goes under the borer line, so it gets one line the first time something wakes for the drill.
+	// The mark is taken when the stage opens; everything after the first one is the pilot's own problem.
+	private int coreWakeMark;
+	private boolean borerHeard;
 	// One chassis per character: the finale has more than one of them on the pad at once, and the beats that
 	// drive a walk need to know which one they are steering.
 	@Nullable
@@ -131,6 +138,8 @@ public final class Assay extends Director {
 	public static boolean shouldBegin(MinecraftServer server, HabitatState habitat) {
 		if (!Surrogate.CONFIG.assay) return false;
 		if (habitat.prologueStage < Prologue.STAGE_DONE || habitat.protagonist == null) return false;
+		// The neighbours' runs and the drive out to Tanaka come first; the company waits behind them.
+		if (!dev.psyda.surrogate.research.Research.done(server)) return false;
 		AssayState assay = AssayState.get(server);
 		return assay.stage == AssayState.STAGE_NONE && assay.padSite != null;
 	}
@@ -270,6 +279,32 @@ public final class Assay extends Director {
 		}
 	}
 
+	// ------------------------------------------------------------------ the rock, during stage three
+
+	@Override
+	protected void tick() {
+		super.tick();
+		watchTheRock();
+	}
+
+	/** Stage three opening: from here, the next borer anywhere is the first one of this stage. */
+	private void markTheRock() {
+		coreWakeMark = Borers.wakes();
+		borerHeard = false;
+	}
+
+	/**
+	 * The first borer of the stage gets a line the moment it wakes rather than at the next beat, because by
+	 * the next beat it is either through the wall or gone and neither reads as a warning.
+	 */
+	private void watchTheRock() {
+		if (borerHeard || assay.stage != AssayState.STAGE_CORE) return;
+		// Nobody to say it to means nobody heard it, so the stage keeps its one line for when they are back.
+		if (player() == null || Borers.wakes() <= coreWakeMark) return;
+		borerHeard = true;
+		sendLine(Crew.HALLORAN.nameKey(), KEY + "core_borer", CinematicPayloads.RADIO, -1, true, "");
+	}
+
 	// ------------------------------------------------------------------ the script
 
 	@Override
@@ -381,16 +416,26 @@ public final class Assay extends Director {
 
 		// ================================================================ Three: the core.
 		label("core");
-		run(() -> checkpoint0(AssayState.STAGE_CORE));
+		run(() -> {
+			checkpoint0(AssayState.STAGE_CORE);
+			markTheRock();
+		});
 		radio(M, "core1");
 		radio(H, "core2");
 		radio(M, "core3");
 		radio(H, "core4");
+		// Tellurium only generates below y -8 and the borer line runs at y 8, so this stage is a borer stage
+		// whether the pilot is carrying Tanaka's damper or not. Neither line stops anyone going down: one of
+		// them is a reminder and the other is a warning, and the difference is the noise.
+		branch(() -> rockIsAwake() && hasDamper(), line(H, "core_damper", CinematicPayloads.RADIO));
+		branch(() -> rockIsAwake() && !hasDamper(), line(H, "core_nodamper", CinematicPayloads.RADIO));
 		objective("core");
 		hint("core_nudge");
 		until(this::coreDelivered, timeout() * 8, H, "core_nudge", 2400, () -> skippedCore = true);
 		branch(() -> skippedCore, line(H, "core_timeout", CinematicPayloads.RADIO));
-		branch(() -> !skippedCore, new Beat.Run(this::objectiveDone0), line(M, "core_done", CinematicPayloads.RADIO));
+		branch(() -> !skippedCore, new Beat.Run(this::objectiveDone0),
+				line(H, "core_up", CinematicPayloads.RADIO),
+				line(M, "core_done", CinematicPayloads.RADIO));
 		radio(H, "core5");
 
 		// ================================================================ Four: the payload.
@@ -710,6 +755,24 @@ public final class Assay extends Director {
 		if (apronDone) return true;
 		// Most of it, not all of it: nobody should have to chase the last corner block.
 		return PadBuilder.apronLaid(world(), origin) >= PadBuilder.apronTotal() * 3 / 4;
+	}
+
+	/** Whether anything under this world would come for a drill at all. With hazards off, none of it is said. */
+	private boolean rockIsAwake() {
+		return Borers.enabled(world());
+	}
+
+	/**
+	 * Tanaka's damper, anywhere the pilot can reach it: handed over in act two, already fitted to the chassis
+	 * they are driving, or loose in a pocket. A player who never made the drive out gets the other line and
+	 * does the stage anyway.
+	 */
+	private boolean hasDamper() {
+		if (ResearchState.get(server).damper) return true;
+		ServerPlayerEntity player = player();
+		if (player == null) return false;
+		if (player.getVehicle() instanceof RobotEntity robot && robot.hasModule(RobotModule.DAMPER)) return true;
+		return player.getInventory().containsAny(stack -> stack.isOf(ModItems.RESONANCE_DAMPER));
 	}
 
 	private boolean coreDelivered() {

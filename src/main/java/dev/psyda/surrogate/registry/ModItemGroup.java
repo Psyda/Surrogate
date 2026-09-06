@@ -31,6 +31,11 @@ public final class ModItemGroup {
 				entries.add(ModItems.BATTERY_UPGRADE);
 				entries.add(ModItems.CARGO_BAY);
 				entries.add(ModItems.FABRICATOR);
+				entries.add(ModItems.RELAY_MODULE);
+				entries.add(ModItems.RESONANCE_DAMPER);
+				entries.add(ModItems.ACID_COATING);
+				entries.add(ModItems.SHIELDED_UPLINK);
+				entries.add(ModItems.CERAMIC_CLADDING);
 				entries.add(ModItems.ROBOT_CORE);
 				entries.add(ModItems.SERVO_MOTOR);
 				entries.add(ModItems.SCRAP_CHASSIS);
@@ -55,6 +60,11 @@ public final class ModItemGroup {
 				entries.add(ModItems.SULFUR_CRUST);
 				entries.add(ModItems.SCRAP_HEAP);
 				entries.add(ModItems.VENT);
+				entries.add(ModItems.GEYSER);
+				entries.add(ModItems.GEOTHERMAL_TAP);
+				entries.add(ModItems.RELAY_MAST);
+				entries.add(ModItems.DAMPER_BEACON);
+				entries.add(ModItems.SPAN_ANCHOR);
 				entries.add(ModItems.VEHICLE_FABRICATOR);
 				entries.add(ModItems.SUPPLY_CRATE);
 				entries.add(ModItems.LOCKER);
@@ -78,6 +88,8 @@ public final class ModItemGroup {
 				entries.add(ModItems.SURVEY_MARKER);
 				entries.add(ModItems.PAD_LIGHT);
 				entries.add(ModItems.ANTENNA_MAST);
+				entries.add(ModItems.SURVEY_STAKE);
+				entries.add(ModItems.SEALED_SAMPLE);
 				entries.add(ModItems.CINNABAR_ORE);
 				entries.add(ModItems.HALITE_ORE);
 				entries.add(ModItems.COBALT_ORE);

@@ -8,6 +8,8 @@ import dev.psyda.surrogate.client.crawler.PortholeRenderer;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import dev.psyda.surrogate.client.gui.CrawlerHud;
 import dev.psyda.surrogate.network.CrawlerPayloads;
+import dev.psyda.surrogate.network.HazardPayload;
+import dev.psyda.surrogate.client.gui.HazardOverlay;
 import dev.psyda.surrogate.client.gui.PilotHud;
 import dev.psyda.surrogate.client.render.CrawlerEntityModel;
 import dev.psyda.surrogate.client.render.CrawlerEntityRenderer;
@@ -80,6 +82,9 @@ public class SurrogateClient implements ClientModInitializer {
 		EntityModelLayerRegistry.registerModelLayer(dev.psyda.surrogate.client.render.CompanyShipModel.LAYER,
 				dev.psyda.surrogate.client.render.CompanyShipModel::getTexturedModelData);
 		EntityRendererRegistry.register(ModEntities.COMPANY_SHIP, dev.psyda.surrogate.client.render.CompanyShipRenderer::new);
+		EntityModelLayerRegistry.registerModelLayer(dev.psyda.surrogate.client.render.BorerEntityModel.LAYER,
+				dev.psyda.surrogate.client.render.BorerEntityModel::getTexturedModelData);
+		EntityRendererRegistry.register(ModEntities.BORER, dev.psyda.surrogate.client.render.BorerEntityRenderer::new);
 		EntityRendererRegistry.register(ModEntities.ROBOT_WRECK, RobotWreckRenderer::new);
 		EntityRendererRegistry.register(ModEntities.SURVIVOR, SurvivorEntityRenderer::new);
 		EntityRendererRegistry.register(ModEntities.CREW, CrewEntityRenderer::new);
@@ -116,6 +121,7 @@ public class SurrogateClient implements ClientModInitializer {
 		ClientPlayNetworking.registerGlobalReceiver(CrawlerPayloads.State.ID, (payload, context) -> CrawlerClientState.onState(payload));
 		ClientPlayNetworking.registerGlobalReceiver(CrawlerPayloads.Scan.ID, (payload, context) -> CrawlerClientState.onScan(payload));
 		ClientPlayNetworking.registerGlobalReceiver(CrawlerPayloads.Camera.ID, (payload, context) -> CrawlerClientState.onCamera(payload));
+		ClientPlayNetworking.registerGlobalReceiver(HazardPayload.ID, (payload, context) -> HazardClientState.onPayload(payload));
 		// The crawler's cameras: rendered at the start of the frame, painted on the porthole after the glass.
 		WorldRenderEvents.START.register(PortholeRenderer::update);
 		WorldRenderEvents.AFTER_TRANSLUCENT.register(PortholeRenderer::drawPorthole);
@@ -124,11 +130,14 @@ public class SurrogateClient implements ClientModInitializer {
 			ClientPilotState.reset();
 			CinematicState.reset();
 			TransitClientState.reset();
+			HazardClientState.reset();
 		});
 		// The ship readout sits over the pilot HUD; the cinematic layer draws over both.
 		HudRenderCallback.EVENT.register(PilotHud::render);
 		HudRenderCallback.EVENT.register(CrawlerHud::render);
 		HudRenderCallback.EVENT.register(TransitHud::render);
+		// The weather paints over the readouts and under the cutscene bars.
+		HudRenderCallback.EVENT.register(HazardOverlay::render);
 		HudRenderCallback.EVENT.register(CinematicOverlay::render);
 
 		KeyBindingHelper.registerKeyBinding(PILOT_MENU);
@@ -147,6 +156,7 @@ public class SurrogateClient implements ClientModInitializer {
 			CrawlerClientState.tick(client);
 			CinematicState.tick(client);
 			TransitClientState.tick(client);
+			HazardClientState.tick(client);
 			devTick(client);
 		});
 	}

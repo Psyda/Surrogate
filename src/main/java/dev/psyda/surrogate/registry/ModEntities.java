@@ -68,6 +68,18 @@ public final class ModEntities {
 					.trackingTickInterval(1)
 					.build("company_ship"));
 
+	/**
+	 * What is under the rock. Nothing in the world spawns one: {@link dev.psyda.surrogate.hazard.Borers}
+	 * decides when one wakes. Tracked every tick because the body is drawn off its position history, and a
+	 * history sampled twice a second is a train rather than an animal.
+	 */
+	public static final EntityType<dev.psyda.surrogate.entity.BorerEntity> BORER = Registry.register(Registries.ENTITY_TYPE, Surrogate.id("borer"),
+			EntityType.Builder.<dev.psyda.surrogate.entity.BorerEntity>create(dev.psyda.surrogate.entity.BorerEntity::new, SpawnGroup.MISC)
+					.dimensions(dev.psyda.surrogate.entity.BorerEntity.WIDTH, dev.psyda.surrogate.entity.BorerEntity.HEIGHT)
+					.maxTrackingRange(8)
+					.trackingTickInterval(1)
+					.build("borer"));
+
 	/** Client-side cinematic camera. Never spawned in a world, never saved. */
 	public static final EntityType<CameraEntity> CAMERA = Registry.register(Registries.ENTITY_TYPE, Surrogate.id("camera"),
 			EntityType.Builder.create(CameraEntity::new, SpawnGroup.MISC)

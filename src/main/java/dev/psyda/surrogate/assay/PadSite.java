@@ -42,7 +42,8 @@ public final class PadSite {
 	/** Picks the site, once per world. Safe to call on every join. */
 	public static void choose(ServerWorld world, HabitatState habitat, AssayState assay) {
 		if (assay.padSite != null || habitat.origin == null) return;
-		Random random = world.getRandom();
+		// Off the world seed, so the pad lands in the same valley every time. See SurvivorManager.
+		Random random = Random.create(world.getSeed() ^ 0x50414421L);
 		SurvivorManager survivors = SurvivorManager.get(world.getServer());
 		BlockPos siteTwo = habitat.siteTwo;
 		Predicate<BlockPos> clearOfEveryone = pos -> {
@@ -55,6 +56,18 @@ public final class PadSite {
 		Valleys.Reach reach = Valleys.reach(world, habitat.origin.getX(), habitat.origin.getZ(), MAX_DISTANCE + 96);
 		BlockPos best = Valleys.pickSite(world, reach, habitat.origin, random, away, Math.PI * 0.6,
 				MIN_DISTANCE, MAX_DISTANCE, 96, clearOfEveryone);
+		// The cone away from Site Two is a preference, not a requirement. On a seed where that quarter is
+		// table or acid the pad used to fall straight through to a blind guess, and act three's whole
+		// centrepiece would stand somewhere the crawler could not reach. Ask the rest of the compass first,
+		// then a wider band, and only then give up on drivable ground.
+		if (best == null) {
+			best = Valleys.pickSite(world, reach, habitat.origin, random, away, Math.PI,
+					MIN_DISTANCE, MAX_DISTANCE, 160, clearOfEveryone);
+		}
+		if (best == null) {
+			best = Valleys.pickSite(world, reach, habitat.origin, random, away, Math.PI,
+					MIN_DISTANCE / 2, MAX_DISTANCE + 300, 192, clearOfEveryone);
+		}
 		boolean drivable = best != null;
 		for (int attempt = 0; attempt < 16 && best == null; attempt++) {
 			double angle = away + (random.nextDouble() * 2.0 - 1.0) * Math.PI * 0.6;

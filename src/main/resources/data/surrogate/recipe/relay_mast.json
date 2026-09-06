@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    " A ",
+    "CRC",
+    "PPP"
+  ],
+  "key": {
+    "A": {
+      "item": "surrogate:antenna_mast"
+    },
+    "C": {
+      "item": "minecraft:copper_ingot"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "P": {
+      "item": "surrogate:hull_plating"
+    }
+  },
+  "result": {
+    "id": "surrogate:relay_mast",
+    "count": 1
+  }
+}

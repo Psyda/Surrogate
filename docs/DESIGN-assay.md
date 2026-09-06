@@ -13,6 +13,10 @@ mini rocket leaves and the ship that came for the payload does not come down.
 Related: [DESIGN-crawler.md](DESIGN-crawler.md) for the vehicle and docking; the props and the vehicle
 fabricator (`surrogate:vehicle_fabricator`) already exist and this arc is what they are for.
 
+Where it sits in the whole game: act three of eight. Acts one and two (the research runs, and the range gate
+at Tanaka) now run before it and are what hands the player the resonance damper; act four picks up the tick
+after this one ends. See [DESIGN-campaign.md](DESIGN-campaign.md).
+
 ## Shape
 
 Five stages, each a survey site's worth of work, tracked in `AssayState` (a `PersistentState` beside
@@ -87,6 +91,9 @@ chassis and a drill.
 * The crawler is the way to carry them back if the seam is far; the radar (`CrawlerSonar`) marks the pocket
   when close, which is what the radar is for.
 * Halloran does not like this stage. Nobody has been asked to go that deep before, and she says so.
+* **The borer line runs at y 8** ([DESIGN-hazards.md](DESIGN-hazards.md)), and tellurium is sixteen blocks
+  inside it. Tanaka's resonance damper, from act two, is what makes this stage survivable; a player who
+  skipped act two can still do it, badly and loudly, which is the rule the whole game keeps.
 
 ## Stage four: the payload
 

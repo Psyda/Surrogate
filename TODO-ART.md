@@ -78,6 +78,26 @@ every block on a live server and builds a crawler at a fabricator.
 | Fabricator hologram | The crawler model tinted cyan, growing out of the ground (`VehicleFabricatorRenderer`) | A wireframe or scan-line pass would sell it better; sounds are vanilla beacon chords for now | `client/render/VehicleFabricatorRenderer.java`, `tools/gen_sounds.py` |
 | Everything else | Procedural crate, locker, lamp, pipe, rail, seat, table, tray, cabinet, extinguisher, vent, tank, bunk, drum, marker, pad light, mast | Hand-painted versions of any of them; the model UVs are in `tools/gen_data.py` | `textures/block/` under the names the generator prints |
 
+## The hazards and the campaign (2026-09-06)
+
+The four things on Sallow (`docs/DESIGN-hazards.md`) and the modules that answer them. All procedural or
+ASCII placeholders in `tools/gen_textures.py`.
+
+| What | Placeholder today | Wanted | Drop it here |
+| --- | --- | --- | --- |
+| The borer | Procedural segmented body | A blind thing built for rock: banded chitin, a ring of grinding plates instead of a face, dust in every seam. It is mostly seen as a shape inside its own dust cloud, so silhouette matters more than detail. | `textures/entity/borer.png` |
+| Geyser throat | Procedural vent top, hot and cold | A crusted throat looking down into something orange; the hot version glows and the crust is wet. | `textures/block/geyser_top.png`, `geyser_top_hot.png` |
+| Geothermal tap | Procedural machine cube | A cap bolted over a throat: a heavy flange, a pressure line, a gauge, scale and salt crusted up the sides. | `textures/block/geothermal_tap.png` |
+| Modules | ASCII maps | Relay module (a folded dish and a coil), resonance damper (a tuning fork over a coil pack), acid coating (a ceramic tile and a brush), shielded uplink (a caged aerial), ceramic cladding (a stack of sintered plates) | `textures/item/relay_module.png`, `resonance_damper.png`, `acid_coating.png`, `shielded_uplink.png`, `ceramic_cladding.png` |
+| Relay mast, damper beacon, span anchor | Procedural cubes | Three real props: a guyed lattice mast, a squat drum with a subwoofer face, and a bolted deck plate with an eye for a cable. All three are cube_all today and want proper models as much as textures. | `textures/block/relay_mast.png`, `damper_beacon.png`, `span_anchor.png` and models in `tools/gen_data.py` |
+| Survey stake | ASCII map | A ranging rod with a company tag knotted to it. | `textures/block/survey_stake.png` |
+| Sealed sample | ASCII map | A screw-top canister with a green window and a seal ring. | `textures/item/sealed_sample.png` |
+| Belt shelter | Layer text in `SurvivorShelter` | The three far-side shelters are built from a different kit: sloped ceramic roof, gutters, panels under a canopy, no bare metal. It should read as somebody's answer to the weather from two hundred metres away. | `survivor/SurvivorShelter.java` |
+| Storm sky | Fog shift and a screen overlay | An aurora band in the fog and a proper interference pass on the pilot view; the tear bands are drawn with quads. | `client/` |
+| Acid rain | Client particles and screen streaks | Streaks that read as falling acid rather than rain, and running green marks down the edges of the pilot view. | `client/` |
+| Reyes and Novak | Procedural suits | Two more skins: Reyes in a medical layer over a suit, Novak in a torn one, favouring one side. | `textures/entity/` |
+| New sounds | Synthesized | Storm interference wash, storm crack, borer grinding through rock (should get louder as it closes and be genuinely unpleasant), borer lunge, geyser rumble and erupt, tap cap-on, acid rain hiss. | `tools/gen_sounds.py`, then `sounds/` |
+
 ## Nice to have
 
 * A painting-style loading card for each day (the chapter cards are text only).
