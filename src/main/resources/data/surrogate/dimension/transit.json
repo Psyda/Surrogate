@@ -1,0 +1,17 @@
+{
+  "type": "surrogate:transit",
+  "generator": {
+    "type": "minecraft:flat",
+    "settings": {
+      "biome": "surrogate:vacuum",
+      "layers": [
+        {
+          "block": "minecraft:air",
+          "height": 1
+        }
+      ],
+      "features": false,
+      "lakes": false
+    }
+  }
+}

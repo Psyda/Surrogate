@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "surrogate:block/crawler_bay"
+    },
+    "facing=east": {
+      "model": "surrogate:block/crawler_bay",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "surrogate:block/crawler_bay",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "surrogate:block/crawler_bay",
+      "y": 270
+    }
+  }
+}

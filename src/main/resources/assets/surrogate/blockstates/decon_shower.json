@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "lit=false": {
+      "model": "surrogate:block/decon_shower"
+    },
+    "lit=true": {
+      "model": "surrogate:block/decon_shower_lit"
+    }
+  }
+}

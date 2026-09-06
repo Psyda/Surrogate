@@ -1,0 +1,263 @@
+package dev.psyda.surrogate.client.cinematic;
+
+import dev.psyda.surrogate.client.SurrogateClient;
+import dev.psyda.surrogate.network.CinematicPayloads;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.render.RenderTickCounter;
+import net.minecraft.text.OrderedText;
+import net.minecraft.text.StringVisitable;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.math.MathHelper;
+
+import java.util.List;
+
+/**
+ * Draws the cinematic layer over the HUD: letterbox bars, fades, subtitles with a typewriter reveal,
+ * title cards and chapter headings, the objective banner and the hold-to-skip hint.
+ */
+@Environment(EnvType.CLIENT)
+public final class CinematicOverlay {
+	private static final int GOLD = 0xFFE0B040;
+	private static final int AQUA = 0xFF5FD7E6;
+	private static final int AMBER = 0xFFF0A030;
+	private static final int WHITE = 0xFFF2F2F2;
+	private static final int GREY = 0xFFB0B0B0;
+	private static final int RED = 0xFFE84040;
+	private static final int GREEN = 0xFF66E07A;
+	private static final int YELLOW = 0xFFF5D66A;
+	private static final int SYSTEM_CYAN = 0xFF7FE8F0;
+	private static final float REVEAL_PER_TICK = 2.2f;
+
+	private CinematicOverlay() {
+	}
+
+	public static void render(DrawContext context, RenderTickCounter tickCounter) {
+		MinecraftClient client = MinecraftClient.getInstance();
+		if (client.player == null) return;
+		context.draw(() -> renderLayer(context, tickCounter, client));
+	}
+
+	private static void renderLayer(DrawContext context, RenderTickCounter tickCounter, MinecraftClient client) {
+		float delta = tickCounter.getTickDelta(false);
+		int width = context.getScaledWindowWidth();
+		int height = context.getScaledWindowHeight();
+		TextRenderer font = client.textRenderer;
+
+		float bars = CinematicState.letterbox(delta);
+		int barHeight = Math.round(height * 0.13f * (bars * bars * (3f - 2f * bars)));
+		if (barHeight > 0) {
+			context.fill(0, 0, width, barHeight, 0xFF000000);
+			context.fill(0, height - barHeight, width, height, 0xFF000000);
+		}
+
+		float fade = CinematicState.fade(delta);
+		if (fade > 0.002f) {
+			context.fill(0, 0, width, height, (Math.round(fade * 255f) << 24));
+		}
+
+		if (CinematicState.hasLine()) renderLine(context, font, width, height, barHeight, delta);
+		renderObjective(context, font, width, delta);
+		if (CinematicState.isInputLocked()) renderSkip(context, font, width, height, barHeight);
+	}
+
+	// ------------------------------------------------------------------ subtitles
+
+	private static Text lineText() {
+		String arg = CinematicState.lineArg;
+		return arg.isEmpty() ? Text.translatable(CinematicState.textKey) : Text.translatable(CinematicState.textKey, arg);
+	}
+
+	private static Text speakerText() {
+		String arg = CinematicState.lineArg;
+		return arg.isEmpty() ? Text.translatable(CinematicState.speakerKey) : Text.translatable(CinematicState.speakerKey, arg);
+	}
+
+	private static void renderLine(DrawContext context, TextRenderer font, int width, int height, int barHeight, float delta) {
+		float t = CinematicState.lineElapsed + delta;
+		int ticks = CinematicState.lineTicks;
+		float alpha = Math.min(1f, t / 6f) * MathHelper.clamp((ticks + 10 - t) / 8f, 0f, 1f);
+		if (alpha <= 0.02f) return;
+		int style = CinematicState.lineStyle;
+		switch (style) {
+			case CinematicPayloads.TITLE -> renderTitle(context, font, width, height, t, ticks, 3f);
+			case CinematicPayloads.CHAPTER -> renderTitle(context, font, width, height, t, ticks, 2f);
+			case CinematicPayloads.ALERT -> renderAlert(context, font, width, height, t, alpha);
+			case CinematicPayloads.NARRATION -> renderNarration(context, font, width, height, t, alpha);
+			case CinematicPayloads.SYSTEM -> renderSystem(context, font, width, height, barHeight, t, alpha);
+			default -> renderSpeech(context, font, width, height, barHeight, t, alpha, style);
+		}
+	}
+
+	private static void renderSpeech(DrawContext context, TextRenderer font, int width, int height, int barHeight, float t, float alpha, int style) {
+		String full = lineText().getString();
+		int visible = Math.min(full.length(), (int) (t * REVEAL_PER_TICK));
+		String shown = full.substring(0, visible);
+		int maxWidth = (int) (width * 0.62f);
+		List<OrderedText> lines = font.wrapLines(StringVisitable.plain(shown), maxWidth);
+		int lineCount = Math.max(1, font.wrapLines(StringVisitable.plain(full), maxWidth).size());
+		int blockHeight = 12 + lineCount * (font.fontHeight + 2);
+
+		int anchorY;
+		if (barHeight > 0) {
+			anchorY = height - barHeight / 2 - blockHeight / 2;
+		} else {
+			anchorY = height - 64 - blockHeight;
+			int panelWidth = Math.min(width - 20, Math.max(font.getWidth(full), 120) + 24);
+			context.fill(width / 2 - panelWidth / 2, anchorY - 6, width / 2 + panelWidth / 2, anchorY + blockHeight, withAlpha(0x000000, alpha * 0.55f));
+		}
+		Text speaker = speakerText();
+		Text name;
+		int nameColor;
+		switch (style) {
+			case CinematicPayloads.RADIO -> {
+				name = Text.empty().append(Text.translatable("cinematic.surrogate.radio")).append(" > ").append(speaker);
+				nameColor = AQUA;
+			}
+			case CinematicPayloads.INTERCOM -> {
+				name = Text.empty().append(Text.translatable("cinematic.surrogate.intercom")).append(" > ").append(speaker);
+				nameColor = AMBER;
+			}
+			default -> {
+				name = speaker;
+				nameColor = GOLD;
+			}
+		}
+		context.drawCenteredTextWithShadow(font, name, width / 2, anchorY, withAlpha(nameColor, alpha));
+		int y = anchorY + font.fontHeight + 3;
+		for (OrderedText line : lines) {
+			context.drawCenteredTextWithShadow(font, line, width / 2, y, withAlpha(WHITE, alpha));
+			y += font.fontHeight + 2;
+		}
+	}
+
+	/** A machine speaking: bracketed, cyan, no typewriter, a thin rule either side of the name. */
+	private static void renderSystem(DrawContext context, TextRenderer font, int width, int height, int barHeight, float t, float alpha) {
+		String full = lineText().getString();
+		int visible = Math.min(full.length(), (int) (t * REVEAL_PER_TICK * 1.6f));
+		String shown = "[ " + full.substring(0, visible) + (visible < full.length() ? "_" : " ]");
+		int maxWidth = (int) (width * 0.62f);
+		List<OrderedText> lines = font.wrapLines(StringVisitable.plain(shown), maxWidth);
+		int blockHeight = 12 + Math.max(1, lines.size()) * (font.fontHeight + 2);
+		int anchorY = barHeight > 0 ? height - barHeight / 2 - blockHeight / 2 : height - 64 - blockHeight;
+		if (barHeight <= 0) {
+			int panelWidth = Math.min(width - 20, Math.max(font.getWidth(full), 120) + 24);
+			context.fill(width / 2 - panelWidth / 2, anchorY - 6, width / 2 + panelWidth / 2, anchorY + blockHeight, withAlpha(0x001014, alpha * 0.7f));
+		}
+		Text name = speakerText();
+		int nameWidth = font.getWidth(name);
+		context.fill(width / 2 - nameWidth / 2 - 30, anchorY + 4, width / 2 - nameWidth / 2 - 6, anchorY + 5, withAlpha(0x2A8C99, alpha));
+		context.fill(width / 2 + nameWidth / 2 + 6, anchorY + 4, width / 2 + nameWidth / 2 + 30, anchorY + 5, withAlpha(0x2A8C99, alpha));
+		context.drawCenteredTextWithShadow(font, name, width / 2, anchorY, withAlpha(0x2A8C99, alpha));
+		int y = anchorY + font.fontHeight + 3;
+		for (OrderedText line : lines) {
+			context.drawCenteredTextWithShadow(font, line, width / 2, y, withAlpha(SYSTEM_CYAN, alpha));
+			y += font.fontHeight + 2;
+		}
+	}
+
+	private static void renderNarration(DrawContext context, TextRenderer font, int width, int height, float t, float alpha) {
+		String full = lineText().getString();
+		int visible = Math.min(full.length(), (int) (t * REVEAL_PER_TICK));
+		List<OrderedText> lines = font.wrapLines(StringVisitable.plain(full.substring(0, visible)), (int) (width * 0.6f));
+		int y = (int) (height * 0.7f);
+		for (OrderedText line : lines) {
+			context.drawCenteredTextWithShadow(font, line, width / 2, y, withAlpha(GREY, alpha));
+			y += font.fontHeight + 2;
+		}
+	}
+
+	private static void renderAlert(DrawContext context, TextRenderer font, int width, int height, float t, float alpha) {
+		boolean on = ((int) (t / 5)) % 3 != 2;
+		if (!on) return;
+		Text title = lineText().copy().formatted(Formatting.BOLD);
+		Text sub = speakerText();
+		context.getMatrices().push();
+		context.getMatrices().translate(width / 2f, height * 0.36f, 0f);
+		context.getMatrices().scale(2f, 2f, 1f);
+		context.drawCenteredTextWithShadow(font, title, 0, 0, withAlpha(RED, alpha));
+		context.getMatrices().pop();
+		context.drawCenteredTextWithShadow(font, sub, width / 2, (int) (height * 0.36f) + 24, withAlpha(WHITE, alpha));
+	}
+
+	private static void renderTitle(DrawContext context, TextRenderer font, int width, int height, float t, int ticks, float scale) {
+		float alpha = Math.min(1f, t / 18f) * MathHelper.clamp((ticks - t) / 18f, 0f, 1f);
+		if (alpha <= 0.02f) return;
+		Text title = lineText();
+		Text sub = speakerText();
+		int cy = (int) (height * 0.42f);
+		context.getMatrices().push();
+		context.getMatrices().translate(width / 2f, cy, 0f);
+		context.getMatrices().scale(scale, scale, 1f);
+		context.drawCenteredTextWithShadow(font, title, 0, 0, withAlpha(WHITE, alpha));
+		context.getMatrices().pop();
+		int ruleY = cy + (int) (font.fontHeight * scale) + 3;
+		int lineWidth = (int) (font.getWidth(title) * scale * Math.min(1f, t / 30f));
+		context.fill(width / 2 - lineWidth / 2, ruleY, width / 2 + lineWidth / 2, ruleY + 1, withAlpha(0x22D3EE, alpha));
+		context.drawCenteredTextWithShadow(font, sub, width / 2, ruleY + 8, withAlpha(GREY, alpha));
+	}
+
+	// ------------------------------------------------------------------ objective and skip
+
+	/** How far down the screen the objective banner reaches, for readouts that share the top edge. */
+	public static int objectiveHeight = 40;
+
+	private static void renderObjective(DrawContext context, TextRenderer font, int width, float delta) {
+		int state = CinematicState.objectiveState;
+		if (state == CinematicPayloads.OBJECTIVE_CLEAR) return;
+		float t = CinematicState.objectiveElapsed + delta;
+		float alpha = Math.min(1f, t / 8f);
+		if (state == CinematicPayloads.OBJECTIVE_DONE) alpha *= MathHelper.clamp((70 - t) / 14f, 0f, 1f);
+		if (alpha <= 0.02f) return;
+		boolean done = state == CinematicPayloads.OBJECTIVE_DONE;
+		Text label = Text.translatable(done ? "cinematic.surrogate.objective.done" : "cinematic.surrogate.objective");
+		Text text = Text.translatable(CinematicState.objectiveKey);
+		Text keyHint = Text.translatable("cinematic.surrogate.objective.log", SurrogateClient.LOG.getBoundKeyLocalizedText());
+		// Long objectives wrap rather than run off a narrow window.
+		List<OrderedText> lines = font.wrapLines(text, Math.min(320, width - 60));
+		int textWidth = font.getWidth(label) + 14 + font.getWidth(keyHint);
+		for (OrderedText line : lines) textWidth = Math.max(textWidth, font.getWidth(line));
+		int panelWidth = textWidth + 26;
+		int panelHeight = 20 + lines.size() * 10;
+		int x = width / 2 - panelWidth / 2;
+		int y = 8;
+		objectiveHeight = y + panelHeight + 4;
+		float slide = (1f - alpha) * -10f;
+		context.getMatrices().push();
+		context.getMatrices().translate(0f, slide, 0f);
+		context.fill(x, y, x + panelWidth, y + panelHeight, withAlpha(0x000000, alpha * 0.6f));
+		context.fill(x, y, x + 2, y + panelHeight, withAlpha(done ? 0x66E07A : 0xF5D66A, alpha));
+		context.drawTextWithShadow(font, label, x + 10, y + 5, withAlpha(done ? GREEN : YELLOW, alpha));
+		context.drawTextWithShadow(font, keyHint, x + panelWidth - 10 - font.getWidth(keyHint), y + 5, withAlpha(0x8A8A8A, alpha));
+		int lineY = y + 17;
+		for (OrderedText line : lines) {
+			context.drawTextWithShadow(font, line, x + 10, lineY, withAlpha(WHITE, alpha));
+			lineY += 10;
+		}
+		context.getMatrices().pop();
+	}
+
+	private static void renderSkip(DrawContext context, TextRenderer font, int width, int height, int barHeight) {
+		MinecraftClient client = MinecraftClient.getInstance();
+		Text hint = Text.translatable("cinematic.surrogate.skip", client.options.jumpKey.getBoundKeyLocalizedText());
+		int textWidth = font.getWidth(hint);
+		int x = width - textWidth - 10;
+		// In the top bar when the bars are down (the subtitle owns the bottom one), otherwise low on the right.
+		int y = barHeight > 14 ? Math.max(4, barHeight / 2 - 8) : height - 22;
+		context.drawTextWithShadow(font, hint, x, y, 0xFF8A8A8A);
+		if (CinematicState.skipHeld > 0) {
+			float progress = Math.min(1f, CinematicState.skipHeld / (float) CinematicState.SKIP_HOLD_TICKS);
+			context.fill(x, y + 10, x + textWidth, y + 12, 0xFF333333);
+			context.fill(x, y + 10, x + (int) (textWidth * progress), y + 12, 0xFFDDDDDD);
+		}
+	}
+
+	private static int withAlpha(int rgb, float alpha) {
+		int a = MathHelper.clamp(Math.round(alpha * 255f), 4, 255);
+		return (a << 24) | (rgb & 0xFFFFFF);
+	}
+}

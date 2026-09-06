@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    "surrogate:caustic_sand",
+    "surrogate:ash",
+    "surrogate:sulfur",
+    "surrogate:sulfur_crust",
+    "surrogate:cinnabar",
+    "surrogate:cinnabar_ore"
+  ]
+}

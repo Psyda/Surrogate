@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "PCP",
+    "SBS",
+    "PRP"
+  ],
+  "key": {
+    "P": {
+      "item": "surrogate:hull_plating"
+    },
+    "C": {
+      "item": "minecraft:copper_ingot"
+    },
+    "S": {
+      "item": "surrogate:servo_motor"
+    },
+    "B": {
+      "item": "minecraft:iron_block"
+    },
+    "R": {
+      "item": "minecraft:redstone_block"
+    }
+  },
+  "result": {
+    "id": "surrogate:vehicle_fabricator",
+    "count": 1
+  }
+}

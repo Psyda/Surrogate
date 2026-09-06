@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    {
+      "item": "surrogate:hull_plating"
+    },
+    {
+      "item": "surrogate:sulfur"
+    }
+  ],
+  "result": {
+    "id": "surrogate:hazard_plating",
+    "count": 1
+  }
+}

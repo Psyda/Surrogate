@@ -1,0 +1,112 @@
+plugins {
+    id 'fabric-loom' version '1.12.7'
+    id 'maven-publish'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+repositories {
+    maven { name = 'Fabric'; url = 'https://maven.fabricmc.net/' }
+    maven { name = 'TeamReborn'; url = 'https://maven.fabricmc.net/teamreborn/' }
+    maven { name = 'Masa'; url = 'https://masa.dy.fi/maven' }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+    // Team Reborn Energy: the de-facto Fabric energy API (Tech Reborn, Modern Industrialization, etc).
+    // Bundled into the jar so the mod works standalone; dedupes with any other mod that bundles it.
+    include modApi("teamreborn:energy:${project.energy_version}") {
+        exclude group: 'net.fabricmc.fabric-api'
+    }
+
+    // Dev-only: `gradle runServer -PwithCarpet` adds Carpet so /player fake players can drive the dive flow.
+    if (project.hasProperty('withCarpet')) {
+        modLocalRuntime 'carpet:fabric-carpet:1.21-1.4.147+v240613'
+    }
+}
+
+loom {
+    runs {
+        client {
+            // `gradle runClient -PquickPlay=<world folder>` skips the menus and loads that singleplayer world.
+            if (project.hasProperty('quickPlay')) {
+                programArgs '--quickPlaySingleplayer', project.quickPlay.toString()
+            }
+            // `-PdevTransit=day4` restarts the ship week at that label for whoever joins (dev only).
+            if (project.hasProperty('devTransit')) {
+                vmArg "-Dsurrogate.devTransit=${project.devTransit}"
+            }
+            // `-PdevBoard=cabin|helm|dock` puts whoever joins aboard the nearest crawler, at that console (dev only).
+            if (project.hasProperty('devBoard')) {
+                vmArg "-Dsurrogate.devBoard=${project.devBoard}"
+            }
+            // `-PdevPrologue=day2` skips the ship and restarts the days on the ground at that day (dev only).
+            if (project.hasProperty('devPrologue')) {
+                vmArg "-Dsurrogate.devPrologue=${project.devPrologue}"
+            }
+            // `-PdevShots=60 -PdevQuit=2400 -PdevFast=true`: screenshot every 3 s, quit after 2 min, quarter-length scenes.
+            if (project.hasProperty('devShots')) {
+                vmArg "-Dsurrogate.devScreenshots=${project.devShots}"
+            }
+            if (project.hasProperty('devQuit')) {
+                vmArg "-Dsurrogate.devQuitAfter=${project.devQuit}"
+            }
+            if (project.hasProperty('devFast')) {
+                vmArg "-Dsurrogate.devFast=true"
+            }
+            if (project.hasProperty('devLook')) {
+                vmArg "-Dsurrogate.devLook=${project.devLook}"
+            }
+            if (project.hasProperty('devSkyDebug')) {
+                vmArg "-Dsurrogate.devSkyDebug=true"
+            }
+            // `-PdevCreateWorld=true` (no quickPlay): opens the new world screen from the title after three seconds.
+            if (project.hasProperty('devCreateWorld')) {
+                vmArg "-Dsurrogate.devCreateWorld=true"
+            }
+            // `-PdevScreen=log` or `-PdevScreen=terminal:bridge`: opens that screen in-world for five seconds, ten seconds in.
+            if (project.hasProperty('devScreen')) {
+                vmArg "-Dsurrogate.devScreen=${project.devScreen}"
+            }
+            // `-PdevRun=<command>@<ticks>`: sends that chat command once, that far into the world.
+            if (project.hasProperty('devRun')) {
+                vmArg "-Dsurrogate.devRun=${project.devRun}"
+            }
+            // `-PdevTp=x,y,z,afterTicks`: puts the player there every five seconds from that tick on.
+            if (project.hasProperty('devTp')) {
+                vmArg "-Dsurrogate.devTp=${project.devTp}"
+            }
+        }
+    }
+}
+
+processResources {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') {
+        expand 'version': project.version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.release = 21
+    it.options.encoding = 'UTF-8'
+}
+
+java {
+    withSourcesJar()
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+jar {
+    from('LICENSE') { rename { "${it}_${project.archives_base_name}" } }
+}

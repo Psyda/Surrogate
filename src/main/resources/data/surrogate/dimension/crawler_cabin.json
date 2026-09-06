@@ -1,0 +1,17 @@
+{
+  "type": "surrogate:crawler_cabin",
+  "generator": {
+    "type": "minecraft:flat",
+    "settings": {
+      "biome": "surrogate:crawler_cabin",
+      "layers": [
+        {
+          "block": "minecraft:air",
+          "height": 1
+        }
+      ],
+      "features": false,
+      "lakes": false
+    }
+  }
+}

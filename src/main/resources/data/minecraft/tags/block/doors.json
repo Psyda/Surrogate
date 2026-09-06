@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "surrogate:airlock_door",
+    "surrogate:dock_door"
+  ]
+}

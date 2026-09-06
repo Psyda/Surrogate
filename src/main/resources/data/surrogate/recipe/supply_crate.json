@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "PNP",
+    "N N",
+    "PNP"
+  ],
+  "key": {
+    "P": {
+      "item": "surrogate:hull_plating"
+    },
+    "N": {
+      "item": "minecraft:iron_nugget"
+    }
+  },
+  "result": {
+    "id": "surrogate:supply_crate",
+    "count": 2
+  }
+}

@@ -1,0 +1,110 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "surrogate:block/tray_side",
+    "side": "surrogate:block/tray_side",
+    "soil": "surrogate:block/tray_soil",
+    "sprouts": "surrogate:block/sprouts",
+    "frame": "surrogate:block/frame_metal"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        6,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#side",
+          "uv": [
+            0,
+            0,
+            16,
+            6
+          ]
+        },
+        "south": {
+          "texture": "#side",
+          "uv": [
+            0,
+            0,
+            16,
+            6
+          ]
+        },
+        "east": {
+          "texture": "#side",
+          "uv": [
+            0,
+            0,
+            16,
+            6
+          ]
+        },
+        "west": {
+          "texture": "#side",
+          "uv": [
+            0,
+            0,
+            16,
+            6
+          ]
+        },
+        "up": {
+          "texture": "#soil"
+        },
+        "down": {
+          "texture": "#frame"
+        }
+      }
+    },
+    {
+      "from": [
+        8,
+        6,
+        1
+      ],
+      "to": [
+        8,
+        22,
+        15
+      ],
+      "faces": {
+        "east": {
+          "texture": "#sprouts"
+        },
+        "west": {
+          "texture": "#sprouts"
+        }
+      },
+      "shade": false
+    },
+    {
+      "from": [
+        1,
+        6,
+        8
+      ],
+      "to": [
+        15,
+        22,
+        8
+      ],
+      "faces": {
+        "north": {
+          "texture": "#sprouts"
+        },
+        "south": {
+          "texture": "#sprouts"
+        }
+      },
+      "shade": false
+    }
+  ]
+}

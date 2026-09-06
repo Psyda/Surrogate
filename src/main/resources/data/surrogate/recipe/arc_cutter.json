@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "I",
+    "C",
+    "M"
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "C": {
+      "item": "minecraft:copper_ingot"
+    },
+    "M": {
+      "item": "surrogate:servo_motor"
+    }
+  },
+  "result": {
+    "id": "surrogate:arc_cutter",
+    "count": 1
+  }
+}

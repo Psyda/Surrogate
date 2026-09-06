@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:flat_cache",
+  "argument": {
+    "type": "minecraft:clamp",
+    "input": {
+      "type": "minecraft:mul",
+      "argument1": {
+        "type": "minecraft:add",
+        "argument1": {
+          "type": "minecraft:mul",
+          "argument1": -1.0,
+          "argument2": {
+            "type": "minecraft:noise",
+            "noise": "surrogate:basin",
+            "xz_scale": 1.0,
+            "y_scale": 0.0
+          }
+        },
+        "argument2": -0.55
+      },
+      "argument2": 5.882352941176473
+    },
+    "min": 0.0,
+    "max": 1.0
+  }
+}

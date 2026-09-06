@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "PRP",
+    "PGP",
+    "PRP"
+  ],
+  "key": {
+    "P": {
+      "item": "surrogate:hull_plating"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "G": {
+      "item": "minecraft:glass"
+    }
+  },
+  "result": {
+    "id": "surrogate:data_rack",
+    "count": 1
+  }
+}

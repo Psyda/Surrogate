@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "transportation",
+  "pattern": [
+    "PPP",
+    "SBS",
+    "PLP"
+  ],
+  "key": {
+    "P": {
+      "item": "surrogate:hull_plating"
+    },
+    "S": {
+      "item": "surrogate:servo_motor"
+    },
+    "B": {
+      "item": "minecraft:iron_block"
+    },
+    "L": {
+      "item": "surrogate:crawler_blueprint"
+    }
+  },
+  "result": {
+    "id": "surrogate:crawler_kit",
+    "count": 1
+  }
+}

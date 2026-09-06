@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "surrogate:block/data_rack_front",
+    "side": "surrogate:block/data_rack_side",
+    "top": "surrogate:block/machine_plating"
+  }
+}

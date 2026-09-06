@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "SS",
+    "SS"
+  ],
+  "key": {
+    "S": {
+      "item": "surrogate:caustic_sand"
+    }
+  },
+  "result": {
+    "id": "surrogate:caustic_sandstone",
+    "count": 1
+  }
+}

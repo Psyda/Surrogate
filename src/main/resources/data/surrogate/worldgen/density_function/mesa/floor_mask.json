@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:flat_cache",
+  "argument": {
+    "type": "minecraft:clamp",
+    "input": {
+      "type": "minecraft:mul",
+      "argument1": "surrogate:mesa/valley",
+      "argument2": 50.0
+    },
+    "min": 0.0,
+    "max": 1.0
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["CRC", "IPI", "III"],
+  "key": {
+    "C": { "item": "minecraft:copper_ingot" },
+    "R": { "item": "minecraft:redstone_block" },
+    "I": { "item": "minecraft:iron_ingot" },
+    "P": { "item": "surrogate:power_cell" }
+  },
+  "result": { "id": "surrogate:charging_dock", "count": 1 }
+}

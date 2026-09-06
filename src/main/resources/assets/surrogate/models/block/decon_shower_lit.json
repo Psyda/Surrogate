@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "surrogate:block/hull_plating",
+    "side": "surrogate:block/decon_shower_side",
+    "bottom": "surrogate:block/decon_shower_nozzle_lit"
+  }
+}

@@ -1,0 +1,124 @@
+{
+  "variants": {
+    "facing=north,print=body_top": {
+      "model": "surrogate:block/poster_body_top"
+    },
+    "facing=north,print=body_bottom": {
+      "model": "surrogate:block/poster_body_bottom"
+    },
+    "facing=north,print=sallow_top": {
+      "model": "surrogate:block/poster_sallow_top"
+    },
+    "facing=north,print=sallow_bottom": {
+      "model": "surrogate:block/poster_sallow_bottom"
+    },
+    "facing=north,print=provender": {
+      "model": "surrogate:block/poster_provender"
+    },
+    "facing=north,print=console": {
+      "model": "surrogate:block/poster_console"
+    },
+    "facing=north,print=console_alert": {
+      "model": "surrogate:block/poster_console_alert"
+    },
+    "facing=north,print=manifest": {
+      "model": "surrogate:block/poster_manifest"
+    },
+    "facing=east,print=body_top": {
+      "model": "surrogate:block/poster_body_top",
+      "y": 90
+    },
+    "facing=east,print=body_bottom": {
+      "model": "surrogate:block/poster_body_bottom",
+      "y": 90
+    },
+    "facing=east,print=sallow_top": {
+      "model": "surrogate:block/poster_sallow_top",
+      "y": 90
+    },
+    "facing=east,print=sallow_bottom": {
+      "model": "surrogate:block/poster_sallow_bottom",
+      "y": 90
+    },
+    "facing=east,print=provender": {
+      "model": "surrogate:block/poster_provender",
+      "y": 90
+    },
+    "facing=east,print=console": {
+      "model": "surrogate:block/poster_console",
+      "y": 90
+    },
+    "facing=east,print=console_alert": {
+      "model": "surrogate:block/poster_console_alert",
+      "y": 90
+    },
+    "facing=east,print=manifest": {
+      "model": "surrogate:block/poster_manifest",
+      "y": 90
+    },
+    "facing=south,print=body_top": {
+      "model": "surrogate:block/poster_body_top",
+      "y": 180
+    },
+    "facing=south,print=body_bottom": {
+      "model": "surrogate:block/poster_body_bottom",
+      "y": 180
+    },
+    "facing=south,print=sallow_top": {
+      "model": "surrogate:block/poster_sallow_top",
+      "y": 180
+    },
+    "facing=south,print=sallow_bottom": {
+      "model": "surrogate:block/poster_sallow_bottom",
+      "y": 180
+    },
+    "facing=south,print=provender": {
+      "model": "surrogate:block/poster_provender",
+      "y": 180
+    },
+    "facing=south,print=console": {
+      "model": "surrogate:block/poster_console",
+      "y": 180
+    },
+    "facing=south,print=console_alert": {
+      "model": "surrogate:block/poster_console_alert",
+      "y": 180
+    },
+    "facing=south,print=manifest": {
+      "model": "surrogate:block/poster_manifest",
+      "y": 180
+    },
+    "facing=west,print=body_top": {
+      "model": "surrogate:block/poster_body_top",
+      "y": 270
+    },
+    "facing=west,print=body_bottom": {
+      "model": "surrogate:block/poster_body_bottom",
+      "y": 270
+    },
+    "facing=west,print=sallow_top": {
+      "model": "surrogate:block/poster_sallow_top",
+      "y": 270
+    },
+    "facing=west,print=sallow_bottom": {
+      "model": "surrogate:block/poster_sallow_bottom",
+      "y": 270
+    },
+    "facing=west,print=provender": {
+      "model": "surrogate:block/poster_provender",
+      "y": 270
+    },
+    "facing=west,print=console": {
+      "model": "surrogate:block/poster_console",
+      "y": 270
+    },
+    "facing=west,print=console_alert": {
+      "model": "surrogate:block/poster_console_alert",
+      "y": 270
+    },
+    "facing=west,print=manifest": {
+      "model": "surrogate:block/poster_manifest",
+      "y": 270
+    }
+  }
+}

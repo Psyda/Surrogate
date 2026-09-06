@@ -1,0 +1,1775 @@
+{
+  "cinematic.title": {
+    "sounds": [
+      {
+        "name": "surrogate:cinematic/title",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.surrogate.title"
+  },
+  "cinematic.radio_open": {
+    "sounds": [
+      {
+        "name": "surrogate:cinematic/radio_open"
+      }
+    ],
+    "subtitle": "subtitles.surrogate.radio"
+  },
+  "cinematic.radio_close": {
+    "sounds": [
+      {
+        "name": "surrogate:cinematic/radio_close"
+      }
+    ],
+    "subtitle": "subtitles.surrogate.radio"
+  },
+  "cinematic.static": {
+    "sounds": [
+      {
+        "name": "surrogate:cinematic/static"
+      }
+    ],
+    "subtitle": "subtitles.surrogate.static"
+  },
+  "cinematic.objective": {
+    "sounds": [
+      {
+        "name": "surrogate:cinematic/objective"
+      }
+    ],
+    "subtitle": "subtitles.surrogate.objective"
+  },
+  "prologue.quake": {
+    "sounds": [
+      {
+        "name": "surrogate:prologue/quake",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.surrogate.quake"
+  },
+  "prologue.breach": {
+    "sounds": [
+      {
+        "name": "surrogate:prologue/breach"
+      }
+    ],
+    "subtitle": "subtitles.surrogate.breach"
+  },
+  "prologue.alarm": {
+    "sounds": [
+      {
+        "name": "surrogate:prologue/alarm"
+      }
+    ],
+    "subtitle": "subtitles.surrogate.alarm"
+  },
+  "prologue.signal_lost": {
+    "sounds": [
+      {
+        "name": "surrogate:prologue/signal_lost"
+      }
+    ],
+    "subtitle": "subtitles.surrogate.signal_lost"
+  },
+  "transit.hum": {
+    "sounds": [
+      {
+        "name": "surrogate:transit/hum",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.surrogate.hum"
+  },
+  "transit.klaxon": {
+    "sounds": [
+      {
+        "name": "surrogate:transit/klaxon",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.surrogate.klaxon"
+  },
+  "transit.engine_cut": {
+    "sounds": [
+      {
+        "name": "surrogate:transit/engine_cut"
+      }
+    ],
+    "subtitle": "subtitles.surrogate.engine_cut"
+  },
+  "transit.engine_relight": {
+    "sounds": [
+      {
+        "name": "surrogate:transit/engine_relight"
+      }
+    ],
+    "subtitle": "subtitles.surrogate.engine_relight"
+  },
+  "transit.thaw": {
+    "sounds": [
+      {
+        "name": "surrogate:transit/thaw"
+      }
+    ],
+    "subtitle": "subtitles.surrogate.thaw"
+  },
+  "transit.flatline": {
+    "sounds": [
+      {
+        "name": "surrogate:transit/flatline"
+      }
+    ],
+    "subtitle": "subtitles.surrogate.flatline"
+  },
+  "transit.intercom": {
+    "sounds": [
+      {
+        "name": "surrogate:transit/intercom"
+      }
+    ],
+    "subtitle": "subtitles.surrogate.intercom"
+  },
+  "transit.hatch": {
+    "sounds": [
+      {
+        "name": "surrogate:transit/hatch"
+      }
+    ],
+    "subtitle": "subtitles.surrogate.hatch"
+  },
+  "transit.decompress": {
+    "sounds": [
+      {
+        "name": "surrogate:transit/decompress"
+      }
+    ],
+    "subtitle": "subtitles.surrogate.decompress"
+  },
+  "transit.bleed": {
+    "sounds": [
+      {
+        "name": "surrogate:transit/bleed"
+      }
+    ],
+    "subtitle": "subtitles.surrogate.bleed"
+  },
+  "transit.descent": {
+    "sounds": [
+      {
+        "name": "surrogate:transit/descent",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.surrogate.descent"
+  },
+  "transit.sedate": {
+    "sounds": [
+      {
+        "name": "surrogate:transit/sedate"
+      }
+    ],
+    "subtitle": "subtitles.surrogate.sedate"
+  },
+  "block.microwave_hum": {
+    "sounds": [
+      {
+        "name": "surrogate:block/microwave_hum"
+      }
+    ],
+    "subtitle": "subtitles.surrogate.microwave_hum"
+  },
+  "block.microwave_ding": {
+    "sounds": [
+      {
+        "name": "surrogate:block/microwave_ding"
+      }
+    ],
+    "subtitle": "subtitles.surrogate.microwave_ding"
+  },
+  "crawler.dock_beep": {
+    "sounds": [
+      {
+        "name": "surrogate:crawler/dock_beep"
+      }
+    ],
+    "subtitle": "subtitles.surrogate.dock_beep"
+  },
+  "crawler.dock_lock": {
+    "sounds": [
+      {
+        "name": "surrogate:crawler/dock_lock"
+      }
+    ],
+    "subtitle": "subtitles.surrogate.dock_lock"
+  },
+  "crawler.dock_error": {
+    "sounds": [
+      {
+        "name": "surrogate:crawler/dock_error"
+      }
+    ],
+    "subtitle": "subtitles.surrogate.dock_error"
+  },
+  "voice.halloran.radio.1": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/halloran.radio.1",
+        "stream": true
+      }
+    ]
+  },
+  "voice.halloran.radio.2": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/halloran.radio.2",
+        "stream": true
+      }
+    ]
+  },
+  "voice.halloran.radio.3": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/halloran.radio.3",
+        "stream": true
+      }
+    ]
+  },
+  "voice.halloran.radio.4": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/halloran.radio.4",
+        "stream": true
+      }
+    ]
+  },
+  "voice.halloran.radio.5": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/halloran.radio.5",
+        "stream": true
+      }
+    ]
+  },
+  "voice.halloran.radio.6": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/halloran.radio.6",
+        "stream": true
+      }
+    ]
+  },
+  "voice.halloran.radio.later": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/halloran.radio.later",
+        "stream": true
+      }
+    ]
+  },
+  "voice.okafor.greet": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/okafor.greet",
+        "stream": true
+      }
+    ]
+  },
+  "voice.okafor.idle.1": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/okafor.idle.1",
+        "stream": true
+      }
+    ]
+  },
+  "voice.okafor.idle.2": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/okafor.idle.2",
+        "stream": true
+      }
+    ]
+  },
+  "voice.okafor.name": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/okafor.name",
+        "stream": true
+      }
+    ]
+  },
+  "voice.okafor.plea": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/okafor.plea",
+        "stream": true
+      }
+    ]
+  },
+  "voice.okafor.radio.1": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/okafor.radio.1",
+        "stream": true
+      }
+    ]
+  },
+  "voice.okafor.radio.2": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/okafor.radio.2",
+        "stream": true
+      }
+    ]
+  },
+  "voice.okafor.radio.3": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/okafor.radio.3",
+        "stream": true
+      }
+    ]
+  },
+  "voice.okafor.rescued_radio": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/okafor.rescued_radio",
+        "stream": true
+      }
+    ]
+  },
+  "voice.okafor.safe": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/okafor.safe",
+        "stream": true
+      }
+    ]
+  },
+  "voice.okafor.thanks": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/okafor.thanks",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.answer_nudge": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.answer_nudge",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.answer_timeout": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.answer_timeout",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.assay1": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.assay1",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.assay2": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.assay2",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.assay3": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.assay3",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.assay4": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.assay4",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.call1": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.call1",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.call2": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.call2",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.call3": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.call3",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.call4": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.call4",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.call5": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.call5",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.call6": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.call6",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.call7": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.call7",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.colony1": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.colony1",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.colony2": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.colony2",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.colony3": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.colony3",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.colony4": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.colony4",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.colony5": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.colony5",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.colony6": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.colony6",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.colony7": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.colony7",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.dive1": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.dive1",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.dive2": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.dive2",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.dive_nudge": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.dive_nudge",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.dive_timeout": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.dive_timeout",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.dock1": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.dock1",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.dock2": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.dock2",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.door_nudge": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.door_nudge",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.door_timeout": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.door_timeout",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.end1": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.end1",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.end2": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.end2",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.follow1": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.follow1",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.key1": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.key1",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.key_nudge": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.key_nudge",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.key_timeout": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.key_timeout",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.kit1": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.kit1",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.kit_nudge": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.kit_nudge",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.kit_timeout1": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.kit_timeout1",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.kit_timeout2": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.kit_timeout2",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.leave1": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.leave1",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.leave2": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.leave2",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.look_nudge": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.look_nudge",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.meet1": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.meet1",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.meet2": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.meet2",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.meet3": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.meet3",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.meet4": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.meet4",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.morning1": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.morning1",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.morning2": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.morning2",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.morning3": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.morning3",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.morning4": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.morning4",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.night1": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.night1",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.night2": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.night2",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.online1": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.online1",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.online2": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.online2",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.out1": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.out1",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.out2": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.out2",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.out3": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.out3",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.out4": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.out4",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.out_nudge": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.out_nudge",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.pod1": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.pod1",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.pod2": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.pod2",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.pod3": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.pod3",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.sample_done": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.sample_done",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.sample_done2": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.sample_done2",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.sample_nudge": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.sample_nudge",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.sample_timeout": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.sample_timeout",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.seeds1": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.seeds1",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.seeds2": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.seeds2",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.seeds3": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.seeds3",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.walk1": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.walk1",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.walk2": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.walk2",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.walk3": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.walk3",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.walk4": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.walk4",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.wrench_nudge": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.wrench_nudge",
+        "stream": true
+      }
+    ]
+  },
+  "voice.prologue.wrench_timeout": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/prologue.wrench_timeout",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.alarm1": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.alarm1",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.alarm2": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.alarm2",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.alarm3": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.alarm3",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.alarm4": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.alarm4",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.alarm5": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.alarm5",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.alarm6": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.alarm6",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.alarm7": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.alarm7",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.alarm8": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.alarm8",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.alarm9": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.alarm9",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.bleed1": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.bleed1",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.bleed2": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.bleed2",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.breach1": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.breach1",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.breach2": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.breach2",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.breach3": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.breach3",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.breach4": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.breach4",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.breach5": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.breach5",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.bridge1": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.bridge1",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.bridge2": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.bridge2",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.bridge3": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.bridge3",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.bridge4": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.bridge4",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.bridge5": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.bridge5",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.bridge_nudge": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.bridge_nudge",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.contract1": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.contract1",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.contract2": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.contract2",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.contract3": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.contract3",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.contract4": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.contract4",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.contract5": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.contract5",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.contract6": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.contract6",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.contract_call": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.contract_call",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.contract_nudge": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.contract_nudge",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.coolant_done": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.coolant_done",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.coolant_nudge": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.coolant_nudge",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.coolant_timeout": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.coolant_timeout",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.descent_brief": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.descent_brief",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.drop1": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.drop1",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.drop2": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.drop2",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.drop2b": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.drop2b",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.drop2c": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.drop2c",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.drop3": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.drop3",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.drop4": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.drop4",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.drop5": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.drop5",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.drop6": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.drop6",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.drop_call": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.drop_call",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.drop_nudge": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.drop_nudge",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.eat_nudge": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.eat_nudge",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.hail1": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.hail1",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.hail2": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.hail2",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.hail3": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.hail3",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.hold1": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.hold1",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.hold2": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.hold2",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.hold3": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.hold3",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.hold_call": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.hold_call",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.hold_nudge": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.hold_nudge",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.link1": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.link1",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.link2": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.link2",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.link3": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.link3",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.medbay_nudge": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.medbay_nudge",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.patch_done": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.patch_done",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.patch_nudge": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.patch_nudge",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.patch_timeout": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.patch_timeout",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.pod_nudge": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.pod_nudge",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.port1": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.port1",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.port2": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.port2",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.port3": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.port3",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.port4": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.port4",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.port5": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.port5",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.port_call": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.port_call",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.port_check1": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.port_check1",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.port_check2": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.port_check2",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.relay1": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.relay1",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.relay2": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.relay2",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.relay3": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.relay3",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.relay4": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.relay4",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.relay5": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.relay5",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.relay6": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.relay6",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.relay7": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.relay7",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.relay_warn": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.relay_warn",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.rest2_nudge": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.rest2_nudge",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.rest3_nudge": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.rest3_nudge",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.rest6_nudge": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.rest6_nudge",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.rest_nudge": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.rest_nudge",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.sallow1": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.sallow1",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.sallow2": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.sallow2",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.sallow3": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.sallow3",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.sallow4": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.sallow4",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.sallow5": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.sallow5",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.sallow_call": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.sallow_call",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.system1": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.system1",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.system2": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.system2",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.thaw1": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.thaw1",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.thaw2": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.thaw2",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.thaw3": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.thaw3",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.thaw4": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.thaw4",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.thaw5": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.thaw5",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.turn1": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.turn1",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.turn2": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.turn2",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.turn3": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.turn3",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.turn4": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.turn4",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.turn5": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.turn5",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.turn6": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.turn6",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.turn_call": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.turn_call",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.turn_nudge": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.turn_nudge",
+        "stream": true
+      }
+    ]
+  },
+  "voice.transit.window_nudge": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/transit.window_nudge",
+        "stream": true
+      }
+    ]
+  }
+}

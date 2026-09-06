@@ -1,0 +1,23 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "surrogate:block/machine_plating",
+    "frame": "surrogate:block/frame_metal",
+    "plating": "surrogate:block/machine_plating",
+    "pad": "surrogate:block/dock_pad_top",
+    "pillar_front": "surrogate:block/dock_pillar_front",
+    "pillar_side": "surrogate:block/dock_pillar_side"
+  },
+  "elements": [
+    { "name": "pad", "from": [0, 0, 0], "to": [16, 3, 16],
+      "faces": { "down": {"texture": "#frame"}, "up": {"texture": "#pad"}, "north": {"texture": "#frame"}, "south": {"texture": "#frame"}, "west": {"texture": "#frame"}, "east": {"texture": "#frame"} } },
+    { "name": "pillar", "from": [2, 3, 13], "to": [14, 16, 16],
+      "faces": { "down": {"texture": "#plating"}, "up": {"texture": "#plating"}, "north": {"texture": "#pillar_front"}, "south": {"texture": "#pillar_side"}, "west": {"texture": "#pillar_side"}, "east": {"texture": "#pillar_side"} } },
+    { "name": "coupler", "from": [6, 8, 11], "to": [10, 11, 13],
+      "faces": { "down": {"texture": "#frame"}, "up": {"texture": "#frame"}, "north": {"texture": "#frame"}, "south": {"texture": "#frame"}, "west": {"texture": "#frame"}, "east": {"texture": "#frame"} } },
+    { "name": "rail_left", "from": [0, 3, 0], "to": [2, 5, 13],
+      "faces": { "down": {"texture": "#frame"}, "up": {"texture": "#frame"}, "north": {"texture": "#frame"}, "south": {"texture": "#frame"}, "west": {"texture": "#frame"}, "east": {"texture": "#frame"} } },
+    { "name": "rail_right", "from": [14, 3, 0], "to": [16, 5, 13],
+      "faces": { "down": {"texture": "#frame"}, "up": {"texture": "#frame"}, "north": {"texture": "#frame"}, "south": {"texture": "#frame"}, "west": {"texture": "#frame"}, "east": {"texture": "#frame"} } }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "surrogate:block/locker"
+    },
+    "facing=east": {
+      "model": "surrogate:block/locker",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "surrogate:block/locker",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "surrogate:block/locker",
+      "y": 270
+    }
+  }
+}

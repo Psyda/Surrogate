@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "surrogate:block/hydroponic_tray"
+    }
+  }
+}

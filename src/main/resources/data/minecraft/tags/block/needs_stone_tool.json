@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "surrogate:sulfur_crust",
+    "surrogate:cinnabar_ore",
+    "surrogate:halite_ore"
+  ]
+}

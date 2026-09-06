@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "surrogate:block/breached_plating"
+    },
+    "facing=east": {
+      "model": "surrogate:block/breached_plating",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "surrogate:block/breached_plating",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "surrogate:block/breached_plating",
+      "y": 270
+    }
+  }
+}

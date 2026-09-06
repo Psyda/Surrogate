@@ -1,0 +1,12 @@
+{
+  "replace": false,
+  "values": [
+    "surrogate:toxic_desert",
+    "surrogate:ash_dunes",
+    "surrogate:acid_flats",
+    "surrogate:salt_pans",
+    "surrogate:dead_grove",
+    "surrogate:vacuum",
+    "surrogate:crawler_cabin"
+  ]
+}

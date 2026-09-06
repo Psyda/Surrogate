@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "minecraft:paper" },
+    { "item": "minecraft:redstone" },
+    { "item": "minecraft:copper_ingot" },
+    { "item": "minecraft:gold_nugget" }
+  ],
+  "result": { "id": "surrogate:uplink_card", "count": 1 }
+}

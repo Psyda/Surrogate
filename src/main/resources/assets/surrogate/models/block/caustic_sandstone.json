@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "surrogate:block/caustic_sandstone_top",
+    "bottom": "surrogate:block/caustic_sandstone_top",
+    "side": "surrogate:block/caustic_sandstone"
+  }
+}

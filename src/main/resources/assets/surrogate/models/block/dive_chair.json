@@ -1,0 +1,412 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "surrogate:block/frame_metal",
+    "frame": "surrogate:block/frame_metal",
+    "plating": "surrogate:block/machine_plating",
+    "cushion": "surrogate:block/chair_cushion",
+    "visor": "surrogate:block/visor",
+    "screen": "surrogate:block/console_screen"
+  },
+  "display": {
+    "gui": {
+      "rotation": [
+        30,
+        225,
+        0
+      ],
+      "translation": [
+        0,
+        -1,
+        0
+      ],
+      "scale": [
+        0.55,
+        0.55,
+        0.55
+      ]
+    },
+    "ground": {
+      "translation": [
+        0,
+        3,
+        0
+      ],
+      "scale": [
+        0.25,
+        0.25,
+        0.25
+      ]
+    },
+    "thirdperson_righthand": {
+      "rotation": [
+        75,
+        45,
+        0
+      ],
+      "translation": [
+        0,
+        2.5,
+        0
+      ],
+      "scale": [
+        0.375,
+        0.375,
+        0.375
+      ]
+    },
+    "firstperson_righthand": {
+      "rotation": [
+        0,
+        45,
+        0
+      ],
+      "scale": [
+        0.4,
+        0.4,
+        0.4
+      ]
+    }
+  },
+  "elements": [
+    {
+      "name": "base",
+      "from": [
+        1,
+        0,
+        1
+      ],
+      "to": [
+        15,
+        2,
+        15
+      ],
+      "faces": {
+        "down": {
+          "texture": "#frame"
+        },
+        "up": {
+          "texture": "#frame"
+        },
+        "north": {
+          "texture": "#frame"
+        },
+        "south": {
+          "texture": "#frame"
+        },
+        "west": {
+          "texture": "#frame"
+        },
+        "east": {
+          "texture": "#frame"
+        }
+      }
+    },
+    {
+      "name": "seat",
+      "from": [
+        1,
+        2,
+        2
+      ],
+      "to": [
+        15,
+        7,
+        13
+      ],
+      "faces": {
+        "down": {
+          "texture": "#frame"
+        },
+        "up": {
+          "texture": "#cushion"
+        },
+        "north": {
+          "texture": "#cushion"
+        },
+        "south": {
+          "texture": "#cushion"
+        },
+        "west": {
+          "texture": "#cushion"
+        },
+        "east": {
+          "texture": "#cushion"
+        }
+      }
+    },
+    {
+      "name": "backrest",
+      "from": [
+        1,
+        7,
+        12
+      ],
+      "to": [
+        15,
+        16,
+        16
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          7,
+          14
+        ],
+        "axis": "x",
+        "angle": 22.5
+      },
+      "faces": {
+        "down": {
+          "texture": "#plating"
+        },
+        "up": {
+          "texture": "#plating"
+        },
+        "north": {
+          "texture": "#cushion"
+        },
+        "south": {
+          "texture": "#plating"
+        },
+        "west": {
+          "texture": "#plating"
+        },
+        "east": {
+          "texture": "#plating"
+        }
+      }
+    },
+    {
+      "name": "armrest_left",
+      "from": [
+        0,
+        7,
+        4
+      ],
+      "to": [
+        2,
+        10,
+        13
+      ],
+      "faces": {
+        "down": {
+          "texture": "#plating"
+        },
+        "up": {
+          "texture": "#plating"
+        },
+        "north": {
+          "texture": "#plating"
+        },
+        "south": {
+          "texture": "#plating"
+        },
+        "west": {
+          "texture": "#plating"
+        },
+        "east": {
+          "texture": "#plating"
+        }
+      }
+    },
+    {
+      "name": "armrest_right",
+      "from": [
+        14,
+        7,
+        4
+      ],
+      "to": [
+        16,
+        10,
+        13
+      ],
+      "faces": {
+        "down": {
+          "texture": "#plating"
+        },
+        "up": {
+          "texture": "#plating"
+        },
+        "north": {
+          "texture": "#plating"
+        },
+        "south": {
+          "texture": "#plating"
+        },
+        "west": {
+          "texture": "#plating"
+        },
+        "east": {
+          "texture": "#plating"
+        }
+      }
+    },
+    {
+      "name": "console",
+      "from": [
+        13,
+        10,
+        4
+      ],
+      "to": [
+        16,
+        12,
+        9
+      ],
+      "faces": {
+        "down": {
+          "texture": "#frame"
+        },
+        "up": {
+          "texture": "#screen"
+        },
+        "north": {
+          "texture": "#frame"
+        },
+        "south": {
+          "texture": "#frame"
+        },
+        "west": {
+          "texture": "#frame"
+        },
+        "east": {
+          "texture": "#frame"
+        }
+      }
+    },
+    {
+      "name": "visor_post",
+      "from": [
+        0,
+        10,
+        3
+      ],
+      "to": [
+        2,
+        31,
+        5
+      ],
+      "faces": {
+        "down": {
+          "texture": "#frame"
+        },
+        "up": {
+          "texture": "#frame"
+        },
+        "north": {
+          "texture": "#frame"
+        },
+        "south": {
+          "texture": "#frame"
+        },
+        "west": {
+          "texture": "#frame"
+        },
+        "east": {
+          "texture": "#frame"
+        }
+      }
+    },
+    {
+      "name": "visor_boom",
+      "from": [
+        0,
+        29,
+        1
+      ],
+      "to": [
+        9,
+        31,
+        5
+      ],
+      "faces": {
+        "down": {
+          "texture": "#frame"
+        },
+        "up": {
+          "texture": "#frame"
+        },
+        "north": {
+          "texture": "#frame"
+        },
+        "south": {
+          "texture": "#frame"
+        },
+        "west": {
+          "texture": "#frame"
+        },
+        "east": {
+          "texture": "#frame"
+        }
+      }
+    },
+    {
+      "name": "visor_stem",
+      "from": [
+        7,
+        26,
+        1
+      ],
+      "to": [
+        9,
+        29,
+        3
+      ],
+      "faces": {
+        "down": {
+          "texture": "#frame"
+        },
+        "up": {
+          "texture": "#frame"
+        },
+        "north": {
+          "texture": "#frame"
+        },
+        "south": {
+          "texture": "#frame"
+        },
+        "west": {
+          "texture": "#frame"
+        },
+        "east": {
+          "texture": "#frame"
+        }
+      }
+    },
+    {
+      "name": "visor",
+      "from": [
+        4,
+        22,
+        0
+      ],
+      "to": [
+        12,
+        26,
+        2
+      ],
+      "faces": {
+        "down": {
+          "texture": "#frame"
+        },
+        "up": {
+          "texture": "#frame"
+        },
+        "north": {
+          "texture": "#visor"
+        },
+        "south": {
+          "texture": "#visor"
+        },
+        "west": {
+          "texture": "#frame"
+        },
+        "east": {
+          "texture": "#frame"
+        }
+      }
+    }
+  ]
+}

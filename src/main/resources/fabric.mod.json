@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "surrogate",
+  "version": "${version}",
+  "name": "Surrogate",
+  "description": "Pilot durable one-block robot chassis from a dive chair while your body stays safe at base. No regeneration, real boot times, wrecks that keep your cargo, and a body that has to log off to eat and sleep.",
+  "authors": ["Psyda"],
+  "contact": {
+    "sources": "https://github.com/psyda/vigil-latencygrapher"
+  },
+  "icon": "assets/surrogate/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["dev.psyda.surrogate.Surrogate"],
+    "client": ["dev.psyda.surrogate.client.SurrogateClient"]
+  },
+  "mixins": ["surrogate.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "~1.21.1",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}

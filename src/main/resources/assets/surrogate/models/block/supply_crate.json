@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "surrogate:block/supply_crate_top",
+    "bottom": "surrogate:block/supply_crate_top",
+    "side": "surrogate:block/supply_crate_side"
+  }
+}

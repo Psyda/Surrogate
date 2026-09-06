@@ -1,0 +1,28 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.psyda.surrogate.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "PlayerEntityMixin",
+    "SlotMixin",
+    "CraftingInventoryAccessor",
+    "PlayerScreenHandlerAccessor",
+    "RegistryLoaderMixin",
+    "DimensionOptionsRegistryHolderMixin"
+  ],
+  "client": [
+    "client.PlayerEntityRendererMixin",
+    "client.CameraMixin",
+    "client.InGameHudMixin",
+    "client.GameRendererMixin",
+    "client.MinecraftClientMixin",
+    "client.KeyboardInputMixin",
+    "client.HeldItemRendererMixin",
+    "client.CreateWorldScreenMixin",
+    "client.TitleScreenMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

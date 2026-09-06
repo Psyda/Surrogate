@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "GRG",
+    "PDP"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:glass"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "P": {
+      "item": "surrogate:hull_plating"
+    },
+    "D": {
+      "item": "minecraft:coarse_dirt"
+    }
+  },
+  "result": {
+    "id": "surrogate:hydroponic_tray",
+    "count": 1
+  }
+}

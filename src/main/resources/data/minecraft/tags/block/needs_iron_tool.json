@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "surrogate:cobalt_ore",
+    "surrogate:deepslate_cobalt_ore",
+    "surrogate:tellurium_ore"
+  ]
+}

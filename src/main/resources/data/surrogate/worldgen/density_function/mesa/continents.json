@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:add",
+  "argument1": {
+    "type": "minecraft:add",
+    "argument1": 0.8,
+    "argument2": {
+      "type": "minecraft:mul",
+      "argument1": -1.6,
+      "argument2": "surrogate:mesa/floor_mask"
+    }
+  },
+  "argument2": {
+    "type": "minecraft:mul",
+    "argument1": -0.6,
+    "argument2": "surrogate:mesa/sea"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "surrogate:block/charging_dock" },
+    "facing=east": { "model": "surrogate:block/charging_dock", "y": 90 },
+    "facing=south": { "model": "surrogate:block/charging_dock", "y": 180 },
+    "facing=west": { "model": "surrogate:block/charging_dock", "y": 270 }
+  }
+}

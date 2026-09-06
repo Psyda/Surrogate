@@ -1,0 +1,141 @@
+{
+  "_comment": "Casting for tools/gen_voices.py. A character renders only when `voice` is set; `candidates` are auditioned with --audition (all of them, or only `proposed` with --proposed). Voice ids are ElevenLabs voices on the account. Expressive settings (stability 0.3, style 0.75) for people; the ship stays stiff. `v3_stability` is the eleven_v3 preset used for comparisons: 0.0 creative, 0.5 natural, 1.0 robust.",
+  "model": "eleven_v3",
+  "characters": {
+    "ship": {
+      "name": "PROVENDER / HABITAT SEVEN (system voice)",
+      "voice": "kkBYq92Aop0da4iwQJ9h",
+      "approved": true,
+      "settings": {
+        "stability": 0.75,
+        "similarity_boost": 0.8,
+        "style": 0.05,
+        "use_speaker_boost": true
+      },
+      "sample": "Descent complete. Habitat Seven, Site Four. Atmosphere: sealed.",
+      "model": "eleven_multilingual_v2"
+    },
+    "castellanos": {
+      "name": "Mags Castellanos, who flies the Provender. Dry, tired, forty-one runs.",
+      "voice": "pFZP5JQG7iQjIQuC4Bku",
+      "candidates": {
+        "lily": "pFZP5JQG7iQjIQuC4Bku",
+        "sarah": "EXAVITQu4vr4xnSDxMaL",
+        "matilda": "XrExE9yKIg1WjnnlVkGX"
+      },
+      "settings": {
+        "stability": 0.3,
+        "similarity_boost": 0.7,
+        "style": 0.75,
+        "use_speaker_boost": true
+      },
+      "sample": "Your contract. Surrogate pilot, Habitat Seven. Return passage dated four years from Tuesday. There has never been a return passage. I have flown forty-one of these.",
+      "proposed": "lily",
+      "approved": true,
+      "approval": "user 2026-09-05: v3 voices approved; Marsh recast from Roger (too flat) to Chris by Claude, replace if it stands out"
+    },
+    "ferreira": {
+      "name": "Dr. Nadia Ferreira, flight medical. Precise and kind.",
+      "voice": "hpp4J3VqNfWAUOO0d1Us",
+      "candidates": {
+        "bella": "hpp4J3VqNfWAUOO0d1Us",
+        "alice": "Xb7hH8MSUJpSbSDYk0k2",
+        "river": "SAz9YHcvj6GT2YYXdXww"
+      },
+      "settings": {
+        "stability": 0.3,
+        "similarity_boost": 0.7,
+        "style": 0.75,
+        "use_speaker_boost": true
+      },
+      "sample": "Sit. This is the part you do not remember. Deep breath. Count back from ten for me. See you in four years.",
+      "proposed": "bella",
+      "approved": true,
+      "approval": "user 2026-09-05: v3 voices approved; Marsh recast from Roger (too flat) to Chris by Claude, replace if it stands out"
+    },
+    "teague": {
+      "name": "Bram Teague, ship engineer. Loud and quick.",
+      "voice": "N2lVS1w4EtoT3dr4eOWO",
+      "candidates": {
+        "charlie": "IKne3meq5aSn9XLyUdCD",
+        "callum": "N2lVS1w4EtoT3dr4eOWO",
+        "andy": "kVBPcEMsUF1nsAO1oNWw"
+      },
+      "settings": {
+        "stability": 0.3,
+        "similarity_boost": 0.7,
+        "style": 0.75,
+        "use_speaker_boost": true
+      },
+      "sample": "That was the casserole. Nobody touch the galley unit. Nobody touch anything. Do not scratch the chassis.",
+      "proposed": "callum",
+      "approved": true,
+      "approval": "user 2026-09-05: v3 voices approved; Marsh recast from Roger (too flat) to Chris by Claude, replace if it stands out"
+    },
+    "halloran": {
+      "name": "Ines Halloran, station lead at Site Two. Blunt, warm underneath, two hundred days in.",
+      "voice": "EXAVITQu4vr4xnSDxMaL",
+      "candidates": {
+        "matilda": "XrExE9yKIg1WjnnlVkGX",
+        "sarah": "EXAVITQu4vr4xnSDxMaL",
+        "lily": "pFZP5JQG7iQjIQuC4Bku"
+      },
+      "settings": {
+        "stability": 0.3,
+        "similarity_boost": 0.7,
+        "style": 0.75,
+        "use_speaker_boost": true
+      },
+      "sample": "Site Four, Site Two. Halloran. You are down. Say something so I know the pod did not land on you. Rules. Two doors. Never both.",
+      "proposed": "sarah",
+      "approved": true,
+      "approval": "user 2026-09-05: v3 voices approved; Marsh recast from Roger (too flat) to Chris by Claude, replace if it stands out"
+    },
+    "marsh": {
+      "name": "Teo Marsh, company representative and fixer. Deadpan; complains at one pitch.",
+      "voice": "iP95p4xoKVk53GoZ742B",
+      "candidates": {
+        "roger": "CwhRBWXzGAHq8TQ4Fs17",
+        "chris": "iP95p4xoKVk53GoZ742B",
+        "eric": "cjVigY5qzO86Huf0OWal"
+      },
+      "settings": {
+        "stability": 0.3,
+        "similarity_boost": 0.7,
+        "style": 0.75,
+        "use_speaker_boost": true
+      },
+      "sample": "I fix things. Hello. It has a cargo arm. It is not for this. Remote keying. Do not tell the company I know how to do that.",
+      "proposed": "chris",
+      "approved": true,
+      "approval": "user 2026-09-05: v3 voices approved; Marsh recast from Roger (too flat) to Chris by Claude, replace if it stands out"
+    },
+    "okafor": {
+      "name": "Dr. Ada Okafor, Greenhouse Station. Warm, wry, alone with tomatoes.",
+      "voice": "cgSgspJ2msm6clMCkdW9",
+      "candidates": {
+        "jessica": "cgSgspJ2msm6clMCkdW9",
+        "hope": "tnSpp4vdxKPjI9w0GnoV",
+        "bella": "hpp4J3VqNfWAUOO0d1Us"
+      },
+      "settings": {
+        "stability": 0.3,
+        "similarity_boost": 0.7,
+        "style": 0.75,
+        "use_speaker_boost": true
+      },
+      "sample": "This is Okafor at Greenhouse Station. Scrubber is down to its last cell. The tomatoes are fine. I am less fine.",
+      "proposed": "jessica",
+      "approved": true,
+      "approval": "user 2026-09-05: v3 voices approved; Marsh recast from Roger (too flat) to Chris by Claude, replace if it stands out"
+    }
+  },
+  "speakers": {
+    "_comment": "Lang key prefixes to characters, for lines the scripts do not name a speaker for.",
+    "cinematic.surrogate.transit.ship": "ship",
+    "cinematic.surrogate.prologue.pod": "ship",
+    "survivor.surrogate.okafor": "okafor",
+    "crew.surrogate.halloran.radio": "halloran"
+  },
+  "v3_stability": 0.0
+}
