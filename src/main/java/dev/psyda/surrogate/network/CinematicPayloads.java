@@ -171,6 +171,30 @@ public final class CinematicPayloads {
 		}
 	}
 
+	/**
+	 * The conference call on the hub terminal: which of {@link dev.psyda.surrogate.rescue.CallPanel}'s tiles
+	 * are up, which have gone to snow, and whose turn it is to talk.
+	 *
+	 * <p>Two bitmasks and an index rather than a list of panels, because the roster is fixed and the ordinal
+	 * is already the wire format. A {@code live} of zero closes the call; so does the state payload going
+	 * inactive, which is the one every director sends at the end of a scene without knowing this exists.
+	 *
+	 * @param speaking the ordinal of whoever is talking, or -1 for nobody
+	 */
+	public record Call(int live, int snow, int speaking) implements CustomPayload {
+		public static final Id<Call> ID = new Id<>(Surrogate.id("cinematic_call"));
+		public static final PacketCodec<ByteBuf, Call> CODEC = PacketCodec.of((p, buf) -> {
+			VarInts.write(buf, p.live);
+			VarInts.write(buf, p.snow);
+			VarInts.write(buf, p.speaking);
+		}, buf -> new Call(VarInts.read(buf), VarInts.read(buf), VarInts.read(buf)));
+
+		@Override
+		public Id<? extends CustomPayload> getId() {
+			return ID;
+		}
+	}
+
 	/** Client to server: the player held the skip key. */
 	public record Skip() implements CustomPayload {
 		public static final Id<Skip> ID = new Id<>(Surrogate.id("cinematic_skip"));

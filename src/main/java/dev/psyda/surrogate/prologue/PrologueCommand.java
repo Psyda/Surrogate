@@ -67,7 +67,8 @@ public final class PrologueCommand {
 						.then(TerrainScan.command())
 						.then(CrawlerCommand.command())
 						.then(dev.psyda.surrogate.errand.ErrandCommand.errandCommand())
-						.then(dev.psyda.surrogate.errand.ErrandCommand.faunaCommand())));
+						.then(dev.psyda.surrogate.errand.ErrandCommand.faunaCommand())
+						.then(dev.psyda.surrogate.rescue.RescueCommand.command())));
 	}
 
 	private static int start(ServerCommandSource source) throws CommandSyntaxException {

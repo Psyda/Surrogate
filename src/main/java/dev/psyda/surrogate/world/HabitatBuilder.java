@@ -245,6 +245,9 @@ public final class HabitatBuilder {
 		if (dev.psyda.surrogate.assay.Assay.shouldBegin(player.server, state) && !Transit.inProgress(player.server)) {
 			dev.psyda.surrogate.assay.Assay.begin(player.server);
 		}
+		// Acts four and five never take the join: they have one scene and it is behind a terminal. All this
+		// puts back is the banner telling the player which terminal.
+		dev.psyda.surrogate.rescue.Rescue.onJoin(player);
 		PilotData data = PilotManager.data(player);
 		if (data.welcomed) return;
 		data.welcomed = true;

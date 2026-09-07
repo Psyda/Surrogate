@@ -134,6 +134,11 @@ public class SurrogateClient implements ClientModInitializer {
 		ClientPlayNetworking.registerGlobalReceiver(CinematicPayloads.Objective.ID, (payload, context) -> CinematicState.onObjective(payload));
 		ClientPlayNetworking.registerGlobalReceiver(CinematicPayloads.Effect.ID, (payload, context) -> CinematicState.onEffect(payload));
 		ClientPlayNetworking.registerGlobalReceiver(CinematicPayloads.Hint.ID, (payload, context) -> CinematicState.onHint(payload));
+		ClientPlayNetworking.registerGlobalReceiver(CinematicPayloads.Call.ID, (payload, context) -> CinematicState.onCall(payload));
+		// The board arrives immediately before the terminal it belongs to, so the screen can read it off
+		// the client state as it builds its pages rather than opening blank and filling in a tick later.
+		ClientPlayNetworking.registerGlobalReceiver(dev.psyda.surrogate.network.MissionPayload.ID,
+				(payload, context) -> dev.psyda.surrogate.client.ClientMissionState.onPayload(payload));
 		ClientPlayNetworking.registerGlobalReceiver(TerminalPayload.ID, (payload, context) -> context.client().setScreen(new TerminalScreen(payload.unit(), payload.survey())));
 		ClientPlayNetworking.registerGlobalReceiver(CrawlerPayloads.State.ID, (payload, context) -> CrawlerClientState.onState(payload));
 		ClientPlayNetworking.registerGlobalReceiver(CrawlerPayloads.Scan.ID, (payload, context) -> CrawlerClientState.onScan(payload));
@@ -146,6 +151,7 @@ public class SurrogateClient implements ClientModInitializer {
 			CrawlerClientState.reset();
 			ClientPilotState.reset();
 			CinematicState.reset();
+			dev.psyda.surrogate.client.ClientMissionState.reset();
 			TransitClientState.reset();
 			HazardClientState.reset();
 		});

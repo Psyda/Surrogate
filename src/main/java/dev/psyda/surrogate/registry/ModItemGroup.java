@@ -69,6 +69,7 @@ public final class ModItemGroup {
 				entries.add(ModItems.RELAY_MAST);
 				entries.add(ModItems.DAMPER_BEACON);
 				entries.add(ModItems.SPAN_ANCHOR);
+				entries.add(ModItems.SPAN_KIT);
 				entries.add(ModItems.VEHICLE_FABRICATOR);
 				entries.add(ModItems.SUPPLY_CRATE);
 				entries.add(ModItems.LOCKER);

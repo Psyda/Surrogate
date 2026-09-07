@@ -11,6 +11,11 @@ import net.minecraft.util.math.BlockPos;
 public class TerminalBlockEntity extends BlockEntity {
 	/** The unit a player-placed terminal is on: the pilot's own manual and not much else. */
 	public static final String PERSONAL = "personal";
+	/**
+	 * The screen in the player's own pod. Act four's conference happens on this one and the mission board
+	 * lives on it afterwards, so the name is a constant rather than a string typed out in three places.
+	 */
+	public static final String HUB = "habitat";
 
 	private String unit = PERSONAL;
 

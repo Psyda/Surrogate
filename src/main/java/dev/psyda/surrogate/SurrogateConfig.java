@@ -121,6 +121,13 @@ public class SurrogateConfig {
 	public boolean research = true;
 	/** Contract Seven: the corporation's research task, after the opening days. */
 	public boolean assay = true;
+	/**
+	 * Acts four and five (docs/DESIGN-campaign.md): the conference on the hub terminal, the bridge over the
+	 * Rift, the vent across the road to Ceramic Row and the pocket at the bottom of the chasm.
+	 */
+	public boolean rescue = true;
+	/** Surface days between the ship not coming down and Halloran asking for the room. */
+	public int conferenceAfterDays = 2;
 	public int prologueObjectiveTimeoutTicks = 1500;
 	/** Reading speed used to time subtitles, in characters per second. */
 	public double prologueReadSpeed = 18.0;
@@ -144,6 +151,16 @@ public class SurrogateConfig {
 	public boolean vanillaMonsters = false;
 	/** The whole hazard layer: borers, storms, geysers and the belt's rain. */
 	public boolean hazards = true;
+	/**
+	 * The pocket of mist on the floor of the Rift around Novak's wreck. It is the only hazard in the game
+	 * with no clock and no warning: his log says it stopped going down at dawn on day nine and it has not
+	 * been back down since. It eats machines and leaves bodies alone, which is why the last rescue is done
+	 * on foot. No cladding or coating touches it, deliberately.
+	 */
+	public boolean riftMist = true;
+	public double riftMistChassisDamagePerSecond = 3.0;
+	/** What a crawler's hull corrodes by down there, in the same units as the belt's own {@code corrosionLimit}. */
+	public double riftMistHullWearPerSecond = 6.0;
 
 	// Fauna: the four animals (docs/DESIGN-fauna.md). None of them is a hazard; two of them are gates on
 	// Ferreira's survey, and all six live specimens are a gate on the full ending.

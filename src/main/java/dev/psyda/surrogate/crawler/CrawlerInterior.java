@@ -318,6 +318,29 @@ public final class CrawlerInterior {
 
 	// ------------------------------------------------------------------ the hull
 
+	/**
+	 * Brings a cabin's own chunks in before anything reads or writes entities inside it.
+	 *
+	 * <p>Only the hull's overworld chunks are ever force-loaded. The room itself is in a pocket dimension
+	 * that stays loaded while somebody is standing in it and not otherwise, so a survivor put aboard by a
+	 * dock console outside the hull is in an unloaded chunk a moment later — and the drive home then finds
+	 * an empty room and marks nobody rescued.
+	 */
+	public static void loadCabin(MinecraftServer server, @Nullable CrawlerInteriors.Slot slot) {
+		ServerWorld cabin = CrawlerDimension.world(server);
+		if (cabin == null || slot == null || !slot.built) return;
+		BlockPos origin = CrawlerInteriors.origin(slot.index);
+		for (int dx = -1; dx <= 1; dx++) {
+			for (int dz = -1; dz <= 1; dz++) cabin.getChunk((origin.getX() >> 4) + dx, (origin.getZ() >> 4) + dz);
+		}
+	}
+
+	/** Whether this hull has a cabin somebody could be put into. Nothing gets aboard one that has not. */
+	public static boolean hasCabin(MinecraftServer server, CrawlerEntity hull) {
+		CrawlerInteriors.Slot slot = CrawlerInteriors.get(server).forHull(hull.getUuid());
+		return slot != null && slot.built && CrawlerDimension.world(server) != null;
+	}
+
 	/** The cabin's hull, when its chunk is loaded; otherwise asks for the chunk and answers null this tick. */
 	@Nullable
 	public static CrawlerEntity hullOf(MinecraftServer server, @Nullable CrawlerInteriors.Slot slot) {

@@ -117,6 +117,8 @@ public final class ModItems {
 	public static final Item RELAY_MAST = register("relay_mast", new BlockItem(ModBlocks.RELAY_MAST, new Item.Settings()));
 	public static final Item DAMPER_BEACON = register("damper_beacon", new BlockItem(ModBlocks.DAMPER_BEACON, new Item.Settings()));
 	public static final Item SPAN_ANCHOR = register("span_anchor", new BlockItem(ModBlocks.SPAN_ANCHOR, new Item.Settings()));
+	/** A bridge in a box: one course of five-wide deck a use, out of the plating in your pockets. */
+	public static final Item SPAN_KIT = register("span_kit", new dev.psyda.surrogate.item.SpanKitItem(new Item.Settings().maxCount(1)));
 
 	// The fabricator, the props and the ores
 	public static final Item VEHICLE_FABRICATOR = register("vehicle_fabricator", new BlockItem(ModBlocks.VEHICLE_FABRICATOR, new Item.Settings()));

@@ -21,8 +21,8 @@ vehicle), [DESIGN-hazards.md](DESIGN-hazards.md) (the four things on Sallow that
 | I | The Neighbours | Okafor and Sorensen: three research runs and the errands around them | Sorensen's relay schematic | **Built** |
 | II | Out of Range | Tanaka is past the mast's reach | The relay module | **Built** |
 | III | Contract Seven | The assay: stake, pad, core, payload, ignition | The ship leaves | **Built** |
-| IV | The Conference | Everything starts failing; the call from the hub terminal | The rescue plan | Decline built, call to write |
-| V | The Rift | The bridge, the acid belt, three more people | Everyone aboard | Terrain and belt built, rescues to write |
+| IV | The Conference | Everything starts failing; the call from the hub terminal | The rescue plan | **Built** |
+| V | The Rift | The bridge, the acid belt, three more people | Everyone aboard | **Built** |
 | VI | The Vote | Where eight people and a cat are going | A destination | New |
 | VII | Ascent | Build it, house them, feed them, leave | The ending card | New |
 
@@ -31,8 +31,14 @@ Acts I, II, IV, V, VI and VII are the work this note plans. Each is a `Director`
 around anything the player ignores.
 
 Acts one and two are `research/Research.java`, driven by `/surrogate research start|stage <name>|skip|fast|
-status` and checked headlessly by `tools/smoke_test_research.py`. The map underneath all of it is chosen
-rather than rolled; see [The map](#the-map).
+status` and checked headlessly by `tools/smoke_test_research.py`. Acts four and five are `rescue/`, driven by
+`/surrogate rescue call|skip|plan|span|flow|cut|plate|lift|tp <where>|board|status|reset` and checked by
+`tools/smoke_test_campaign.py`. The map underneath all of it is chosen rather than rolled; see
+[The map](#the-map).
+
+Only act four is a `Director`. Act five is three obstacles in whatever order the world allows, so it is a
+sweep and a set of watchers rather than a list of beats: nothing there asks the player to accept anything,
+and each piece notices when the world has changed and says so on the radio.
 
 ## The people
 
@@ -125,9 +131,15 @@ Nobody dies of it. It is a graph going the wrong way in six places at once, and 
 hub terminal, which is the point.
 
 **The call.** Halloran asks everyone onto the band at once, and the player is asked to sit at the hub
-terminal in the pod. The screen becomes a conference: six panels, six faces, Marsh in the corner with the
-company's logo already peeled off his sleeve. It is letterboxed, the camera is on the screen, and it runs
-about four minutes.
+terminal in the pod. The screen becomes a conference: eight tiles, four across and two down, with six live
+faces on them and Marsh in the last corner with the company's logo already peeled off his sleeve. It is
+letterboxed, the camera pushes into the screen and never cuts away, and it runs three or four minutes.
+
+Eight tiles rather than six, because eight is the cast and because beat five needs three of them to break.
+Reyes has a tile of her own even though she is speaking over Brandt's set, and Novak's is dark from the
+first frame and says NO CARRIER, which is the scene's whole argument stated before anybody makes it. The
+faces are the heads off the survivors' own skins rather than a second set of portraits, so the people on the
+screen cannot drift from the people in the shelters.
 
 Beats of the call, in order:
 
@@ -143,9 +155,15 @@ Beats of the call, in order:
    company would never have sold us. Marsh, who has spent the whole game filing forms, offers the only useful
    thing he owns: the pad, the gantry, and the fabricator's licence key.
 
-Out of it: the **mission board**, a terminal page listing every survivor, their state (unreached, reached,
-rescued, housed, fed), their site's condition, and what is blocking each. It is the campaign's checklist and
-it stays live to the end.
+Out of it: the **mission board**, a terminal page listing every survivor, their state (not reached, reached,
+aboard, home), their shelter's scrubber, and the one thing in the way of each. It is the campaign's checklist
+and it stays live to the end. It appears on the hub terminal only, it is worked out fresh every time the
+screen opens — every fact on it is already saved somewhere better — and the blocked column is the whole
+value of the thing: six names with six states is a list, and six names with "the Rift" written beside three
+of them is a plan.
+
+Also out of it: a **span kit**, from Sorensen's one-more-of-anything, because the far side has to be a drive
+by the end of the scene and not a topic.
 
 ## Act V: the Rift
 
@@ -187,6 +205,49 @@ The three rescues, in the order the world allows:
 
 The drive home has everyone aboard. The cabin has six passengers in a room built for two, the crawler is
 overweight and slow, and it is the best scene in the game.
+
+### What building it changed
+
+**The narrows are searched for, not chosen.** `Rescue.crossing` sweeps rays from the pod towards each of the
+three far people, finds where the Rift band is narrowest, and squares the answer up onto a cardinal, because
+a deck can only be laid on one. It is a coordinate on the radio and nothing else: the player may cross
+wherever they like, and four hundred blocks of plating laid by hand is still a crossing.
+
+Three things it has to be told, all of them learned the hard way. The far three are placed one per compass
+sector, so there is no single bearing to "the far side" and a search aimed only at Brandt looks the wrong way
+down an empty horizon. Both lips have to be valley floor, or the noise happily reports a twenty block chasm
+in the middle of a lake. And the near lip is a slope rather than an edge, so a survey that starts measuring
+from the first block of it measures a shoulder and reports no crossing anywhere on the map.
+
+**The Rift is flooded.** The chasm cuts thirty-four blocks below a valley floor that is itself one block above
+sea level, so it fills, and the crossing is a bridge over water rather than over air. That reads perfectly
+well from the deck. It changes the third rescue, which the design wrote as a climb down the scree: it is a
+dive now. The rebreather covers it — it tops the lungs up as well as slowing the toxin, which is the name of
+the thing and should always have been true — and Novak's wreck is laid on the real floor of the chasm in a
+sealed pocket, which is exactly the overhang his log and Reyes' patient list both describe. Making the chasm
+dry instead would mean turning off aquifers or moving sea level, which moves every terrain constant, and
+`docs/DESIGN-campaign.md` says out loud that an old seed is not a promise after that. It is left as it is.
+
+**Novak was in a ditch.** He is placed by looking for the Rift, and the Rift mask feathers out to nothing at
+its edges, so "in the Rift" included a four-block scratch in the open floor. He is placed at the bottom of it
+now, mask at one, thirty-six blocks down, which is what every line either he or Reyes has about the place
+says it is.
+
+**A passenger could be lost on the way home.** The cabin is a pocket dimension whose chunks are held only
+while a player is standing in it, so somebody put aboard from a docking console outside the hull was in an
+unloaded section by the time the hull got home, and the scan of the room found an empty room: the collar
+locked, nobody stepped out, and the site stayed marked aboard for good. Who is aboard is read off the saved
+state now, along with which hull they are riding in, and anybody the room cannot produce is put back
+together at the door. The hull matters: without it a second crawler coming home takes the first one's
+passengers out of a cabin they are still sitting in, and one person becomes two.
+
+**Two things the act had to be told about being a game rather than a story.** The call is for whoever sat
+down at the terminal, not for whoever the prologue named the protagonist — on a server those are different
+people, and the wrong one was being put in a four-minute locked cinematic eight hundred blocks away while
+the one who pressed the button saw nothing. And the span anchor is an ordinary block: it mines, it drops
+itself, and it takes its bearing from whoever puts it back. Broken and replaced in the same hole while
+standing on the deck it just laid, it faces the other way, so the survey is keyed on the bearing as well as
+the position and a turned anchor starts again rather than laying the rest of a measured span across open air.
 
 ## Act VI: the Vote
 
@@ -375,21 +436,26 @@ Act III
 
 Act IV
 - [x] Shelter decline clocks and their terminal readouts
-- [ ] The conference cinematic from the hub terminal, with the storm cutting the far side
-- [ ] The mission board terminal page — `SurvivorManager.scrubber` is the reading it wants and is waiting
-      for a caller
+- [x] The conference cinematic from the hub terminal, with the storm cutting the far side
+- [x] The mission board terminal page, on the hub, with the blocked column
+- [x] `/surrogate rescue call|skip|plan|status|board`, so four minutes of scene can be looked at on demand
 
 Act V
 - [x] The Rift in the terrain, and the reachability grid proving the far side is cut off
 - [x] The acid belt: biomes, rain, corrosion, cladding and coating
 - [x] The belt shelter kit: sloped ceramic roof, gutters, panels under a canopy
-- [ ] Span kit and the bridge courses — the span anchor block is placed and honest about being an anchor
-- [ ] Magma flow across Brandt's approach, and cutting it
-- [ ] Reyes' blown airlock — Sorensen's is built, hers is not
-- [ ] Novak: the wreck, the mist, the rebreather run, carrying a person — the wreck is on the Rift floor and
-      he is in it; nothing can reach him yet
+- [x] The narrows: searched for off the noise, squared onto a cardinal, and read out on the radio
+- [x] Span kit and the bridge courses: five wide, a course a use, eight deck plating a course
+- [x] Magma flow across Brandt's approach, the wall upstream, and the basin it ponds into when it is cut
+- [x] Reyes' blown airlock: four plates in the frame, and she refuses the collar out loud until they are in
+- [x] Novak: the wreck on the real floor of the chasm, the mist that eats machines, the carry, and Halloran
+      refusing the run out loud until Reyes is up
 - [x] Why a body can be down there at all: Marsh's Kestrel, on the Site Two terminal, with Halloran's reply
       saying out loud that he is going to be the one who can
+- [ ] The drive home with six aboard — they ride and they arrive, and nobody has written what they say on
+      the way
+- [ ] The descent is a dive rather than a climb, because the chasm is flooded (see above). Playable, and not
+      what the act was written as; a dry Rift is a terrain change and a fresh seed sweep
 
 Act VI
 - [ ] Opinions weighted by what the player did — `ResearchState` already records which errands were done,

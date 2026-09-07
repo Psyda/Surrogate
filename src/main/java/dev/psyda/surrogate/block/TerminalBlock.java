@@ -70,6 +70,9 @@ public class TerminalBlock extends BlockWithEntity {
 		if (world.isClient) return ActionResult.SUCCESS;
 		if (player instanceof ServerPlayerEntity serverPlayer && world.getBlockEntity(pos) instanceof TerminalBlockEntity terminal) {
 			world.playSound(null, pos, SoundEvents.BLOCK_NOTE_BLOCK_BIT.value(), SoundCategory.BLOCKS, 0.4f, 1.9f);
+			// The hub in the player's own pod is where the conference happens and where the mission board
+			// lives. When the call is due, sitting down at it is the call, and no screen opens.
+			if (dev.psyda.surrogate.rescue.Rescue.onTerminal(serverPlayer, terminal.getUnit())) return ActionResult.SUCCESS;
 			dev.psyda.surrogate.errand.ErrandState errands = dev.psyda.surrogate.errand.ErrandState.get(serverPlayer.server);
 			ServerPlayNetworking.send(serverPlayer, new TerminalPayload(terminal.getUnit(), errands.disk ? errands.read : -1));
 		}

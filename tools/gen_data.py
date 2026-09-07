@@ -2323,6 +2323,136 @@ LANG.update({
 })
 print("survey page and Marsh's suit done")
 
+# ======================================================================================
+# Acts four and five: the conference, the bridge, the belt road and the Rift floor (2026-09-06)
+# ======================================================================================
+# docs/DESIGN-campaign.md, "Act IV: the Conference" and "Act V: the Rift". One new item — the span kit,
+# which is the only piece of hardware either act adds — and a great deal of dialogue, because act four is a
+# four minute scene in which eight people who have never been in a room together are in one.
+
+model("item/span_kit", {"parent": "minecraft:item/generated", "textures": {"layer0": f"{MOD}:item/span_kit"}})
+# Sorensen's shop builds the first one during the call. Every one after it is this, which is deliberately
+# expensive: a bridge should cost about what a crawler costs, or laying plating by hand stops being a choice.
+shaped("span_kit", ["PFP", "SBS", "PFP"],
+       {"P": mid("hull_plating"), "F": mid("hull_frame"), "S": mid("servo_motor"), "B": "minecraft:iron_block"},
+       mid("span_kit"), 1, "transportation")
+
+LANG.update({
+    "item.surrogate.span_kit": "Span Kit",
+    "tooltip.surrogate.span_kit": "Use on a span anchor: surveys the gap, then lays one course of deck a use",
+    "tooltip.surrogate.span_kit.cost": "%s deck plating a course. Five wide, because the hull is",
+
+    # ---------------------------------------------------------------- the call itself
+    "cinematic.surrogate.call.lost": "SIGNAL LOST",
+    "cinematic.surrogate.call.no_carrier": "NO CARRIER",
+    "cinematic.surrogate.conference.chapter": "THE CONFERENCE",
+    "cinematic.surrogate.conference.chapter.sub": "Habitat Seven. All stations.",
+    "cinematic.surrogate.conference.objective.hub": "Sit down at the hub terminal in your pod",
+
+    # One: who is on the band. Halloran counts the room before she says anything, because the count is the
+    # thing she is afraid of.
+    "cinematic.surrogate.conference.roll1": "Habitat Seven to all stations. Everybody who can hear me, key once. I want to know who is on this band before I say anything else.",
+    "cinematic.surrogate.conference.roll2": "Greenhouse Station. Okafor. Here, and listening.",
+    "cinematic.surrogate.conference.roll3": "Survey Two. Sorensen. Here.",
+    "cinematic.surrogate.conference.roll4": "Sulfur Works. Tanaka. Here. Picture is holding, for now.",
+    "cinematic.surrogate.conference.roll5": "...Brandt. If you got that, it was me. Say everything twice. I am getting one word in three out here.",
+    "cinematic.surrogate.conference.roll6": "That is five. Novak.",
+    "cinematic.surrogate.conference.roll7": "Reyes, Clinic Nine. Brandt is on my set because his is worse than mine. Nothing off Novak. Nothing since day three.",
+    "cinematic.surrogate.conference.roll8": "Noted. Marsh, you have the floor, and you are going to hate it.",
+
+    # The schedule. The company never sends anybody a refusal; it sends a document with them left out of it.
+    "cinematic.surrogate.conference.sched1": "This is the last thing the relay took off the ship before it stopped answering. It is not a message. It is a schedule.",
+    "cinematic.surrogate.conference.sched2": "Eleven lines. Payload received. Mass confirmed. Burn logged. Then a heading for a station four months from here. There is no line on it that comes back down.",
+    "cinematic.surrogate.conference.sched3": "Read the bottom of it. Out loud, Teo.",
+    "cinematic.surrogate.conference.sched4": "Site personnel: contract fulfilled. Recovery not scheduled. That is the whole of it. That is what they sent.",
+
+    # Two: the margins. Both of them answer with a number, because that is the only currency left.
+    "cinematic.surrogate.conference.green1": "Then I will give you mine. The greenhouse has eleven days of margin at the current draw. Not eleven days of food; eleven days before the trays stop paying for themselves.",
+    "cinematic.surrogate.conference.green2": "With more light and more hands it is not eleven days, it is indefinite. That is not optimism, it is arithmetic, and it is the only good number anybody is going to hear today.",
+    "cinematic.surrogate.conference.shop1": "Survey Two can build one more of anything. One. I have the parts for a single serious thing and after that I am a man in a shed.",
+    "cinematic.surrogate.conference.shop2": "So tell me what the one thing is and I will start tonight.",
+
+    # Three: the ground. Tanaka has been sitting on this for a month and says so.
+    "cinematic.surrogate.conference.quake1": "Before anybody decides anything, hear the ground. I have a month of traces I did not want to send to people who could not move.",
+    "cinematic.surrogate.conference.quake2": "The vent field is opening. Not a swarm. Not a quake. Opening, slowly, and westward, and it will keep going whether or not this call ends well.",
+    "cinematic.surrogate.conference.quake3": "Which is the other reason nobody is staying where they are.",
+
+    # Four: the far side, badly, through the belt.
+    "cinematic.surrogate.conference.far1": "...say again... no. No, I have the sense of it. You are talking about leaving.",
+    "cinematic.surrogate.conference.far1b": "I have been out here longer than your station has existed and I am telling you the roof holds. The man under it is the problem...",
+    "cinematic.surrogate.conference.far2": "He is saying he will come if somebody comes for him. He will not say it in that order and I am not going to make him.",
+    "cinematic.surrogate.conference.far3": "Halloran. Before one other thing on this call gets decided. There is a man on the floor of the Rift and this is day eleven.",
+    "cinematic.surrogate.conference.far4": "I have not forgotten him. Nobody on this band has forgotten him.",
+
+    # Five: the storm, which is the act's argument made out of weather.
+    "cinematic.surrogate.conference.storm_alert": "MAGNETIC STORM",
+    "cinematic.surrogate.conference.storm_alert.sub": "Far side signal lost",
+    "cinematic.surrogate.conference.storm1": "Brandt. Reyes. Say again. — Nothing. That is the front coming over the belt. We knew it was due and I would have liked ten more minutes.",
+    "cinematic.surrogate.conference.storm2": "Three panels. That is what we are looking at. That is the problem, drawn for you, by the weather.",
+    "cinematic.surrogate.conference.storm3": "Then that is where the argument stops and the work starts.",
+
+    # Six: the plan, and the smallest concrete decency on the planet.
+    "cinematic.surrogate.conference.plan1": "Here is what we are going to do. I am not putting it to a vote, because there is only one of it.",
+    "cinematic.surrogate.conference.plan2": "One crawler. One chassis. Everybody off that side of the Rift and into that pod, in whatever order the ground allows.",
+    "cinematic.surrogate.conference.plan2b": "And then we build the thing the company would never have sold us, and we go home in it.",
+    "cinematic.surrogate.conference.plan3": "Then my one thing is a span kit. Five wide, laid off an anchor. A bridge you can walk over is not a bridge; it has to take a hull. It will be on your port by morning.",
+    "cinematic.surrogate.conference.plan4": "And I will keep eight people fed while you do it, which is the part nobody ever puts in the plan.",
+    "cinematic.surrogate.conference.plan5": "You will want the pad. It is company property. So is the gantry. So, technically, am I.",
+    "cinematic.surrogate.conference.plan6": "The licence key for the fabricator is on your rack as of this morning. Every pattern behind it opens.",
+    "cinematic.surrogate.conference.plan6b": "If anyone ever asks, I would like it on the record that I did this on a Tuesday and nobody had to ask me twice.",
+    "cinematic.surrogate.conference.plan7": "Habitat Seven, out. Go and get them.",
+
+    # ---------------------------------------------------------------- act five on the radio
+    "message.surrogate.rescue.summon": "Everyone on the band at once, and I mean everyone. Sit down at the hub terminal in your own pod when you can. This will not fit in a radio call.",
+    "message.surrogate.rescue.kit": "%s, from Survey Two. Sorensen says the anchor goes on the near lip, looking across.",
+    "message.surrogate.rescue.crossing": "The narrows are at x %s, z %s. That is where the survey says the two sides come closest.",
+    "message.surrogate.rescue.flow": "That vent was not there a month ago and you are not driving through it. Look upstream. There is a wall holding it on that line, and behind the wall there is somewhere for it to go.",
+    "message.surrogate.rescue.flow_cut": "That is it in the basin. Give the channel a minute to go grey, then take the hull straight over.",
+    "message.surrogate.rescue.reyes_sealed": "The lock will not cycle against open air. Four plates in the frame, from your side, and then I will walk out to you.",
+    "message.surrogate.rescue.novak_refused": "No. Not without Reyes aboard. You will get him to the top and then you will be standing over a man with a bad leg and no doctor, and I have thought about that a great deal more than you have. Clinic Nine first.",
+    "message.surrogate.rescue.novak_refused_again": "Reyes first. I said it once.",
+    "message.surrogate.rescue.carrying": "Carrying. Half speed, and the air does not care.",
+    "message.surrogate.rescue.set_down": "Set down.",
+    "message.surrogate.rescue.everyone": "That is everybody off the far side. All stations, stand down, and come home.",
+    "message.surrogate.mist.chassis": "The mist is in the joints. Get the chassis out of the chasm.",
+    "message.surrogate.mist.body": "The mist. A rebreather is sixty seconds, and it is not sixty seconds of standing about.",
+
+    # The bridge.
+    "message.surrogate.span.nothing": "Nothing to span. The anchor sits on the near lip with a real gap in front of it and the far side within sight.",
+    "message.surrogate.span.surveyed": "Surveyed: %s blocks across, %s courses, %s deck plating a course.",
+    "message.surrogate.span.course": "Course %s of %s.",
+    "message.surrogate.span.finished": "The deck is down and both tracks fit. That is the far side reachable.",
+    "message.surrogate.span.done_already": "This span is finished.",
+    "message.surrogate.span.needs": "Needs %s %s for the next course.",
+
+    # ---------------------------------------------------------------- the mission board
+    "terminal.surrogate.board.title": "MISSION BOARD",
+    "terminal.surrogate.board.header": "# ROLL: %s OF %s HOME",
+    "terminal.surrogate.board.home": "home",
+    "terminal.surrogate.board.aboard": "aboard, riding",
+    "terminal.surrogate.board.reached": "reached",
+    "terminal.surrogate.board.unreached": "not reached",
+    "terminal.surrogate.board.scrubber": "scrubber %s%%",
+    "terminal.surrogate.board.blocked": "in the way: %s",
+    "board.surrogate.block.riding": "in the cabin. Take them home.",
+    "board.surrogate.block.collar": "nothing. Back a hull onto the collar.",
+    "board.surrogate.block.unfound": "nobody has been there yet.",
+    "board.surrogate.block.rift": "the Rift. Anchor and span it.",
+    "board.surrogate.block.flow": "a vent across the approach. Cut the wall upstream.",
+    "board.surrogate.block.belt": "the belt, and no cladding until he hands the pattern over.",
+    "board.surrogate.block.airlock": "her frame. Four hull plates, from outside.",
+    "board.surrogate.block.doctor": "Reyes. She has to be aboard before anybody goes down.",
+    "board.surrogate.block.carry": "the mist. On foot, one rebreather, and carry him up.",
+    "board.surrogate.note.span_none": "No span. Plant an anchor on the near lip, looking across.",
+    "board.surrogate.note.span_part": "Span under way. Deck plating, a course a use.",
+    "board.surrogate.note.span_done": "Span complete. The far side takes a hull.",
+    "board.surrogate.note.flow": "A vent is running across the road to Ceramic Row.",
+    "board.surrogate.note.flow_cut": "The flow is in the basin and the channel is crust.",
+    "board.surrogate.note.airlock": "Clinic Nine's outer frame is open. Four plates.",
+    "board.surrogate.note.done": "Everybody is off the far side.",
+})
+print("acts four and five done")
+
 lang_path = os.path.join(ASSETS, "lang", "en_us.json")
 with open(lang_path, encoding="utf-8") as f:
     lang = json.load(f)

@@ -54,6 +54,18 @@ public final class SurvivorShelter {
 	 * errands (docs/DESIGN-campaign.md): until somebody puts a hull plate on it he is holding his breath.
 	 */
 	public static final BlockPos BREACH = new BlockPos(1, 2, 3);
+	/**
+	 * Clinic Nine's frame. Her outer door is lying in the porch and both jambs are eaten through, top and
+	 * bottom, which is four plates from outside and the reason she has not left in nineteen days
+	 * (docs/DESIGN-campaign.md, act five). Only Reyes has these.
+	 */
+	public static final BlockPos[] FRAME = {
+			new BlockPos(-1, 1, 3), new BlockPos(1, 1, 3),
+			new BlockPos(-1, 2, 3), new BlockPos(1, 2, 3)};
+	/** The overhang around Novak's wreck: half its width, half its depth, and its ceiling. */
+	private static final int POCKET_X = 6;
+	private static final int POCKET_Z = 5;
+	private static final int POCKET_UP = 6;
 	private static final int APRON_MIN_X = -15;
 	private static final int APRON_MAX_X = -4;
 	private static final int APRON_HALF_Z = 2;
@@ -204,6 +216,13 @@ public final class SurvivorShelter {
 		if (site.survivor() == Survivor.SORENSEN) {
 			set(world, origin.add(BREACH), ModBlocks.BREACHED_PLATING.getDefaultState().with(BreachedPlatingBlock.FACING, Direction.SOUTH));
 		}
+		// Reyes' is worse: the whole frame, both jambs, top and bottom. The door is still there and it will
+		// not cycle against open air, which is why she is behind it and not walking about.
+		if (site.survivor() == Survivor.REYES) {
+			for (BlockPos offset : FRAME) {
+				set(world, origin.add(offset), ModBlocks.BREACHED_PLATING.getDefaultState().with(BreachedPlatingBlock.FACING, Direction.SOUTH));
+			}
+		}
 
 		// A few scrap heaps outside: the wreck of whatever brought them here. Not on the apron.
 		Random random = world.getRandom();
@@ -230,22 +249,29 @@ public final class SurvivorShelter {
 	/**
 	 * Novak's site, which is not a shelter: no collar, no port, no air. A crawler that went over the edge
 	 * eleven days ago, lying on the floor of the Rift with one lamp still burning off its buffer, and Novak
-	 * beside it. This is only the thing to find.
+	 * beside it. Act five is the only thing that reaches it: a body on foot, a rebreather, and sixty seconds.
 	 *
-	 * <p>TODO act five (docs/DESIGN-campaign.md, "Novak, at the bottom of the Rift"): getting him up is the
-	 * rebreather run, on foot, and carrying a person. Until that exists nothing here can move him, and the
-	 * wreck deliberately has no collar and no port for {@code SurvivorManager.board} to work through.
+	 * <p>The overhang around it is built rather than found. The Rift cuts thirty-four blocks below a valley
+	 * floor that is itself barely above sea level, so the chasm fills, and the wreck used to be laid on the
+	 * water's surface thirty blocks above where it was supposed to be — the heightmap that placed it counts
+	 * water as ground. It goes on the real floor now, in a sealed pocket that is exactly the overhang Reyes
+	 * and Novak both describe on the terminals, so there is air down there to be running out of.
 	 */
 	public static void buildWreck(ServerWorld world, SurvivorManager.Site site) {
-		int top = world.getTopY(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, site.x, site.z);
+		// The ocean floor, not the surface: the chasm is flooded and the surface of it is not the bottom.
+		int top = world.getTopY(Heightmap.Type.OCEAN_FLOOR, site.x, site.z);
 		BlockPos origin = new BlockPos(site.x, top - 1, site.z);
 		site.y = origin.getY();
 		BlockState air = Blocks.AIR.getDefaultState();
-		for (int x = -3; x <= 3; x++) {
-			for (int z = -2; z <= 2; z++) {
-				BlockPos floor = origin.add(x, 0, z);
-				if (!world.getBlockState(floor).isSolidBlock(world, floor)) set(world, floor, ModBlocks.CAUSTIC_SANDSTONE.getDefaultState());
-				for (int y = 1; y <= 4; y++) set(world, origin.add(x, y, z), air);
+		BlockState rock = ModBlocks.CAUSTIC_SANDSTONE.getDefaultState();
+		// The pocket: a floor, four walls and a roof, every one of them solid, because a hole in the side of
+		// it fills with the chasm in about four seconds and there is nothing to run out of after that.
+		for (int x = -POCKET_X; x <= POCKET_X; x++) {
+			for (int z = -POCKET_Z; z <= POCKET_Z; z++) {
+				for (int y = 0; y <= POCKET_UP; y++) {
+					boolean shell = Math.abs(x) == POCKET_X || Math.abs(z) == POCKET_Z || y == 0 || y == POCKET_UP;
+					set(world, origin.add(x, y, z), shell ? rock : air);
+				}
 			}
 		}
 		// The hull on its side, a hull's width of it, torn open along the top.
@@ -275,7 +301,14 @@ public final class SurvivorShelter {
 			survivor.refreshPositionAndAngles(origin.getX() + 2.5, origin.getY() + 1, origin.getZ() + 0.5, 90f, 0f);
 			world.spawnEntity(survivor);
 		}
-		Surrogate.LOGGER.info("Laid {}'s wreck on the Rift floor at {}", site.survivor().key(), origin);
+		// The mask reading goes in the line because the two have disagreed before: the noise says chasm and
+		// the ground says a dip in the floor, and the difference is a set piece at the bottom of a canyon
+		// against a man lying in a ditch.
+		dev.psyda.surrogate.world.Valleys.Masks masks = dev.psyda.surrogate.world.Valleys.masks(world);
+		Surrogate.LOGGER.info("Laid {}'s wreck on the Rift floor at {} (rift mask {}, ground {})",
+				site.survivor().key(), origin,
+				masks == null ? "?" : String.format("%.2f", masks.rift(site.x, site.z)),
+				world.getTopY(Heightmap.Type.OCEAN_FLOOR, site.x, site.z));
 	}
 
 	private static void place(ServerWorld world, BlockPos pos, char c, SurvivorManager.Site site, List<Runnable> deferred) {

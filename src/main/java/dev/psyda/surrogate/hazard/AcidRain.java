@@ -312,6 +312,34 @@ public final class AcidRain {
 	}
 
 	/**
+	 * Eat into a hull from somewhere that is not the belt's rain, and shout about it the way the rain does.
+	 *
+	 * <p>The floor of the Rift is the other place on Sallow that takes a crawler apart, and it does it in a
+	 * pocket of standing mist rather than in weather, so it has its own sweep. What it wants from here is the
+	 * mechanic: a crawler cannot be damaged at all ({@code CrawlerEntity.damage} refuses everything), and
+	 * corrosion is the only thing a hull actually feels, seizes for, and is mended of with a plate.
+	 */
+	public static void corrode(MinecraftServer server, CrawlerEntity hull, double amount) {
+		if (!Surrogate.CONFIG.hazards || amount <= 0.0) return;
+		AcidState state = AcidState.get(server);
+		UUID id = hull.getUuid();
+		double limit = Math.max(1.0, Surrogate.CONFIG.corrosionLimit);
+		double wear = state.hullWear(id);
+		if (wear >= limit) {
+			if (hull.getEnergy() > 0) hull.setEnergy(0);
+			if (state.hullWarned(id) < STAGE_SEIZED) {
+				state.setHull(id, wear, STAGE_SEIZED);
+				alarm(server, hull, "message.surrogate.acid.seized", true);
+			}
+			return;
+		}
+		double next = wear + amount;
+		int warned = state.hullWarned(id);
+		state.setHull(id, next, Math.max(warned, STAGE_FLAT));
+		if (warned < STAGE_FLAT) alarm(server, hull, "message.surrogate.acid.flat", false);
+	}
+
+	/**
 	 * A plate or a repair kit against the hull. Half the limit each, so a crawler that stopped in the belt
 	 * costs two of them and a walk out with them in your hands.
 	 */
