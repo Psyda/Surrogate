@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "CRC",
+    "ISI",
+    "CRC"
+  ],
+  "key": {
+    "C": {
+      "item": "surrogate:cobalt_ingot"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "S": {
+      "item": "surrogate:servo_motor"
+    }
+  },
+  "result": {
+    "id": "surrogate:resonance_damper",
+    "count": 1
+  }
+}

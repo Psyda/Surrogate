@@ -86,12 +86,21 @@ public class SurrogateConfig {
 	public int napFatigueTicks = 8000;
 
 	// Survivors
-	public int survivorCount = 4;
+	public int survivorCount = 6;
 	public int survivorMinDistance = 300;
 	public int survivorMaxDistance = 900;
 	/** The first shelter (the researcher with the crawler blueprint) sits within a chassis walk of the pod. */
 	public int firstSurvivorMinDistance = 160;
 	public int firstSurvivorMaxDistance = 280;
+	/** Tanaka, past the mast's reach: a carrier and no voice until a relay module or a mast covers him. */
+	public int outOfRangeSurvivorMinDistance = 1100;
+	public int outOfRangeSurvivorMaxDistance = 1400;
+	/** Brandt, Reyes and Novak: the far side of the Rift, off the floor the pod's crawler can reach. */
+	public int farSurvivorMinDistance = 1500;
+	public int farSurvivorMaxDistance = 2400;
+	/** What every shelter's scrubber loses a day once the ship has gone, and how low it is allowed to go. */
+	public double shelterDeclinePerDay = 0.01;
+	public double shelterDeclineFloor = 0.3;
 
 	// Crawler: the slow, heavy mobile base (docs/DESIGN-crawler.md). Speed in blocks per tick, under walking pace.
 	public double crawlerSpeed = 0.14;
@@ -108,6 +117,8 @@ public class SurrogateConfig {
 	// Prologue: the opening sequence the first player of a fresh Toxic Wastes world is walked through.
 	// Objectives that the player does not finish in time are done for them by the crew after this long.
 	public boolean prologue = true;
+	/** Acts one and two: the neighbours' three research runs and the drive out to Tanaka, before the contract. */
+	public boolean research = true;
 	/** Contract Seven: the corporation's research task, after the opening days. */
 	public boolean assay = true;
 	public int prologueObjectiveTimeoutTicks = 1500;
@@ -122,6 +133,117 @@ public class SurrogateConfig {
 	public int transitObjectiveTimeoutTicks = 2400;
 	/** How long the player may stay up after being told to rest before the doctor ends the day for them. */
 	public int transitRestTimeoutTicks = 12000;
+
+	// Hazards: the four things on Sallow (docs/DESIGN-hazards.md). Every one of them is also a gate on the
+	// campaign, so these numbers decide how long each act's wall stands up.
+	/**
+	 * Vanilla hostiles. Off: the biomes carry no spawner lists and the server discards any that arrive
+	 * anyway. On: the overworld's own lists are added back to Sallow's biomes as the world loads and the
+	 * sweep stands down. Biomes load once, so a change to this lands on the next world load.
+	 */
+	public boolean vanillaMonsters = false;
+	/** The whole hazard layer: borers, storms, geysers and the belt's rain. */
+	public boolean hazards = true;
+
+	// Fauna: the four animals (docs/DESIGN-fauna.md). None of them is a hazard; two of them are gates on
+	// Ferreira's survey, and all six live specimens are a gate on the full ending.
+	/**
+	 * Whether Sallow has animals on it. Off leaves the wastes empty, which is a legitimate way to play it
+	 * and makes the survey objectives unfinishable, so the objective board hides them when this is off.
+	 */
+	public boolean fauna = true;
+
+	// The survey tier (docs/DESIGN-survey.md): a table, a chain of beacons, and a pillar you feed.
+	/** What the table sees on its own, in blocks. A generous room's worth of valley and no more. */
+	public int surveyStationRadius = 160;
+	/** What one linked beacon adds around itself. */
+	public int surveyBeaconRadius = 140;
+	/** How far apart two beacons, or a beacon and the table, can be and still hear each other. */
+	public int surveyBeaconLinkRange = 220;
+	/**
+	 * How many links deep a chain may go. This is not enforced as a rule so much as used to bound the chunk
+	 * scan that finds beacons at all: past this the search area stops growing.
+	 */
+	public int surveyBeaconChainMax = 8;
+	/** How near the table a long-range pillar has to stand to lend it anything. */
+	public int surveyScannerLinkRange = 12;
+
+	/** What the pillar is worth with nothing in it, and the ceiling however much goes in. */
+	public int longRangeScannerBaseRadius = 0;
+	public int longRangeScannerMaxRadius = 4000;
+	/** Blocks of range per square root of a unit of charge. Range costs more the further you push it. */
+	public double longRangeScannerBlocksPerRoot = 2.0;
+	/** The lump it takes power in, and the unit its readout quotes. */
+	public int longRangeScannerBuffer = 20000;
+
+	// Borers: they hunt vibration through the rock and never come above the line.
+	public int borerDepthY = 8;
+	/** Disturbance one broken block below the line is worth, and what it takes to wake one. */
+	public double borerDisturbancePerBlock = 12.0;
+	public double borerWakeThreshold = 240.0;
+	public double borerDecayPerSecond = 3.0;
+	/** What the resonance damper multiplies your own disturbance by. */
+	public double borerDamperFactor = 0.25;
+	public int borerMaxPerPlayer = 3;
+	public double borerSpeed = 0.09;
+	/** Damage a borer does to the rock it passes through, per tick, against a block's own hardness. */
+	public double borerChewPerTick = 0.55;
+	public int borerLungeDamage = 12;
+	/** A damper beacon does for a fixed site what the module does for a chassis, out to here, while it has power. */
+	public int damperBeaconRange = 48;
+	public int damperBeaconDrainPerTick = 6;
+
+	// Magnetic storms: they take the link, the radio, the radar and the sun.
+	public int stormIntervalTicks = 36000;
+	public int stormIntervalJitterTicks = 24000;
+	public int stormWarningTicks = 1800;
+	public int stormPeakTicks = 18000;
+	public int stormTailTicks = 6000;
+	/** Intensity at which an unshielded link outdoors drops. */
+	public double stormLinkDropAt = 0.75;
+	/** What the shielded uplink multiplies the storm's effect on the link by. */
+	public double stormShieldFactor = 0.5;
+	public double stormSolarFactor = 0.05;
+	public int stormChassisDamage = 1;
+
+	// Geysers: ninety seconds of clock, eight of column.
+	public int geyserQuietTicks = 1400;
+	public int geyserSteamTicks = 240;
+	public int geyserRumbleTicks = 80;
+	public int geyserEruptTicks = 160;
+	public int geyserHeight = 10;
+	public float geyserDamage = 6.0f;
+	public int geothermalTapPerTick = 400;
+	/** What the tap holds when nothing is drawing on it. A hundred seconds of its own output. */
+	public int geothermalTapCapacity = 40000;
+
+	// The belt: a region, not a weather state, with its own clock.
+	public int acidRainIntervalTicks = 9000;
+	public int acidRainJitterTicks = 9000;
+	public int acidRainLengthTicks = 6000;
+	/** Corrosion a machine picks up per second in the open, and how much of it a machine survives. */
+	public double corrosionPerSecond = 0.6;
+	public double corrosionLimit = 100.0;
+	public float acidChassisDamagePerSecond = 0.5f;
+	public int acidCrawlerDrainMultiplier = 4;
+	/** What acid coating multiplies the belt's bite on a chassis by, and ceramic cladding on the crawler. */
+	public double acidCoatingFactor = 0.25;
+	public double acidCladdingFactor = 0.2;
+
+	// The map. Sallow comes out of the seed, and one seed was searched for and chosen so the campaign could
+	// be designed against a map that does not move (docs/DESIGN-campaign.md, "The map"). The new-world screen
+	// offers it for a Toxic Wastes world unless the player types their own; blank offers nothing.
+	// 3878 won a sweep of four thousand: 98.9 of 100, every site placed, a drive with some character to each,
+	// seventeen thousand cells of floor behind the Rift with a twenty-five block crossing into it, and
+	// eighty-five percent of that far side in the belt.
+	public String lockedSeed = "3878";
+
+	// Range: what a chassis can hear and how far a pilot can be from their body.
+	public int radioRange = 700;
+	public int relayModuleRangeBonus = 700;
+	public int relayMastRange = 400;
+	/** What a mast costs to keep the band up. Its buffer holds a minute of it, so a cloudy hour is not silence. */
+	public int relayMastDrainPerTick = 2;
 
 	public int cargoSlots(int tier) {
 		return Math.min(36, cargoBaseSlots + cargoSlotsPerBay * Math.max(0, tier));

@@ -11,6 +11,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.MiningToolItem;
 import net.minecraft.item.tooltip.TooltipType;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
@@ -39,6 +40,11 @@ public class MiningDrillItem extends MiningToolItem {
 		RobotEntity robot = RobotTools.chassisOf(miner);
 		if (robot != null && !world.isClient && state.getHardness(world, pos) != 0.0f) {
 			robot.drainEnergy(Surrogate.CONFIG.drillEnergyPerBlock);
+			// On top of what breaking the block already cost in noise: the drill is the loudest thing that
+			// has ever happened to what lives under this rock.
+			if (world instanceof ServerWorld server) {
+				dev.psyda.surrogate.hazard.Borers.disturb(server, pos, Surrogate.CONFIG.borerDisturbancePerBlock);
+			}
 		}
 		return true;
 	}

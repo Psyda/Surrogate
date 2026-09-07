@@ -59,7 +59,7 @@ def noise(name, lo, hi):
     return {"type": "minecraft:noise_threshold", "noise": name, "min_threshold": lo, "max_threshold": hi}
 
 
-BIOMES = ["toxic_desert", "ash_dunes", "acid_flats", "salt_pans", "dead_grove"]
+BIOMES = ["toxic_desert", "ash_dunes", "acid_flats", "salt_pans", "dead_grove", "caustic_mire", "rift"]
 
 with open(os.path.join(TOOLS, "vanilla_overworld_noise_settings.json"), encoding="utf-8") as f:
     vanilla_noise = json.load(f)
@@ -106,6 +106,21 @@ surface = seq(
                 cond(noise("minecraft:surface", 0.35, 10.0), block("minecraft:podzol", {"snowy": "false"})),
                 block("minecraft:coarse_dirt"))),
             cond(stone_depth("floor", True, 0, 4), block("minecraft:dirt")))),
+        # The belt: the same floors as the corridors, but everything on them has been rained on for a century.
+        cond(biome_is(mid("caustic_mire")), seq(
+            cond(stone_depth("floor", True, 0, 0), seq(
+                cond(noise("minecraft:surface", 0.3, 10.0), block("minecraft:mud")),
+                block(mid("caustic_sand")))),
+            cond(stone_depth("floor", True, 0, 3), block("minecraft:clay")),
+            cond(stone_depth("floor", True, 0, 6), block("minecraft:tuff")))),
+        # The Rift: raw section through everything the valleys are made of, wet at the bottom.
+        cond(biome_is(mid("rift")), seq(
+            cond(stone_depth("ceiling"), block("minecraft:tuff")),
+            cond(stone_depth("floor", True, 0, 0), seq(
+                cond(y_above(40), block("minecraft:tuff")),
+                block("minecraft:mud"))),
+            cond(stone_depth("floor", True, 0, 3), block("minecraft:tuff")),
+            strata)),
     )),
     deepslate_rule,
 )
@@ -132,6 +147,18 @@ RIVER_DEPTH = 5.0
 SLOPE = 0.25            # density per block below the surface
 CAVE_ROOF = 3.5         # density (14 blocks) the ground must reach before a cave may be cut: the interpolation
                         # works in 8-block cells, so a shallower window let cave mouths pull the floor down
+# The Rift (docs/DESIGN-campaign.md, act five): the zero contour of one very long noise, cut down through
+# every valley floor it crosses. It is continuous, so together with the tables it partitions the drivable
+# floor, and the far side of it cannot be reached until somebody builds a bridge. The mask goes out as the
+# router's `temperature`, which nothing else here uses, so world.Valleys reads it without loading a chunk.
+RIFT_HALF = 0.009       # half width of the chasm, in noise units: about 16 blocks at the narrows, 40 at the
+                        # wide places. It cannot go much under this and still cut: the density interpolation
+                        # works in four-block columns, so a narrower slot comes out as a shallow V.
+RIFT_GAIN = 320.0       # how sharply a floor becomes a Rift wall
+RIFT_DEPTH = 34.0       # blocks the Rift floor sits below the valley floor
+# The acid belt: a region, not a weather state. A second very long noise, out as `weirdness`.
+BELT_EDGE = 0.16        # the belt opens where the belt noise rises above this
+BELT_FEATHER = 0.10     # noise units the belt edge is smeared over
 
 TERRAIN_NOISES = {
     "mesa": (-10, [1.0, 1.0, 0.5]),
@@ -139,6 +166,8 @@ TERRAIN_NOISES = {
     "channel": (-9, [1.0, 1.0]),
     "floor": (-7, [1.0, 0.5]),
     "table": (-8, [1.0, 1.0]),
+    "rift": (-11, [1.0, 0.3]),
+    "belt": (-12, [1.0]),
 }
 for name, (octave, amplitudes) in TERRAIN_NOISES.items():
     write(f"data/{MOD}/worldgen/noise/{name}.json", {"firstOctave": octave, "amplitudes": amplitudes})
@@ -209,14 +238,19 @@ def shape(core):
                               add(-0.1171875, add(-0.078125, mul(y_gradient(240, 256, 1.0, 0.0), add(0.078125, core))))))
 
 
-mesa_n, basin_n, channel_n, floor_n, table_n = (dnoise(n) for n in ("mesa", "basin", "channel", "floor", "table"))
+mesa_n, basin_n, channel_n, floor_n, table_n, rift_n, belt_n = (
+    dnoise(n) for n in ("mesa", "basin", "channel", "floor", "table", "rift", "belt"))
 valley = df_write("valley", flat_cache(dmax(add(CORRIDOR, neg(dabs(mesa_n))), add(-BASIN_EDGE, neg(basin_n)))))
 floor_mask = df_write("floor_mask", flat_cache(clamp(mul(valley, CLIFF_GAIN), 0.0, 1.0)))
 sea = df_write("sea", flat_cache(ramp(neg(basin_n), 0.55, 0.72)))
 river = df_write("river", flat_cache(mul(mul(ramp(add(0.075, neg(dabs(channel_n))), 0.0, 0.06),
                                              ramp(neg(basin_n), 0.15, 0.35)), floor_mask)))
+# Only where there is floor to cut: the Rift tapers out as it climbs a cliff and never scars a table top.
+rift = df_write("rift", flat_cache(mul(clamp(mul(add(RIFT_HALF, neg(dabs(rift_n))), RIFT_GAIN), 0.0, 1.0), floor_mask)))
+belt = df_write("belt", flat_cache(ramp(belt_n, BELT_EDGE, BELT_EDGE + BELT_FEATHER)))
 floor_height = df_write("floor_height", flat_cache(add(add(FLOOR_Y, mul(FLOOR_ROLL, floor_n)),
-                                                       add(mul(-SEA_DEPTH, sea), mul(-RIVER_DEPTH, river)))))
+                                                       add(add(mul(-SEA_DEPTH, sea), mul(-RIVER_DEPTH, river)),
+                                                           mul(-RIFT_DEPTH, rift)))))
 height = df_write("height", flat_cache(add(floor_height, mul(add(1.0, neg(floor_mask)), add(TABLE_RISE, mul(TABLE_ROLL, table_n))))))
 base = df_write("base", mul(SLOPE, add(height, neg("minecraft:y"))))
 
@@ -236,15 +270,19 @@ router = dict(vanilla_noise["noise_router"])
 router["continents"] = df_write("continents", add(add(0.8, mul(-1.6, floor_mask)), mul(-0.6, sea)))
 router["erosion"] = df_write("erosion", flat_cache(basin_n))
 router["depth"] = river
+# Two axes vanilla uses for climate carry the two regions instead: temperature is the Rift, weirdness the
+# belt. Nothing else on Sallow reads either, and it means both are one noise sample away everywhere.
+router["temperature"] = df_write("rift_mask", flat_cache(add(-1.0, mul(2.0, rift))))
+router["ridges"] = df_write("belt_mask", flat_cache(add(-1.0, mul(2.0, belt))))
 router["initial_density_without_jaggedness"] = shape(base)
 router["final_density"] = final_density
 
 noise_settings = dict(vanilla_noise)
 noise_settings["surface_rule"] = surface
 noise_settings["noise_router"] = router
-# Spawn on a valley floor, away from the acid and the rivers.
-noise_settings["spawn_target"] = [{"temperature": [-1.0, 1.0], "humidity": [-1.0, 1.0], "continentalness": [-0.95, -0.65],
-                                   "erosion": [-1.5, 1.5], "depth": 0.0, "weirdness": [-1.0, 1.0], "offset": 0.0}]
+# Spawn on a valley floor, away from the acid and the rivers, out of the Rift and out of the belt.
+noise_settings["spawn_target"] = [{"temperature": [-1.0, -0.5], "humidity": [-1.0, 1.0], "continentalness": [-0.95, -0.65],
+                                   "erosion": [-1.5, 1.5], "depth": 0.0, "weirdness": [-1.0, -0.5], "offset": 0.0}]
 write(f"data/{MOD}/worldgen/noise_settings/toxic_wastes.json", noise_settings)
 
 # ======================================================================================
@@ -264,13 +302,22 @@ SEA_C = [-1.6, -1.05]
 FLOOR_C = [-1.05, -0.4]
 TABLE_C = [-0.4, 1.0]
 LAND = [0.0, 0.7]
+# Temperature is the Rift mask and weirdness the belt mask (see the terrain section): -1 outside, +1 inside.
+NEAR_T = [-1.0, 0.4]
+RIFT_T = [0.6, 1.0]
+NEAR_W = [-1.0, 0.1]
+BELT_W = [0.3, 1.0]
 biome_layout = [
-    {"biome": mid("acid_flats"), "parameters": params(continentalness=SEA_C)},
-    {"biome": mid("acid_flats"), "parameters": params(continentalness=[-1.05, 1.0], depth=[0.7, 1.0])},
-    {"biome": mid("ash_dunes"), "parameters": params(continentalness=TABLE_C, depth=LAND)},
-    {"biome": mid("salt_pans"), "parameters": params(continentalness=FLOOR_C, erosion=[-1.5, -0.35], depth=LAND)},
-    {"biome": mid("dead_grove"), "parameters": params(humidity=[0.1, 1.0], continentalness=FLOOR_C, erosion=[-0.35, 1.5], depth=LAND)},
-    {"biome": mid("toxic_desert"), "parameters": params(humidity=[-1.0, 0.1], continentalness=FLOOR_C, erosion=[-0.35, 1.5], depth=LAND)},
+    # The chasm reads as itself wherever it cuts, so it wins on temperature before anything else is asked.
+    {"biome": mid("rift"), "parameters": params(temperature=RIFT_T)},
+    {"biome": mid("acid_flats"), "parameters": params(temperature=NEAR_T, continentalness=SEA_C)},
+    {"biome": mid("acid_flats"), "parameters": params(temperature=NEAR_T, continentalness=[-1.05, 1.0], depth=[0.7, 1.0])},
+    {"biome": mid("ash_dunes"), "parameters": params(temperature=NEAR_T, continentalness=TABLE_C, depth=LAND)},
+    {"biome": mid("salt_pans"), "parameters": params(temperature=NEAR_T, continentalness=FLOOR_C, erosion=[-1.5, -0.35], weirdness=NEAR_W, depth=LAND)},
+    {"biome": mid("dead_grove"), "parameters": params(temperature=NEAR_T, humidity=[0.1, 1.0], continentalness=FLOOR_C, erosion=[-0.35, 1.5], weirdness=NEAR_W, depth=LAND)},
+    {"biome": mid("toxic_desert"), "parameters": params(temperature=NEAR_T, humidity=[-1.0, 0.1], continentalness=FLOOR_C, erosion=[-0.35, 1.5], weirdness=NEAR_W, depth=LAND)},
+    # Downwind of the vent field: the same floors, and it rains on them.
+    {"biome": mid("caustic_mire"), "parameters": params(temperature=NEAR_T, continentalness=FLOOR_C, weirdness=BELT_W, depth=LAND)},
 ]
 
 write(f"data/{MOD}/worldgen/world_preset/toxic_wastes.json", {
@@ -361,6 +408,16 @@ write(f"data/{MOD}/worldgen/configured_feature/vent.json", surface_patch(mid("ve
 write(f"data/{MOD}/worldgen/placed_feature/vent.json",
       placed(mid("vent"), [rarity(12), IN_SQUARE, SURFACE, BIOME_FILTER]))
 
+# The ones that still work. Rare, one to a few chunks, and each is on a ninety second clock of its own.
+write(f"data/{MOD}/worldgen/configured_feature/geyser.json", surface_patch(mid("geyser"), 1, 1))
+write(f"data/{MOD}/worldgen/placed_feature/geyser.json",
+      placed(mid("geyser"), [rarity(26), IN_SQUARE, SURFACE, BIOME_FILTER]))
+# The same vent, thinned out for the tables and the flats. The field is centred on the mire and reaches onto
+# them (docs/DESIGN-hazards.md): about one working vent in seventy chunks out there against one in
+# twenty-six down in the belt, so a live one on the dunes is a thing you find rather than a thing you expect.
+write(f"data/{MOD}/worldgen/placed_feature/geyser_sparse.json",
+      placed(mid("geyser"), [rarity(70), IN_SQUARE, SURFACE, BIOME_FILTER]))
+
 write(f"data/{MOD}/worldgen/configured_feature/petrified_tree.json", {
     "type": "minecraft:tree",
     "config": {
@@ -424,7 +481,7 @@ ore("ore_tellurium", [ore_target("#minecraft:deepslate_ore_replaceables", {"Name
 # ======================================================================================
 UNDERGROUND = [
     [], ["minecraft:lake_lava_underground", "minecraft:lake_lava_surface"], ["minecraft:amethyst_geode"],
-    ["minecraft:fossil_upper", "minecraft:fossil_lower", "minecraft:monster_room", "minecraft:monster_room_deep"],
+    ["minecraft:fossil_upper", "minecraft:fossil_lower"],
     [], [],
     ["minecraft:ore_dirt", "minecraft:ore_gravel", "minecraft:ore_granite_upper", "minecraft:ore_granite_lower",
      "minecraft:ore_diorite_upper", "minecraft:ore_diorite_lower", "minecraft:ore_andesite_upper", "minecraft:ore_andesite_lower",
@@ -436,25 +493,48 @@ UNDERGROUND = [
     [], ["minecraft:spring_water", "minecraft:spring_lava"],
 ]
 # Everything custom lives in the vegetal step, always in this order, so feature ordering never cycles between biomes.
-CUSTOM_ORDER = ["sulfur_patch", "scrap_heap", "vent", "petrified_tree"]
+CUSTOM_ORDER = ["sulfur_patch", "scrap_heap", "vent", "geyser", "geyser_sparse", "petrified_tree"]
 # Ores of Sallow, always in this order in the underground_ores step. Halite only where the ground is salt.
 ORE_ORDER = ["ore_cinnabar", "ore_halite", "ore_cobalt", "ore_tellurium"]
 COMMON_ORES = ["ore_cinnabar", "ore_cobalt", "ore_tellurium"]
 SALT_ORES = COMMON_ORES + ["ore_halite"]
 
-MONSTERS = [
-    {"type": "minecraft:spider", "weight": 100, "minCount": 4, "maxCount": 4},
-    {"type": "minecraft:zombie", "weight": 19, "minCount": 4, "maxCount": 4},
-    {"type": "minecraft:skeleton", "weight": 100, "minCount": 4, "maxCount": 4},
-    {"type": "minecraft:creeper", "weight": 100, "minCount": 4, "maxCount": 4},
-    {"type": "minecraft:enderman", "weight": 10, "minCount": 1, "maxCount": 4},
-    {"type": "minecraft:witch", "weight": 5, "minCount": 1, "maxCount": 1},
-    {"type": "minecraft:husk", "weight": 80, "minCount": 4, "maxCount": 4},
-]
+# Nothing lives on Sallow. Every spawner list is empty and the dungeons are out of the underground steps, so
+# the only things that move out there are the crawler, six people in six sealed rooms, and what is under the
+# rock (docs/DESIGN-hazards.md). Surrogate.vanillaMonsters puts them back for anyone who wants them; the
+# server sweeps up any hostile that arrives by some other route.
+NO_SPAWNERS = {"monster": [], "creature": [], "ambient": [], "axolotls": [], "misc": [],
+               "underground_water_creature": [], "water_ambient": [], "water_creature": []}
+
+
+def spawn(name, weight, lo, hi):
+    return {"type": mid(name), "weight": weight, "minCount": lo, "maxCount": hi}
+
+
+# Nothing lives on Sallow except what grew here (docs/DESIGN-fauna.md). Four animals, none of them a threat
+# in the way an empty monster list is a promise that there are none. Only two of the four come off these
+# lists: a slagback wants to be beside a geyser and a lantern slug wants a cave ceiling, and the vanilla
+# spawner can aim at neither, so Fauna.java places those two itself.
+#
+# The weights are low and the group sizes small on purpose. A trundle should be a thing you notice, not a
+# herd you walk through.
+TRUNDLES = [spawn("trundle", 8, 1, 2)]
+TOCKERS = [spawn("tocker", 6, 1, 3)]
+
+
+def wildlife(*groups):
+    """A spawner block with a creature list in it and every other list still empty."""
+    out = dict(NO_SPAWNERS)
+    creatures = []
+    for g in groups:
+        creatures += g
+    out["creature"] = creatures
+    return out
 
 
 def biome(name, *, temperature, downfall, precipitation, fog, sky, water, water_fog, grass, foliage,
-          vegetal, custom, music="minecraft:music.overworld.desert", particle=None, extra_monsters=(), ores=COMMON_ORES):
+          vegetal, custom, music="minecraft:music.overworld.desert", particle=None, ores=COMMON_ORES,
+          spawners=None):
     effects = {
         "fog_color": fog, "sky_color": sky, "water_color": water, "water_fog_color": water_fog,
         "grass_color": grass, "foliage_color": foliage,
@@ -472,16 +552,13 @@ def biome(name, *, temperature, downfall, precipitation, fog, sky, water, water_
         "downfall": downfall,
         "has_precipitation": precipitation,
         "effects": effects,
-        "carvers": {"air": ["minecraft:cave", "minecraft:cave_extra_underground", "minecraft:canyon"]},
+        # No canyons. minecraft:canyon fires on one chunk in a hundred between y 10 and 67, so it cut real
+        # chasms across valley floors that the reachability fill could not see, and a drive the terrain scan
+        # called drivable could be cut in half on the ground. The Rift is the only chasm on Sallow now, it is
+        # in the noise, and Valleys knows exactly where it is.
+        "carvers": {"air": ["minecraft:cave", "minecraft:cave_extra_underground"]},
         "features": features,
-        "spawners": {
-            "monster": MONSTERS + list(extra_monsters),
-            "creature": [],
-            "ambient": [{"type": "minecraft:bat", "weight": 10, "minCount": 8, "maxCount": 8}],
-            "axolotls": [], "misc": [],
-            "underground_water_creature": [{"type": "minecraft:glow_squid", "weight": 10, "minCount": 4, "maxCount": 6}],
-            "water_ambient": [], "water_creature": [],
-        },
+        "spawners": dict(spawners) if spawners else dict(NO_SPAWNERS),
         "spawn_costs": {},
     }
 
@@ -491,25 +568,42 @@ SCRUB = ["minecraft:glow_lichen", "minecraft:patch_dead_bush_2", "minecraft:brow
 write(f"data/{MOD}/worldgen/biome/toxic_desert.json", biome(
     "toxic_desert", temperature=2.0, downfall=0.0, precipitation=False,
     fog=0xC9B85E, sky=0x9FA050, water=0x6E8B2B, water_fog=0x2F4A0F, grass=0x8A8A3A, foliage=0x7A7A2A,
-    vegetal=SCRUB, custom=["sulfur_patch", "scrap_heap"], ores=SALT_ORES))
+    vegetal=SCRUB, custom=["sulfur_patch", "scrap_heap"], ores=SALT_ORES,
+    spawners=wildlife(TRUNDLES, TOCKERS)))
 write(f"data/{MOD}/worldgen/biome/ash_dunes.json", biome(
     "ash_dunes", temperature=1.6, downfall=0.0, precipitation=False,
     fog=0x77746A, sky=0x6E6B5F, water=0x4A5A3A, water_fog=0x1F2A14, grass=0x5C5C40, foliage=0x4E4E36,
-    vegetal=["minecraft:glow_lichen"], custom=["sulfur_patch", "scrap_heap", "vent"],
-    particle=("minecraft:white_ash", 0.02)))
+    vegetal=["minecraft:glow_lichen"], custom=["sulfur_patch", "scrap_heap", "vent", "geyser_sparse"],
+    particle=("minecraft:white_ash", 0.02),
+    spawners=wildlife(TRUNDLES)))
 write(f"data/{MOD}/worldgen/biome/acid_flats.json", biome(
     "acid_flats", temperature=1.0, downfall=0.4, precipitation=True,
     fog=0x9CB35A, sky=0x8E9E4E, water=0x7FBF2A, water_fog=0x3E6A10, grass=0x7D8F3A, foliage=0x6C7D2E,
     vegetal=["minecraft:glow_lichen", "minecraft:patch_dead_bush_2"], custom=["scrap_heap"], ores=SALT_ORES,
-    extra_monsters=[{"type": "minecraft:drowned", "weight": 40, "minCount": 1, "maxCount": 2}]))
+    spawners=wildlife(TOCKERS)))
 write(f"data/{MOD}/worldgen/biome/salt_pans.json", biome(
     "salt_pans", temperature=1.9, downfall=0.0, precipitation=False,
     fog=0xD9D7B0, sky=0xA9AA6E, water=0x86A648, water_fog=0x3B4F1A, grass=0xA0A070, foliage=0x8C8C5E,
-    vegetal=["minecraft:glow_lichen", "minecraft:patch_dead_bush_2"], custom=["sulfur_patch", "scrap_heap"], ores=SALT_ORES))
+    vegetal=["minecraft:glow_lichen", "minecraft:patch_dead_bush_2"], custom=["sulfur_patch", "scrap_heap", "geyser_sparse"], ores=SALT_ORES,
+    spawners=wildlife(TRUNDLES, TOCKERS)))
 write(f"data/{MOD}/worldgen/biome/dead_grove.json", biome(
     "dead_grove", temperature=1.2, downfall=0.3, precipitation=True,
     fog=0xA8A66A, sky=0x8E9450, water=0x6E8B2B, water_fog=0x2F4A0F, grass=0x6B6B2F, foliage=0x5B5B25,
-    vegetal=SCRUB, custom=["scrap_heap", "petrified_tree"], music="minecraft:music.overworld.forest"))
+    vegetal=SCRUB, custom=["scrap_heap", "petrified_tree"], music="minecraft:music.overworld.forest",
+    spawners=wildlife(TRUNDLES, TOCKERS)))
+# The belt, downwind of the vent field: wet floors that nothing has been able to dry out. It rains here, and
+# what falls is not water (docs/DESIGN-hazards.md). The rain itself is the mod's, on the belt's own clock.
+write(f"data/{MOD}/worldgen/biome/caustic_mire.json", biome(
+    "caustic_mire", temperature=1.1, downfall=0.9, precipitation=True,
+    fog=0x5E6B3A, sky=0x556031, water=0x5C7A22, water_fog=0x25400C, grass=0x4E5A28, foliage=0x424D20,
+    vegetal=["minecraft:glow_lichen", "minecraft:patch_dead_bush_2"], custom=["vent", "geyser", "scrap_heap"],
+    particle=("minecraft:white_ash", 0.008), music="minecraft:music.overworld.swamp"))
+# The Rift: thirty-four blocks of section through everything the valleys are made of, with mist at the bottom.
+write(f"data/{MOD}/worldgen/biome/rift.json", biome(
+    "rift", temperature=1.0, downfall=0.5, precipitation=False,
+    fog=0x2A3320, sky=0x3C4630, water=0x6E8B2B, water_fog=0x1A2A08, grass=0x4A4A28, foliage=0x3E3E20,
+    vegetal=["minecraft:glow_lichen"], custom=["vent"], music="minecraft:music.overworld.dripstone_caves",
+    particle=("minecraft:white_ash", 0.03)))
 
 # ======================================================================================
 # Damage type
@@ -522,7 +616,9 @@ write("data/minecraft/tags/damage_type/bypasses_armor.json", {"replace": False, 
 # ======================================================================================
 # Everything a pickaxe breaks; sections below extend it and the props section writes it out once, last.
 PICKAXE = [mid("dive_chair"), mid("charging_dock"), mid("life_support"), mid("solar_collector"), mid("power_conduit"), mid("decon_shower"), mid("hull_plating"),
-           mid("reinforced_glass"), mid("airlock_door"), mid("caustic_sandstone"), mid("sulfur_crust"), mid("vent")]
+           mid("reinforced_glass"), mid("airlock_door"), mid("caustic_sandstone"), mid("sulfur_crust"), mid("vent"),
+           mid("geyser"), mid("geothermal_tap"), mid("damper_beacon"), mid("relay_mast"), mid("span_anchor"),
+           mid("corroded_machine"), mid("survey_stake")]
 write("data/minecraft/tags/block/mineable/shovel.json", {"replace": False, "values": [mid("caustic_sand"), mid("ash"), mid("scrap_heap")]})
 write("data/minecraft/tags/block/sand.json", {"replace": False, "values": [mid("caustic_sand"), mid("ash")]})
 write("data/minecraft/tags/block/doors.json", {"replace": False, "values": [mid("airlock_door"), mid("dock_door")]})
@@ -545,7 +641,8 @@ def self_drop(name):
 SILK_TOUCH = {"condition": "minecraft:match_tool", "predicate": {"predicates": {
     "minecraft:enchantments": [{"enchantments": "minecraft:silk_touch", "levels": {"min": 1}}]}}}
 
-for name in ["life_support", "solar_collector", "power_conduit", "decon_shower", "hull_plating", "caustic_sand", "caustic_sandstone", "ash", "scrap_heap", "vent"]:
+for name in ["life_support", "solar_collector", "power_conduit", "decon_shower", "hull_plating", "caustic_sand", "caustic_sandstone", "ash", "scrap_heap", "vent",
+             "geyser", "geothermal_tap", "damper_beacon", "relay_mast", "span_anchor"]:
     write(f"data/{MOD}/loot_table/blocks/{name}.json", self_drop(name))
 
 write(f"data/{MOD}/loot_table/blocks/reinforced_glass.json", {
@@ -649,7 +746,8 @@ def cube_all(name, texture=None):
     model(f"item/{name}", {"parent": f"{MOD}:block/{name}"})
 
 
-for name in ["caustic_sand", "ash", "sulfur_crust", "scrap_heap", "hull_plating", "reinforced_glass", "power_conduit"]:
+for name in ["caustic_sand", "ash", "sulfur_crust", "scrap_heap", "hull_plating", "reinforced_glass", "power_conduit",
+             "geothermal_tap", "damper_beacon", "relay_mast", "span_anchor"]:
     cube_all(name)
 
 blockstate("caustic_sandstone", {"": {"model": f"{MOD}:block/caustic_sandstone"}})
@@ -661,6 +759,15 @@ blockstate("vent", {"": {"model": f"{MOD}:block/vent"}})
 model("block/vent", {"parent": "minecraft:block/cube_bottom_top", "textures": {
     "top": f"{MOD}:block/vent_top", "bottom": f"{MOD}:block/vent_side", "side": f"{MOD}:block/vent_side"}})
 model("item/vent", {"parent": f"{MOD}:block/vent"})
+
+# Geyser: the same throat as a fumarole with something still coming up it. The four stages of the cycle are
+# two models; the block entity does the rest (docs/DESIGN-hazards.md).
+for suffix, top in (("", "geyser_top"), ("_hot", "geyser_top_hot")):
+    model(f"block/geyser{suffix}", {"parent": "minecraft:block/cube_bottom_top", "textures": {
+        "top": f"{MOD}:block/{top}", "bottom": f"{MOD}:block/vent_side", "side": f"{MOD}:block/vent_side"}})
+blockstate("geyser", {f"stage={stage}": {"model": f"{MOD}:block/geyser" + ("" if stage in ("quiet", "steam") else "_hot")}
+                      for stage in ("quiet", "steam", "rumble", "erupting")})
+model("item/geyser", {"parent": f"{MOD}:block/geyser"})
 
 # Solar collector: a 3px panel.
 for lit in (False, True):
@@ -736,6 +843,11 @@ LANG = {
     "block.surrogate.sulfur_crust": "Sulfur Crust",
     "block.surrogate.scrap_heap": "Scrap Heap",
     "block.surrogate.vent": "Fumarole",
+    "block.surrogate.geyser": "Geyser",
+    "block.surrogate.geothermal_tap": "Geothermal Tap",
+    "block.surrogate.damper_beacon": "Damper Beacon",
+    "block.surrogate.relay_mast": "Relay Mast",
+    "block.surrogate.span_anchor": "Span Anchor",
     "item.surrogate.sulfur": "Sulfur",
     "item.surrogate.mining_drill": "Mining Drill",
     "item.surrogate.arc_cutter": "Arc Cutter",
@@ -746,6 +858,8 @@ LANG = {
     "biome.surrogate.acid_flats": "Acid Flats",
     "biome.surrogate.salt_pans": "Salt Pans",
     "biome.surrogate.dead_grove": "Dead Grove",
+    "biome.surrogate.caustic_mire": "Caustic Mire",
+    "biome.surrogate.rift": "The Rift",
     "generator.surrogate.toxic_wastes": "Toxic Wastes",
     "death.attack.surrogate.toxin": "%1$s choked on the outside air",
 
@@ -799,8 +913,8 @@ LANG = {
     "tooltip.surrogate.drill": "Pickaxe and shovel. Costs the chassis %s energy per block.",
     "tooltip.surrogate.cutter": "Costs the chassis %s energy per strike.",
     "tooltip.surrogate.chassis_only": "Only works while piloting a chassis",
-    "tooltip.surrogate.scanner.use": "Use to read the air where you stand",
-    "tooltip.surrogate.scanner.block": "Sneak-use on a block to check if it is airtight",
+    "tooltip.surrogate.scanner.use": "Use to read the air, and the belt, where you stand",
+    "tooltip.surrogate.scanner.block": "Sneak-use on a block: airtight or not, and how far the rain has got with a machine",
 
     "book.surrogate.guide.title": "Habitat Field Manual",
     "book.surrogate.guide.author": "Surrogate Systems",
@@ -1163,7 +1277,6 @@ LANG.update({
     "tooltip.surrogate.crawler_blueprint.use": "Put it on the bench with the kit parts; it comes back",
     "message.surrogate.port.needs_chassis": "The port takes a chassis, not a person.",
     "message.surrogate.port.dead": "The port is dead.",
-    "message.surrogate.survivor.blueprint": "%s sends a file: CRAWLER BLUEPRINT. It is in your pack.",
     "message.surrogate.survivor.aboard": "%s is aboard.",
     "message.surrogate.survivor.home": "%s is home.",
     "message.surrogate.crawler.lock_refused": "Not on the collar. Line the ring up first.",
@@ -1566,6 +1679,649 @@ LANG.update({
     "message.surrogate.fabricator.idle": "Idle. Put a vehicle kit on the pad.",
 })
 print("props, ores and fabricator data done")
+
+LANG.update({
+    # The weather, as the pilot HUD reads it out and as the subtitles name the loops.
+    "hud.surrogate.mag": "MAG %s%%",
+    "hud.surrogate.seismic": "SEIS %s%%",
+    "subtitles.surrogate.storm_wind": "Storm wind rises",
+    "subtitles.surrogate.acid_rain": "Acid rain hisses",
+    "subtitles.surrogate.link_hiss": "Uplink hisses",
+})
+
+# ======================================================================================
+# Magnetic storms and the empty wastes (2026-09-06)
+# ======================================================================================
+write(f"data/{MOD}/damage_type/storm.json", {"exhaustion": 0.0, "message_id": "surrogate.storm", "scaling": "never"})
+
+LANG.update({
+    "message.surrogate.storm.warning": "Mast has a front coming in. Ninety seconds. Get the chassis under something.",
+    "message.surrogate.storm.clear": "Field is back down. You can go back out.",
+    "message.surrogate.storm.link_lost": "Uplink gone. The storm took it.",
+    "message.surrogate.radio.noise": "Nothing on the band but hiss.",
+    "death.attack.surrogate.storm": "%1$s stood out in the storm",
+    "subtitles.surrogate.storm_wash": "The band washes out",
+    "subtitles.surrogate.storm_crack": "The sky cracks",
+})
+print("storm data done")
+
+# ======================================================================================
+# Geysers and the geothermal tap (2026-09-06)
+# ======================================================================================
+# The blockstate, the two models, the loot table, the pickaxe entry and the names are written with the rest
+# of the wastes above; what is left is the recipe, the damage type and the words.
+write(f"data/{MOD}/damage_type/geyser.json", {"exhaustion": 0.1, "message_id": "surrogate.geyser", "scaling": "never"})
+
+# Late plumbing: plate, a turbine's worth of motors, and a cobalt throat that survives what comes up it.
+shaped("geothermal_tap", ["PMP", "CBC", "PPP"],
+       {"P": mid("hull_plating"), "M": mid("servo_motor"), "C": mid("cobalt_ingot"), "B": "minecraft:iron_block"},
+       mid("geothermal_tap"), 1, "equipment")
+
+LANG.update({
+    "death.attack.surrogate.geyser": "%1$s was boiled by a geyser",
+    "subtitles.surrogate.geyser_rumble": "The ground moves",
+    "subtitles.surrogate.geyser_erupt": "A geyser lets go",
+    "subtitles.surrogate.tap_cap": "Cap seats",
+    "message.surrogate.geyser.quiet": "Vent quiet. Steam in about %s seconds.",
+    "message.surrogate.geyser.steam": "Steaming at the lip. Stand off it.",
+    "message.surrogate.geyser.rumble": "The ground is moving. Get off it.",
+    "message.surrogate.geyser.erupting": "Erupting.",
+    "message.surrogate.geyser.capped": "Capped. The throat is holding.",
+    "message.surrogate.tap.capped": "Cap seated. The vent is yours.",
+    "message.surrogate.tap.too_late": "The throat is already working. Nothing bolts onto that.",
+    "message.surrogate.tap.info": "Geothermal tap: %s per tick, buffer %s%%.",
+    "message.surrogate.tap.dead": "Nothing live under this cap.",
+})
+print("geyser and tap data done")
+
+# ======================================================================================
+# Chassis and crawler modules, and the three things you plant on the ground (2026-09-06)
+# The four countermeasures of docs/DESIGN-hazards.md, the crawler's first module, and the mast,
+# the beacon and the anchor. Blockstates, loot tables, the pickaxe tag and the block names are
+# written further up with the rest of the hazard blocks; this is the rest of it.
+# ======================================================================================
+for name in ["relay_module", "resonance_damper", "acid_coating", "shielded_uplink", "ceramic_cladding"]:
+    model(f"item/{name}", {"parent": "minecraft:item/generated", "textures": {"layer0": f"{MOD}:item/{name}"}})
+
+COBALT = mid("cobalt_ingot")
+CERAMIC = mid("caustic_sandstone")
+shaped("relay_module", [" G ", "CSC", "IEI"], {"G": mid("reinforced_glass"), "C": COPPER, "S": mid("servo_motor"), "I": IRON, "E": mid("power_cell")},
+       mid("relay_module"), 1, "equipment")
+shaped("resonance_damper", ["CRC", "ISI", "CRC"], {"C": COBALT, "R": REDSTONE, "I": IRON, "S": mid("servo_motor")},
+       mid("resonance_damper"), 1, "equipment")
+shaped("acid_coating", ["SSS", "SPS", "SSS"], {"S": CERAMIC, "P": P}, mid("acid_coating"), 1, "equipment")
+shaped("shielded_uplink", ["CCC", "CUC", "IGI"], {"C": COBALT, "U": mid("uplink_card"), "I": IRON, "G": mid("reinforced_glass")},
+       mid("shielded_uplink"), 1, "equipment")
+shaped("ceramic_cladding", ["SSS", "PPP", "SSS"], {"S": CERAMIC, "P": P}, mid("ceramic_cladding"), 1, "equipment")
+shaped("relay_mast", [" A ", "CRC", "PPP"], {"A": mid("antenna_mast"), "C": COPPER, "R": REDSTONE, "P": P}, mid("relay_mast"), 1, "building")
+shaped("damper_beacon", ["PCP", "CSC", "PRP"], {"P": P, "C": COBALT, "S": mid("servo_motor"), "R": "minecraft:redstone_block"},
+       mid("damper_beacon"), 1, "building")
+shaped("span_anchor", ["PPP", "III", "PPP"], {"P": P, "I": IRON}, mid("span_anchor"), 2, "building")
+
+LANG.update({
+    "item.surrogate.relay_module": "Relay Module",
+    "item.surrogate.resonance_damper": "Resonance Damper",
+    "item.surrogate.acid_coating": "Acid Coating",
+    "item.surrogate.shielded_uplink": "Shielded Uplink",
+    "item.surrogate.ceramic_cladding": "Ceramic Cladding",
+
+    "module.surrogate.relay": "relay",
+    "module.surrogate.damper": "resonance damper",
+    "module.surrogate.coating": "acid coating",
+    "module.surrogate.shield": "shielded uplink",
+    "module.surrogate.crawler.cladding": "ceramic cladding",
+
+    "tooltip.surrogate.relay_module": "Adds %s m to the link and to the radio",
+    "tooltip.surrogate.resonance_damper": "Your own drilling counts for %s%% below Y %s",
+    "tooltip.surrogate.acid_coating": "The belt's rain takes %s%% as much off the hull",
+    "tooltip.surrogate.shielded_uplink": "A storm costs the picture %s%% of what it would",
+    "tooltip.surrogate.ceramic_cladding": "The belt's rain costs the crawler %s%% of what it would",
+    "tooltip.surrogate.parked_only": "Bolted to a hull that is standing still",
+    "tooltip.surrogate.module_fitted": "%s fitted",
+
+    "message.surrogate.module_fitted": "This chassis already carries a %s.",
+    "message.surrogate.status.modules": "Modules: %s",
+    "message.surrogate.crawler.module_fitted": "This hull already carries a %s.",
+    "message.surrogate.crawler.module_moving": "Stop the hull before bolting anything to it.",
+    "message.surrogate.crawler.module_added": "Fitted %s to the hull.",
+    "message.surrogate.relay_mast.live": "Relay mast: repeating the band another %s m. Buffer %s%%.",
+    "message.surrogate.relay_mast.dark": "Relay mast: dark. %s m of reach and nothing to send it with. Buffer %s%%.",
+    "message.surrogate.damper_beacon.singing": "Damper beacon: the rock is quiet for %s m. Buffer %s%%.",
+    "message.surrogate.damper_beacon.silent": "Damper beacon: silent. %s m of quiet, once it has power. Buffer %s%%.",
+    "message.surrogate.span_anchor": "Span anchor. The deck runs %s from here, when there is a kit to lay it.",
+
+    "screen.surrogate.pilot_menu.modules": "Modules: %s",
+    "screen.surrogate.pilot_menu.no_modules": "No modules fitted",
+
+    "hud.surrogate.crawler.cladding": "CLADDING ON",
+    "hud.surrogate.crawler.bare": "HULL BARE",
+    "hud.surrogate.crawler.wear": "CORROSION %s%%",
+})
+print("modules and countermeasure data done")
+
+# ======================================================================================
+# The belt's rain, the borers, and the two things act one leaves lying about (2026-09-06)
+# ======================================================================================
+write(f"data/{MOD}/damage_type/acid.json", {"exhaustion": 0.0, "message_id": "surrogate.acid", "scaling": "never"})
+write(f"data/{MOD}/damage_type/borer.json", {"exhaustion": 0.2, "message_id": "surrogate.borer", "scaling": "never"})
+
+# What the belt can eat: the company's metal, anything of it left under an open sky.
+write(f"data/{MOD}/tags/block/corrodible.json", {"replace": False, "values": [mid(n) for n in [
+    "solar_collector", "power_conduit", "charging_dock", "life_support", "terminal", "relay_mast",
+    "damper_beacon", "geothermal_tap", "vehicle_fabricator", "antenna_mast"]]})
+
+# The remnant. Not a full cube, so a corroded life support unit is also a hole in the wall; no item, because
+# there is nothing left to carry - a hull plate on it puts the machine that was there back.
+prop_model("corroded_machine", {"skin": tex("corroded_machine"), "top": tex("corroded_machine_top")}, [
+    box([1, 0, 1], [15, 13, 15], {"down": {"texture": "#skin"}, "up": {"texture": "#top"},
+                                  "north": {"texture": "#skin"}, "south": {"texture": "#skin"},
+                                  "west": {"texture": "#skin"}, "east": {"texture": "#skin"}})])
+blockstate("corroded_machine", {"": {"model": f"{MOD}:block/corroded_machine"}})
+write(f"data/{MOD}/loot_table/blocks/corroded_machine.json",
+      {"type": "minecraft:block", "pools": [], "random_sequence": mid("blocks/corroded_machine")})
+
+# The wind count's stake, and the canister the seep goes home in.
+prop_model("survey_stake", {"stake": tex("survey_stake")}, cross_planes("#stake", 0, 16, 5))
+blockstate("survey_stake", {"": {"model": f"{MOD}:block/survey_stake"}})
+model("item/survey_stake", {"parent": f"{MOD}:block/survey_stake"})
+write(f"data/{MOD}/loot_table/blocks/survey_stake.json", self_drop("survey_stake"))
+shaped("survey_stake", ["N", "I", "I"], {"N": NUGGET, "I": IRON}, mid("survey_stake"), 4, "building")
+model("item/sealed_sample", {"parent": "minecraft:item/generated", "textures": {"layer0": f"{MOD}:item/sealed_sample"}})
+shaped("sealed_sample", ["III", "IGI", "III"], {"I": mid("hull_plating"), "G": "minecraft:glass_bottle"},
+       mid("sealed_sample"), 2, "equipment")
+
+LANG.update({
+    "block.surrogate.corroded_machine": "Corroded Machine",
+    "block.surrogate.survey_stake": "Survey Stake",
+    "item.surrogate.sealed_sample": "Sealed Sample",
+    "entity.surrogate.borer": "Borer",
+    "death.attack.surrogate.acid": "%1$s was eaten by the rain",
+    "death.attack.surrogate.borer": "%1$s went too deep",
+    "message.surrogate.acid.machine_lost": "%s has gone. The rain got through it.",
+    "message.surrogate.acid.needs_plate": "What is left of %s. A hull plate would put it back.",
+    "message.surrogate.acid.something": "something of ours",
+    "message.surrogate.acid.corroded": "Corroded %s%%. It wants a roof more than it wants a repair.",
+    "message.surrogate.acid.chassis": "The rain is on the chassis. Get it under something.",
+    "message.surrogate.acid.crawler_1": "Rain on the hull. Charge is going four times as fast.",
+    "message.surrogate.acid.crawler_2": "Still in it. Half charge. Cladding is what stops this.",
+    "message.surrogate.acid.crawler_3": "Charge is nearly out. If it stops here it stays here.",
+    "message.surrogate.acid.crawler_4": "Hull is going now. Turn around.",
+    "message.surrogate.borer.close": "Something is working in the rock.",
+    "message.surrogate.borer.damped": "The damper has it. It has lost you.",
+    "subtitles.surrogate.borer_grind": "Grinding through rock",
+    "subtitles.surrogate.borer_lunge": "Something lunges",
+})
+# The rest of what the belt says. The four crawler_N lines above are the charge warnings; these are the hull
+# itself going, the readout while it goes, and what a plate in somebody's hands is worth when they get there.
+LANG.update({
+    "message.surrogate.acid.hud": "ACID ON THE HULL   CHARGE %s%%",
+    "message.surrogate.acid.flat": "Charge is gone. It is on the bare hull now.",
+    "message.surrogate.acid.eating": "Still eating. Every minute out there is another plate to walk out.",
+    "message.surrogate.acid.seized": "That is it stopped. It goes nowhere until somebody carries plate to it.",
+    "message.surrogate.acid.mended": "Hull sound again. Integrity %s%%.",
+    "message.surrogate.acid.mending": "Plate on the hull. Integrity %s%%. It wants more.",
+    "message.surrogate.acid.hull_sound": "Nothing wrong with this hull. Keep the plate.",
+    "message.surrogate.acid.patched": "Patched. Integrity %s%%, and the rain has nothing on it now.",
+    "message.surrogate.acid.patching": "Some of it off. Integrity %s%%. It wants another.",
+    "title.surrogate.acid.hull": "HULL CORRODING",
+    "title.surrogate.acid.hull.sub": "Integrity %s%%",
+    "title.surrogate.acid.seized": "HULL SEIZED",
+    "message.surrogate.scanner.belt_out": "Scanner: outside the belt. Nothing falls on this ground.",
+    "message.surrogate.scanner.belt_dry": "Scanner: inside the belt. Dry for now, and it will not stay dry.",
+    "message.surrogate.scanner.belt_rain": "Scanner: inside the belt and it is falling. Anything of ours under open sky is being eaten.",
+    "message.surrogate.scanner.machine_sound": "Scanner: no corrosion on it. Keep a roof over it and there will not be.",
+})
+print("acid, borer and act one data done")
+
+# ======================================================================================
+# Acts one and two: the neighbours' three runs and the man past the mast (2026-09-06)
+# Every line the Research director asks for. The runs are Okafor's, then Sorensen's, then both
+# of theirs; Halloran opens and closes each one, because the runs are logged through her. Every
+# objective has a timeout and somebody works around it out loud, which is where they live.
+# ======================================================================================
+LANG.update({
+    "cinematic.surrogate.research.chapter": "THE NEIGHBOURS",
+    "cinematic.surrogate.research.chapter.sub": "ACT %s",
+    "cinematic.surrogate.research.mast": "SITE FOUR MAST",
+
+    # Run one: the shallow core. Okafor opens it and Okafor closes it.
+    "cinematic.surrogate.research.open1": "Site Four, Site Two. Two people on this band have wanted a favour off you for a week and have been too polite to ask. Okafor first.",
+    "cinematic.surrogate.research.open2": "Greenhouse Station. Okafor. I am told you have a chassis that goes down as well as along.",
+    "cinematic.surrogate.research.open3": "It does. Ask, and I will log it as survey work, which keeps the company off all three of us.",
+    "cinematic.surrogate.research.core1": "A column of the floor. Twelve blocks straight down, one hole. Not a scrape here and a scrape there. One hole, so the layers come up in order.",
+    "cinematic.surrogate.research.core2": "I am a botanist asking for rock. I know. There is nobody left out here who is not, and I would like to know what my roots are standing in.",
+    "cinematic.surrogate.research.core3": "Twelve blocks of what comes out, into the crate by your door. Take the drill and take a spare cell; it is a long hole for one charge.",
+    "cinematic.surrogate.research.objective.core": "Drill twelve blocks down in one place and put the column in the crate",
+    "cinematic.surrogate.research.core_nudge": "One hole, twelve down, and everything it gives you into the crate. The drill will do it. The cell will complain.",
+    "cinematic.surrogate.research.core_timeout": "You are busy. I have taken what is under my own porch and I will pretend the layers are the same as yours. They are not. I will pretend.",
+    "cinematic.surrogate.research.core_done": "That is the whole column, in order, and it is the first new rock I have had to look at in a year. Thank you.",
+    "cinematic.surrogate.research.core4": "Ash, then sand, then two blocks of something laid down flat and fine. That is a lake bed. There was water standing here long enough to settle silt.",
+    "cinematic.surrogate.research.core5": "So the salt in my trays is not blowing in off the pans. It is coming up from underneath. That is a year of bad tomatoes explained.",
+    "cinematic.surrogate.research.core6": "Logged as a survey task, which it was. Sorensen has been waiting his turn and pretending he has not.",
+
+    # Run two: the wind count. Sorensen's, and he wants it more than he will say.
+    "cinematic.surrogate.research.wind1": "Survey Two. Sorensen. Mine is duller than hers and it takes longer. Four survey stakes, four kinds of ground, eighty blocks apart at the least.",
+    "cinematic.surrogate.research.wind2": "He has asked me for this since spring. I keep telling him the wind is the wind.",
+    "cinematic.surrogate.research.wind3": "The wind is not the wind. It comes off the mesa at dusk and I want to know how far in it reaches. Stakes are in your crate. Four. Plumb, please.",
+    "cinematic.surrogate.research.objective.stakes": "Plant four survey stakes on four biomes, eighty blocks apart",
+    "cinematic.surrogate.research.stakes_nudge": "Four stakes, four kinds of ground, eighty blocks between any two of them. They are in the crate by your door.",
+    "cinematic.surrogate.research.stakes_timeout": "I walked two out myself before the suit made me stop and the pod's chassis carried the others. They are in. They are not plumb.",
+    "cinematic.surrogate.research.wind4": "Now they stand. One night, that is all I want. And leave them up in the morning; I will want the same four again in a month.",
+    "cinematic.surrogate.research.objective.night": "Leave the four stakes standing overnight",
+    "cinematic.surrogate.research.night_nudge": "Nothing to do now but let it get dark. Sleep, charge the chassis, come and look at my rover.",
+    "cinematic.surrogate.research.wind5": "Four counts. Sixty on the dunes at dusk and nine in the mire. There is a wall in the air out there and it stands exactly where the ridge does.",
+    "cinematic.surrogate.research.wind6": "He has wanted that count for a year and I have never once heard him say why.",
+    "cinematic.surrogate.research.wind7": "Because it is a quiet side, and everything we ever build should stand on it. That is a month of working outdoors in a bad suit, saved.",
+
+    # Run three: the seep. Both of them want it and neither of them can go.
+    "cinematic.surrogate.research.seep1": "Site Four, Greenhouse Station. Both of us this time, and we do not agree. The sample crate I left in the channel has a hole through the floor of it.",
+    "cinematic.surrogate.research.seep2": "It has a hole in it because the crate is ceramic, and ceramic was the wrong thing to stand in a channel. That is a materials question and it is mine.",
+    "cinematic.surrogate.research.seep3": "It is the water that is wrong, not the crate. Bring me a litre of it, sealed, on a bench, and then you can pick a material with something to go on.",
+    "cinematic.surrogate.research.seep4": "Then take the crimped flask, it is the only one of mine that holds. And a chassis dips it. Nobody stands in that channel in a suit.",
+    "cinematic.surrogate.research.seep5": "You are both right and you are both on my band. A litre out of the acid, sealed, from a chassis. Go on.",
+    "cinematic.surrogate.research.objective.seep": "Take a sealed sample from an acid river, from inside a chassis",
+    "cinematic.surrogate.research.seep_nudge": "The channel where it runs, not a puddle beside it. And the chassis holds the flask, not you.",
+    "cinematic.surrogate.research.seep_timeout": "The pod's chassis dipped a flask on its own charge run. Wrong end of the channel, no label, and it counts. Barely.",
+    "cinematic.surrogate.research.seep6": "Now get it indoors with the seal still on. Crate by your door. Open it out there and the sample is the sky, and she starts again.",
+    "cinematic.surrogate.research.objective.home": "Bring the sealed sample to the crate without opening it outdoors",
+    "cinematic.surrogate.research.home_nudge": "Do not use it outside. Not to look at it, not to show anybody. Straight in through the airlock and into the crate.",
+    "cinematic.surrogate.research.home_timeout": "It came in on the pod's own arm in the end. The seal held, which is the only part of this I was ever going to care about.",
+    "cinematic.surrogate.research.home_done": "Sealed, and in the crate, and mine. If the greenhouse smells of vinegar for a week, that is me and not the scrubber.",
+    "cinematic.surrogate.research.seep7": "Fluorides. That is what is going through ceramic, and there is more of it in that litre than I would have guessed by an order.",
+    "cinematic.surrogate.research.seep8": "So it is chemistry. I will line the crates with plate, and you can tell me in a month what your chemistry does to plate.",
+    "cinematic.surrogate.research.schematic1": "Last thing and then I am off your band. Sending you a set of plans: a relay for the chassis. Servo, copper, a cell, a piece of reinforced glass.",
+    "cinematic.surrogate.research.schematic2": "Sorensen. Say the rest of it.",
+    "cinematic.surrogate.research.schematic3": "There is a fourth carrier on this band. No voice on it, a tone, keyed twice at the same hour every evening. Somebody is out past the mast.",
+
+    # Act two: out of range. Tanaka is a carrier before he is a voice.
+    "cinematic.surrogate.research.carrier1": "Carrier on the band. No modulation, no callsign, bearing steady. Source beyond mast range of 700 metres. No station on file.",
+    "cinematic.surrogate.research.range1": "There it is again. Two keys, a wait, two keys. That is somebody running a schedule, and they have been running it a long time.",
+    "cinematic.surrogate.research.range2": "Fit the relay and you hear fourteen hundred instead of seven. Then drive at him until the tone turns into a person.",
+    "cinematic.surrogate.research.objective.relay": "Build the relay module and fit it to your chassis",
+    "cinematic.surrogate.research.relay_nudge": "Fabricator, then the chassis. A servo, copper, a power cell and a piece of reinforced glass.",
+    "cinematic.surrogate.research.relay_timeout": "The ugly way, then. The mast keeps a spare head and your chassis had a socket for it. It is on, it is crooked, and it hears.",
+    "cinematic.surrogate.research.carrier2": "Carrier acquired. Modulation present. Voice channel open at 1400 metres. Callsign: Sulfur Works.",
+    "cinematic.surrogate.research.tanaka1": "Sulfur Works. Tanaka. I have listened to the four of you for a year and not one of you has ever heard me. Say something so I know that has changed.",
+    "cinematic.surrogate.research.range3": "We hear you, Sulfur Works. Halloran, Site Two. I am sorry. We had the tone down as equipment.",
+    "cinematic.surrogate.research.tanaka2": "It is equipment. Mine, keyed twice a day so that anyone counting would know a person was doing it. Come out. I have something you want before you dig.",
+    "cinematic.surrogate.research.objective.tanaka": "Drive out to Tanaka at Sulfur Works",
+    "cinematic.surrogate.research.tanaka_nudge": "Eleven hundred metres, the wrong side of the table. That is a crawler drive, not a chassis walk. Charge everything first.",
+    "cinematic.surrogate.research.tanaka_timeout": "He got tired of waiting and put his own chassis on the road with a crate on it. It is standing at your pad. He is still out there.",
+    "cinematic.surrogate.research.tanaka3": "There is a chassis at my window. Somebody drove eleven hundred metres to look at a man through glass. Come round to the port.",
+    "cinematic.surrogate.research.damper1": "Before anything else. I am a seismologist. Four instruments in the rock out here, and for a year they have drawn me the same thing.",
+    "cinematic.surrogate.research.damper2": "Things that move through solid stone. Below the deepslate line, always, and they steer by noise. I call them borers. Nobody gave me a better word.",
+    "cinematic.surrogate.research.damper3": "That is a damper. It sings into the rock at the frequency they steer by. It does not make you safe. It makes forty seconds of drilling instead of eight.",
+    "cinematic.surrogate.research.damper4": "The company's assay has a deep sample on it. Marsh has been careful not to say how deep.",
+    "cinematic.surrogate.research.damper5": "Then take that and be quiet with it. And go up when the rock goes quiet, because quiet is not one of them losing interest.",
+    "cinematic.surrogate.research.close1": "Filed. Three runs and a man none of us could hear. That is the best week this station has had since it was a station.",
+    "cinematic.surrogate.research.close2": "And I have rock, wind and water off one pilot. If anybody wants a tomato in six weeks, I am taking names.",
+    "cinematic.surrogate.research.close3": "Get some sleep, Site Four. Marsh has a form for you in the morning and he looks pleased about it, which is never good.",
+
+    # The five errands, and the one sample that got opened outdoors. None of them was ever an objective.
+    "cinematic.surrogate.research.errand_seeds": "Tomato seed. Kept dry, kept cold, every one of them viable. Four trays free, so they go in tonight. ...Somebody packed these for me. Who.",
+    "cinematic.surrogate.research.errand_airlock": "You put a plate on my outer door. I have talked to all of you in short sentences for two hundred days because of that door. Longer ones now.",
+    "cinematic.surrogate.research.errand_cells": "Cells are in and the scrubber has stopped making the noise. I had stopped hearing the noise, which is the worse half of that.",
+    "cinematic.surrogate.research.errand_kits": "Kits on the bench. Rover Two has a hull again by the end of the week. She will still not steer, but that part is mine.",
+    "cinematic.surrogate.research.errand_sulfur": "Eight sulfur, weighed, and the cartridges are in the press. That is a year of breathing. Say what you want off me and it is yours.",
+    "cinematic.surrogate.research.seep_spoiled": "You opened it out there. That is a litre of sky with a little of my channel in it. Go back and take another, and do not look at that one either.",
+
+    # What the world says back while the runs are on.
+    "message.surrogate.stake.close": "Too near the last stake. Eighty blocks between them, Sorensen said.",
+    "message.surrogate.stake.same_biome": "This ground is already counted. He wants four different ones.",
+    "message.surrogate.stake.planted": "Stake %s of %s standing.",
+    "message.surrogate.sample.wrong_water": "Standing water. The sample comes out of the channel where it runs.",
+    "message.surrogate.sample.needs_chassis": "Not in your own hands. A chassis takes this one.",
+    "message.surrogate.sample.sealed": "The seal holds. It wants a bench, not a doorway.",
+    "message.surrogate.sample.spoiled": "The flask is open and the air got to it first. That sample is the sky now.",
+    "tooltip.surrogate.sealed_sample": "A litre of the channel. Opening it outdoors ruins it",
+})
+print("acts one and two dialogue done")
+
+# 2026-09-06: the far side of the Rift gets its voices. Reyes and Novak had none at all; the decline lines
+# the radio switches to once the assay closes had none either; and a handful of keys the campaign code was
+# already sending had nothing behind them.
+LANG.update({
+    # Imani Reyes, Clinic Nine, behind an airlock the storm took off its frame. She asks after Novak first.
+    "survivor.surrogate.reyes.name": "Dr. Imani Reyes",
+    "survivor.surrogate.reyes.radio.1": "Clinic Nine, Reyes. Before anyone asks after me: has anybody had Novak on this band? His crawler went over the edge of the Rift eleven days ago and I have had nothing off him since.",
+    "survivor.surrogate.reyes.radio.2": "Reyes at Clinic Nine. My outer door is lying in the porch where the storm put it and the frame is eaten through. Four hull plates from the outside and I can cycle the lock again.",
+    "survivor.surrogate.reyes.radio.3": "Clinic Nine, still on the air. If anyone out there has a chassis that will take the belt: the chasm floor, under the overhang, west of the bend. Start there. Not here.",
+    "survivor.surrogate.reyes.greet": "Careful of the frame. It is not a door any more, it is an edge. Talk to me from where you are.",
+    "survivor.surrogate.reyes.plea": "The frame wants %s %s, plated from your side, and then the lock will cycle. Take the rebreathers off the shelf while you are at it. You will need them before I do.",
+    "survivor.surrogate.reyes.thanks": "That is a door again. Both rebreathers, take them. Sixty seconds of your own air each, and down in that mist sixty seconds is the whole of it.",
+    "survivor.surrogate.reyes.idle.1": "The lock cycles. Nineteen days of listening to it not cycle.",
+    "survivor.surrogate.reyes.idle.2": "When you go down there, go light and come straight back up. He will not be able to help you.",
+    "survivor.surrogate.reyes.rescued_radio": "Clinic Nine to all stations: the outer door holds and the lock is cycling. Whoever plated it, the chasm floor is next, and I am coming with you.",
+    "survivor.surrogate.reyes.safe": "Reyes here. Nobody has needed me today. That is the report I like.",
+    "survivor.surrogate.reyes.port.greet": "A chassis on the port. Do not try the airlock, there is nothing to try. Talk here.",
+    "survivor.surrogate.reyes.port.blueprint": "Take the shielded uplink off the rack by the door. When a storm comes over it costs the picture less, and you are going to be a long way from your chair with weather in the way. It is no use to me. I am not going anywhere until you plate that frame.",
+    "survivor.surrogate.reyes.port.again": "Frame is still open. Four plates, from your side. And the overhang on the chasm floor, west of the bend, when you have the air for it.",
+    "survivor.surrogate.reyes.port.empty": "Nobody home. She left on a crawler.",
+    "survivor.surrogate.reyes.aboard": "Aboard. Right. Who is hurt, who is short of air, and how far is it to the Rift.",
+    "survivor.surrogate.reyes.home": "This will do for a ward. Two bunks and a door that shuts. Keep the far one clear.",
+    "survivor.surrogate.reyes.home_radio": "Clinic Nine is closed. Reyes is at the pod, and she has asked for the far bunk kept made up.",
+    "survivor.surrogate.reyes.decline.1": "Clinic Nine. Scrubber is at eighty-one and the intake filter is grey the whole way through. I have washed it twice. It does not wash clean any more.",
+    "survivor.surrogate.reyes.decline.2": "Reyes. I have shut the ward end and moved into the dispensary. Smaller room, less of it to scrub. Everyone out here is doing the same arithmetic this week.",
+    "survivor.surrogate.reyes.decline.3": "Clinic Nine. Nothing off Novak again today. I am marking the days on the wall, which is a habit I would tell a patient to stop.",
+
+    # Aleks Novak, eleven days on the floor of the Rift. Later in the rotation is worse than earlier.
+    "survivor.surrogate.novak.name": "Aleks Novak",
+    "survivor.surrogate.novak.radio.1": "Novak. The hull is on its side at the bottom and I am under the overhang beside it. Do not come down the scree for me. It is not a slope, it is a fall.",
+    "survivor.surrogate.novak.radio.2": "Novak. Tell Reyes the leg is the same as it was yesterday. She will know what that means.",
+    "survivor.surrogate.novak.radio.3": "Novak. Going quiet a while to save the cell. Nothing is wrong. I will come back on at first light.",
+    "survivor.surrogate.novak.greet": "You came down here. That was stupid. Thank you.",
+    "survivor.surrogate.novak.plea": "There is nothing on me you need and nothing left in the hull worth carrying. Get back up the scree while you still have air.",
+    "survivor.surrogate.novak.thanks": "Nothing to give you. Get me to the top and we will call it square.",
+    "survivor.surrogate.novak.idle.1": "Sat up today. That is the whole report.",
+    "survivor.surrogate.novak.idle.2": "Reyes says another week off the leg. Reyes is usually right.",
+    "survivor.surrogate.novak.rescued_radio": "Novak. Up top, in a cabin, with the door shut. I am told I said thank you the whole way. I do not remember the whole way.",
+    "survivor.surrogate.novak.safe": "Novak here. Still horizontal. Reyes says that is the job for now.",
+    "survivor.surrogate.novak.port.greet": "That is not a port, it is a radio in a hull on its side. But I hear you.",
+    "survivor.surrogate.novak.port.again": "Still down here. Still not going anywhere on my own.",
+    "survivor.surrogate.novak.port.empty": "Nobody home. He was carried out of here.",
+    "survivor.surrogate.novak.aboard": "In. It is warm. Drive, do not stop on my account.",
+    "survivor.surrogate.novak.home": "A bed. A real one. I will be quiet now.",
+    "survivor.surrogate.novak.home_radio": "Novak is at the pod. Reyes has the far bunk. That is everybody off the Rift.",
+    "survivor.surrogate.novak.decline.1": "Novak. Water is fine, cell is at a third, heater is off. Do not spend anything getting to me.",
+    "survivor.surrogate.novak.decline.2": "Novak. Reyes first. She has people who need her and I have a hull and a wall.",
+    "survivor.surrogate.novak.decline.3": "Novak. Say again. I had the set turned down and I did not hear the start of that.",
+
+    # Once the assay closes the shelters start losing output, and the round robin talks about that instead.
+    "survivor.surrogate.okafor.decline.1": "Greenhouse Station. Scrubber is at seventy-four this morning. It was seventy-nine on Tuesday. I write the number on the wall each day so that I stop rounding it up.",
+    "survivor.surrogate.okafor.decline.2": "Okafor. I have moved the trays under the one lamp that still draws and pulled up the rest. Twenty plants instead of sixty. Twenty is what this air can carry.",
+    "survivor.surrogate.okafor.decline.3": "Greenhouse Station, still transmitting. The cartridge will not wash clean any more. It comes out of the water the same grey it went in.",
+    "survivor.surrogate.sorensen.decline.1": "Survey Two. Scrubber is at seventy-seven and the spare is a spare in name only. I have had it in pieces on the bunk twice this week.",
+    "survivor.surrogate.sorensen.decline.2": "Sorensen. Rover Two runs an hour and then wants an hour. I have stopped taking her past anywhere I can walk back from.",
+    "survivor.surrogate.sorensen.decline.3": "Survey Two. I have a shop and no stock. I can build one more of anything, and after that I am building it out of the shop.",
+    "survivor.surrogate.tanaka.decline.1": "Sulfur Works. Sixty-eight percent, falling about a point a day. I have done the division. I expect everyone has done the division.",
+    "survivor.surrogate.tanaka.decline.2": "Tanaka. The cartridges are rebuilt out of rebuilt cartridges now. The last set lasted nine days. The set before it lasted twenty.",
+    "survivor.surrogate.tanaka.decline.3": "Sulfur Works. Three new mouths in the vent field since spring and two of them upwind of me. The seismograph has been saying so for a month.",
+    "survivor.surrogate.brandt.decline.1": "Brandt. Filter is grey. I beat it on the step this morning and it came back grey. That is the end of that trick.",
+    "survivor.surrogate.brandt.decline.2": "Brandt. One meal, and I have moved it to the evening, which is when the cold comes in. Not asking. Reporting.",
+    "survivor.surrogate.brandt.decline.3": "Brandt. Rain has been at the roof plate over the porch six days now. The ceramic holds. The plate under it does not.",
+
+    # The port sends whatever they have left the first time a chassis calls. Only Okafor had a line for it.
+    "survivor.surrogate.sorensen.port.blueprint": "Take the relay module off Rover Two while you are here. It bolts to a chassis and it puts another few hundred metres on the band. You will get more out of it than I will. I am not going anywhere.",
+    "survivor.surrogate.tanaka.port.blueprint": "There is a resonance damper on the bench. I built it for the vents and never used it. Fit it and the rock stops hearing you drill, which matters more than you think below the deepslate. Take it. It is doing nothing on that bench.",
+    "survivor.surrogate.brandt.port.blueprint": "Pattern for the cladding. Fired clay on a hull, four courses, and the rain stops eating it. It is what has kept this roof over me. Build it before you drive back through that, not after.",
+
+    "crew.surrogate.tanaka.name": "Yuki Tanaka",
+    # Okafor was two people: her chassis said "Grace Okafor" on the pad while her shelter said "Dr. Ada
+    # Okafor" on the radio. One person, one name, and the shelter's is the one the player meets first.
+    "crew.surrogate.okafor.name": "Dr. Ada Okafor",
+
+    # What the port says about the shelter's own falling number, and what the band sounds like past its reach.
+    "message.surrogate.shelter.scrubber": "Scrubber at %s%% of rated output. It has been going down since the ship left.",
+    "message.surrogate.radio.carrier": "  %s: carrier only, %s. No range on it and no words in it.",
+    "message.surrogate.radio.carrier_line": "A carrier opens somewhere past the band. It holds a few seconds and drops. Somebody said something.",
+    # The handover is a blueprint for Okafor and hardware for everyone else, so the item names itself.
+    "message.surrogate.survivor.blueprint": "%s sends something across the port: %s. It is in your pack.",
+
+    "terminal.surrogate.shelter_reyes.name": "CLINIC NINE",
+    "terminal.surrogate.shelter_reyes.1.title": "PORT LOG",
+    "terminal.surrogate.shelter_reyes.1.body": "# CLINIC NINE, CHASSIS PORT\nOne ward, one dispensary, one doctor. Imani Reyes, medical programme, contract 39.\n\nThe outer door is lying in the porch where the storm left it. The frame is eaten through top to bottom and the lock will not cycle against open air. Four hull plates, from your side of it.\n\nDo not stand in the frame to do the work. I have no way to help you from in here and I would have to watch.",
+    "terminal.surrogate.shelter_reyes.2.title": "PATIENT LIST",
+    "terminal.surrogate.shelter_reyes.2.body": "# CLINIC NINE, ADMISSIONS\nNOVAK, A. Crawler over the Rift edge, day one. On the band that evening, conscious. Reported the leg and would not describe it. Nothing since day three.\n\nThat is the list. One name, eleven days.\n\nHe is on the chasm floor, under the overhang, west of the bend. The mist takes a chassis apart down there, so it has to be a body, and a body is a rebreather and sixty seconds. Plate my frame first. When you carry him up he will need somebody who knows what to do with him.",
+
+    "terminal.surrogate.shelter_novak.name": "CRAWLER FOUR",
+    "terminal.surrogate.shelter_novak.1.title": "HULL LOG",
+    "terminal.surrogate.shelter_novak.1.body": "# CRAWLER FOUR, CABIN SET\nAleks Novak, survey, contract 39. Hull is on its side at the bottom of the Rift and the cabin is the only part of it still sealed.\n\nI have the set, a third of a cell, and whatever was strapped down when we went over. The rest is on the scree between here and the top.\n\nIf you are reading this off my port then you came down. Do not stand there long.",
+    "terminal.surrogate.shelter_novak.2.title": "DAMAGE LOG",
+    "terminal.surrogate.shelter_novak.2.body": "# HULL FOUR, DAMAGE, BY DAY\nDay 1. Went over at the bend. Left track gone, port drive gone, cabin held. Leg is bad. Set works.\nDay 2. Cannot right her. Cannot move her. Sealed the cabin and pulled in what I could reach.\nDay 3. Mist comes up the chasm at night and goes back down at dawn. Plating outside is going grey.\nDay 6. Cell at half. Heater off. Leg is worse than day one and I have stopped writing about the leg.\nDay 9. Mist did not go down at dawn.\nDay 11.",
+})
+print("reyes, novak, the decline lines and the missing keys done")
+
+# ======================================================================================
+# The borer line under Contract Seven, and Novak talking to a chassis (2026-09-06)
+# ======================================================================================
+# Tellurium only generates below y -8 and the borer line runs at y 8, so stage three is sixteen blocks inside
+# it whatever the pilot is carrying. Halloran opens the stage with what that means, says one thing the first
+# time something wakes for the drill, and says one more when the crystals are back above the line. Two
+# openings, because Tanaka's damper is a reminder or an absence and never a gate.
+LANG.update({
+    "cinematic.surrogate.assay.core_damper": "One thing before you go down. There is something under the deepslate line that comes to noise, and a drill is all noise. You have Tanaka's damper. Fit it before the first hole, not after the first one hears you.",
+    "cinematic.surrogate.assay.core_nodamper": "One thing before you go down. There is something under the deepslate line that comes to noise, and a drill is all noise. The damper for it is on a bench at the Sulfur Works and that is where it still is. So: short holes, and listen between them.",
+    "cinematic.surrogate.assay.core_borer": "Your seismic just went up. That is one of them, and it came for the drill. Stop cutting, or come up. There is no third thing.",
+    "cinematic.surrogate.assay.core_up": "Three crystals, and you came back up. That is the half of it I cared about.",
+    # What Novak says to a chassis standing over him. Everything that could actually move him is act five.
+    "survivor.surrogate.novak.chassis": "A chassis. At least somebody knows where I am now. It will not be lifting me, though. The leg wants hands, and hands have to come down here breathing.",
+})
+print("assay borer line and Novak chassis line done")
+
+# ======================================================================================
+# The animals, the optional work, and the survey tier (2026-09-06)
+# ======================================================================================
+# Blocks: a table with a facing, a beacon with a lamp that is red or green, and a pillar that lights up.
+PICKAXE += [mid("survey_station"), mid("survey_beacon"), mid("long_range_scanner")]
+
+for name in ["survey_station", "survey_beacon", "long_range_scanner"]:
+    write(f"data/{MOD}/loot_table/blocks/{name}.json", self_drop(name))
+
+# The table: a plated box with a glass top, turned to face the player who put it down.
+blockstate("survey_station", {f"facing={d}": {"model": f"{MOD}:block/survey_station", "y": y}
+                              for d, y in (("north", 0), ("east", 90), ("south", 180), ("west", 270))})
+model("block/survey_station", {
+    "parent": "minecraft:block/block",
+    "textures": {
+        "particle": f"{MOD}:block/survey_station_side",
+        "side": f"{MOD}:block/survey_station_side",
+        "top": f"{MOD}:block/survey_station_top",
+        "bottom": f"{MOD}:block/hull_plating",
+    },
+    "elements": [
+        # The table itself, thirteen high, so it reads as something you lean on rather than stand on.
+        {"from": [0, 0, 0], "to": [16, 12, 16], "faces": {
+            "down": {"uv": [0, 0, 16, 16], "texture": "#bottom", "cullface": "down"},
+            "up": {"uv": [0, 0, 16, 16], "texture": "#side"},
+            "north": {"uv": [0, 0, 16, 12], "texture": "#side"},
+            "south": {"uv": [0, 0, 16, 12], "texture": "#side"},
+            "west": {"uv": [0, 0, 16, 12], "texture": "#side"},
+            "east": {"uv": [0, 0, 16, 12], "texture": "#side"}}},
+        # The glass, one pixel proud of it, which is the bit that glows.
+        {"from": [1, 12, 1], "to": [15, 13, 15], "faces": {
+            "down": {"uv": [1, 1, 15, 15], "texture": "#top"},
+            "up": {"uv": [1, 1, 15, 15], "texture": "#top"},
+            "north": {"uv": [1, 0, 15, 1], "texture": "#top"},
+            "south": {"uv": [1, 0, 15, 1], "texture": "#top"},
+            "west": {"uv": [1, 0, 15, 1], "texture": "#top"},
+            "east": {"uv": [1, 0, 15, 1], "texture": "#top"}}},
+    ]})
+model("item/survey_station", {"parent": f"{MOD}:block/survey_station"})
+
+# The beacon: a thin pole with a lamp at the top, in two colours.
+for linked, suffix in ((False, ""), (True, "_linked")):
+    model(f"block/survey_beacon{suffix}", {
+        "parent": "minecraft:block/block",
+        "textures": {"particle": f"{MOD}:block/survey_beacon", "pole": f"{MOD}:block/survey_beacon",
+                     "lamp": f"{MOD}:block/survey_beacon_lamp{suffix}"},
+        "elements": [
+            {"from": [6.5, 0, 6.5], "to": [9.5, 13, 9.5], "faces": {
+                "north": {"uv": [6, 3, 10, 16], "texture": "#pole"},
+                "south": {"uv": [6, 3, 10, 16], "texture": "#pole"},
+                "west": {"uv": [6, 3, 10, 16], "texture": "#pole"},
+                "east": {"uv": [6, 3, 10, 16], "texture": "#pole"},
+                "up": {"uv": [6, 6, 10, 10], "texture": "#pole"}}},
+            {"from": [5.5, 13, 5.5], "to": [10.5, 16, 10.5], "faces": {
+                "north": {"uv": [0, 0, 5, 3], "texture": "#lamp"},
+                "south": {"uv": [0, 0, 5, 3], "texture": "#lamp"},
+                "west": {"uv": [0, 0, 5, 3], "texture": "#lamp"},
+                "east": {"uv": [0, 0, 5, 3], "texture": "#lamp"},
+                "up": {"uv": [0, 0, 5, 5], "texture": "#lamp"},
+                "down": {"uv": [0, 0, 5, 5], "texture": "#lamp"}}},
+        ]})
+blockstate("survey_beacon", {"linked=false": {"model": f"{MOD}:block/survey_beacon"},
+                             "linked=true": {"model": f"{MOD}:block/survey_beacon_linked"}})
+model("item/survey_beacon", {"parent": f"{MOD}:block/survey_beacon"})
+
+# The pillar: a full-height column, banded, with a dish face that lights when it has charge.
+for lit, suffix in ((False, ""), (True, "_lit")):
+    model(f"block/long_range_scanner{suffix}", {
+        "parent": "minecraft:block/cube_bottom_top",
+        "textures": {"top": f"{MOD}:block/long_range_scanner_top",
+                     "bottom": f"{MOD}:block/hull_plating",
+                     "side": f"{MOD}:block/long_range_scanner{suffix}"}})
+blockstate("long_range_scanner", {"lit=false": {"model": f"{MOD}:block/long_range_scanner"},
+                                  "lit=true": {"model": f"{MOD}:block/long_range_scanner_lit"}})
+model("item/long_range_scanner", {"parent": f"{MOD}:block/long_range_scanner"})
+
+# The three loose items.
+for name in ["bio_sampler", "specimen_bag", "analysis_disk"]:
+    model(f"item/{name}", {"parent": "minecraft:item/generated", "textures": {"layer0": f"{MOD}:item/{name}"}})
+
+# Spawn eggs would be a lie: nothing here is bred and there is a command that spawns them for testing.
+# Recipes. The survey tier is late-game kit and priced like it: the table wants a data rack and glass, the
+# beacons are cheap on purpose because the errand is walking them out, and the pillar is a real project.
+shaped("survey_station", ["GGG", "RCR", "PPP"],
+       {"G": mid("reinforced_glass"), "R": mid("data_rack"), "C": mid("robot_core"), "P": mid("hull_plating")},
+       mid("survey_station"), 1, "equipment")
+shaped("survey_beacon", ["L", "C", "P"],
+       {"L": REDSTONE, "C": COPPER, "P": mid("hull_plating")},
+       mid("survey_beacon"), 2, "equipment")
+shaped("long_range_scanner", ["ADA", "PCP", "PPP"],
+       {"A": mid("antenna_mast"), "D": mid("data_rack"), "P": mid("hull_plating"), "C": mid("robot_core")},
+       mid("long_range_scanner"), 1, "equipment")
+shaped("bio_sampler", [" S ", "SCS", " P "],
+       {"S": mid("servo_motor"), "C": mid("robot_core"), "P": mid("hull_plating")},
+       mid("bio_sampler"), 1, "equipment")
+shaped("specimen_bag", ["WWW", "WSW", "PPP"],
+       {"W": "minecraft:white_wool", "S": mid("servo_motor"), "P": mid("hull_plating")},
+       mid("specimen_bag"), 1, "equipment")
+
+LANG.update({
+    # ---- The animals
+    "entity.surrogate.trundle": "Trundle",
+    "entity.surrogate.slagback": "Slagback",
+    "entity.surrogate.tocker": "Tocker",
+    "entity.surrogate.lantern_slug": "Lantern Slug",
+
+    # ---- Okafor's table. The note is what the terminal prints once the disk is in.
+    "specimen.surrogate.trundle.name": "Trundle",
+    "specimen.surrogate.trundle.note": "Grazes the crust for something we have not identified. Sleeps nineteen hours. Rolls away from everything, including me, including the wind. I have never seen one hurry and I have never seen one hurt.",
+    "specimen.surrogate.slagback.name": "Slagback",
+    "specimen.surrogate.slagback.note": "Sits on the vent fields absorbing heat through the dorsal plates and is, in every way that matters, a rock with opinions. Do not stand on one. I have stood on one.",
+    "specimen.surrogate.tocker.name": "Tocker",
+    "specimen.surrogate.tocker.note": "Follows light. Repeats tones back at you, badly, about half a second late. There is no reason for this that I can find. It is not mating, it is not warning, it is not territory. It just answers. Why.",
+    "specimen.surrogate.lantern_slug.name": "Lantern Slug",
+    "specimen.surrogate.lantern_slug.note": "Four photophores, no mouth I can locate, no observed movement in eleven hours. It watches. If you knock one off the ceiling it does not survive the fall, so do not, and I am aware that is not a biological note.",
+    "specimen.surrogate.borer.name": "Borer",
+    "specimen.surrogate.borer.note": "Reading taken at two metres from a live specimen in motion. I will not be repeating the procedure and I would ask that you do not either. Segmented, blind, steers by vibration through rock. The rest of the file is your telemetry and my language.",
+    "specimen.surrogate.cat.name": "Ballast",
+    "specimen.surrogate.cat.note": "Felis catus. Off-world, obviously. Filed because you asked and because she is the only specimen on the table that has ever sat on my keyboard. Nine kilograms. Argumentative.",
+    "specimen.surrogate.seep_water.name": "Seep Water",
+    "specimen.surrogate.seep_water.note": "Not water. A little over a third of it is, and the rest is what the crust has been dissolving into it since before anyone was here. Do not put a bare hand in it and do not put a chassis joint in it twice.",
+    "specimen.surrogate.biomatter.name": "Crust Biomatter",
+    "specimen.surrogate.biomatter.note": "The yellow film on the pan floors. Alive, in the sense that it divides. This is the bottom of the whole column: everything else on this table eats this, or eats something that does.",
+
+    # ---- The sampler, the crate, the disk
+    "item.surrogate.bio_sampler": "Bio-Sampler",
+    "item.surrogate.specimen_bag": "Specimen Crate",
+    "item.surrogate.analysis_disk": "Analysis Disk",
+    "tooltip.surrogate.bio_sampler": "Chassis bay. Touch a living thing to file a reading of it.",
+    "tooltip.surrogate.specimen_bag": "Chassis bay. Takes one of each species, alive, for the manifest.",
+    "tooltip.surrogate.analysis_disk": "Okafor's survey software. Use it on any terminal, once.",
+    "message.surrogate.disk.installed": "Analysis software installed. The survey page is on the terminal.",
+    "message.surrogate.disk.already": "This hub already has the software.",
+    "message.surrogate.survey.filed": "Reading filed: %s (%s of %s)",
+    "message.surrogate.bag.crated": "Crated: %s (%s of %s)",
+    "message.surrogate.bag.already": "There is already a %s in a crate.",
+    "message.surrogate.bag.roused": "Not while it is awake. Wait for it to settle.",
+    "message.surrogate.bag.falling": "It has come off the ceiling. There is nothing to collect.",
+    "message.surrogate.bag.borer": "No. Absolutely not. Brandt was very clear about this.",
+
+    # ---- The survey tier
+    "block.surrogate.survey_station": "Survey Station",
+    "block.surrogate.survey_beacon": "Survey Beacon",
+    "block.surrogate.long_range_scanner": "Long-Range Scanner",
+    "message.surrogate.beacon.linked": "Beacon linked. The ground around it is on the table.",
+    "message.surrogate.beacon.orphan": "Beacon out of range. Plant another between here and the last one.",
+    "message.surrogate.scanner.status": "Scanner: %s units in, %s m of reach.",
+    "message.surrogate.scanner.next": "Another %s units buys about %s m.",
+    "screen.surrogate.survey": "Survey",
+    "screen.surrogate.survey.title": "SURFACE SURVEY — SALLOW",
+    "screen.surrogate.survey.reach": "REACH %s m",
+    "screen.surrogate.survey.hint": "drag to turn · scroll to zoom · esc to close",
+    "station.surrogate.home": "Habitat Seven",
+    "station.surrogate.pad": "Pad",
+    "station.surrogate.beacon": "•",
+    "station.surrogate.orphan": "!",
+    "advancement.surrogate.whole_map.title": "The Whole Map",
+    "advancement.surrogate.whole_map.description": "Every shelter on Sallow, on one table, at one time.",
+
+    # ---- The optional work
+    "message.surrogate.errand.offered": "New: %s",
+    "message.surrogate.errand.received": "Received: %s",
+    "message.surrogate.errand.done": "Done: %s",
+
+    "errand.surrogate.housewarming.title": "Housewarming",
+    "errand.surrogate.housewarming.brief": "You have helped both of them. Go home and get some sleep.",
+    "errand.surrogate.housewarming.tired": "You are further past tired than you noticed. The bunk is right there.",
+    "errand.surrogate.housewarming.thanks": "There is a room on the slab now. It has six beds in it and none of them are yours.",
+
+    "errand.surrogate.hot_meal.title": "Something Warm",
+    "errand.surrogate.hot_meal.brief": "Sorensen has been eating out of foil for fourteen months. Cook something and carry it to him before it goes cold.",
+    "errand.surrogate.hot_meal.thanks": "He did not say anything for a while. Then he asked whether there was any more.",
+
+    "errand.surrogate.survey.title": "Okafor's Survey",
+    "errand.surrogate.survey.brief": "A reading of everything alive on this planet. She has given you the sampler and the software; you have to find the rest.",
+    "errand.surrogate.survey.thanks": "The table is full. She has already started arguing with it.",
+
+    "errand.surrogate.ballast.title": "Ballast",
+    "errand.surrogate.ballast.brief": "The cat is out. She has been out for some hours. Bring her back.",
+    "errand.surrogate.ballast.picked_up": "She permits it.",
+    "errand.surrogate.ballast.thanks": "She walks in ahead of you as though it was all arranged.",
+
+    "errand.surrogate.vent_clear.title": "Tanaka's Cable",
+    "errand.surrogate.vent_clear.brief": "A vent has opened under the Sulfur Works' power run and is cooking the insulation. Cap it before it takes the line out.",
+    "errand.surrogate.vent_clear.thanks": "Capped, and the line is holding. She says the heat is welcome now it is going somewhere.",
+
+    "errand.surrogate.burial.title": "Outside Clinic Nine",
+    "errand.surrogate.burial.brief": "There is a body fifteen metres from Reyes' airlock. She has been looking at it through the window for nine weeks and her chassis has been dead for eleven.",
+    "errand.surrogate.burial.name": "Petrov",
+    "errand.surrogate.burial.lifted": "He weighs almost nothing. The suit is most of it.",
+    "errand.surrogate.burial.too_close": "Not here. She can see this window.",
+    "errand.surrogate.burial.thanks": "She watched from the window and did not say anything, and then she said thank you, and then she closed the shutter.",
+
+    "errand.surrogate.corroded.title": "Ceramic Row",
+    "errand.surrogate.corroded.brief": "Three of Brandt's neighbours' machines have been eaten by the rain. He has the plates. He does not have a chassis that can stand in it.",
+    "errand.surrogate.corroded.progress": "That is one back together.",
+    "errand.surrogate.corroded.thanks": "Brandt says the row is quieter with them running. He means it as a good thing.",
+
+    "errand.surrogate.ark.title": "Brandt's Ark",
+    "errand.surrogate.ark.brief": "One of each, alive, in a crate. He has watched them through a window for eleven years and he is not going to be the last person who ever sees one.",
+    "errand.surrogate.ark.thanks": "Six crates on the pad, and the old man will not go inside until he has counted them twice.",
+
+    # ---- The housewarming, in full
+    "cinematic.surrogate.housewarming.wake_1": "There you are. Do not panic, it is only us, and only the chassis. Mikkel has been in your kitchen.",
+    "cinematic.surrogate.housewarming.wake_2": "I have been standing in your kitchen. There is a difference and you will not convince anyone of it.",
+    "cinematic.surrogate.housewarming.wake_3": "We let ourselves in. Your airlock has been keyed to both of us since the day you got the port working, which you would know if you ever read what you sign.",
+    "cinematic.surrogate.housewarming.offer_1": "We have been talking. About you, mostly, and about that slab out the east side that has had nothing on it since you landed.",
+    "cinematic.surrogate.housewarming.offer_2": "There is a module in a rack on the platform with your habitat's number stencilled on it. It has been there four hundred days. Nobody will send it down for one signature.",
+    "cinematic.surrogate.housewarming.offer_3": "Three signatures, though. Three registered sites, all requesting the same manifest line. That, they will answer. We sent it an hour ago. Come outside.",
+    "cinematic.surrogate.housewarming.wait_1": "Any minute. It is a heavy thing on a cheap parachute and the platform does not aim so much as let go.",
+    "cinematic.surrogate.housewarming.wait_2": "There. That light, low, coming up out of the west. That is yours.",
+    "cinematic.surrogate.housewarming.landed_1": "On the slab. Near enough on the slab. That is four hundred days of paperwork settling into your garden.",
+    "cinematic.surrogate.housewarming.landed_2": "Six bunks in there. Which is six more than anyone on this planet has spare.",
+    "cinematic.surrogate.housewarming.goodbye": "We are going to go and be in our own kitchens now. Sleep in your own bed tonight, not the new ones. They are not for you.",
+})
+print("fauna, errand and survey data done")
+
+LANG.update({
+    # The survey page on any hub terminal that has had the disk put in it.
+    "terminal.surrogate.survey.title": "SURVEY",
+    "terminal.surrogate.survey.header": "OKAFOR / XENOBIOLOGY — %s of %s subjects filed",
+    "terminal.surrogate.survey.unread": "No reading on file.",
+
+    # ---- Marsh's suit.
+    #
+    # The prologue has him walk from Site Two to the pod and back, which is two hours outside, and Halloran
+    # says out loud that his suit is rated for one. Both of those are true and neither is a mistake: she is
+    # looking at a contractor's suit because it is the only kind she has ever seen. His is not one.
+    "terminal.surrogate.site02.4.title": "KESTREL — ISSUE NOTE",
+    "terminal.surrogate.site02.4.body": "Company Field Standard 11-C, and every word of it matters if you are the one wearing it.\n\nContractor issue on this contract is the Tern: soft suit, single bottle, one hour of exposure and a fifteen minute reserve you are not supposed to touch. Halloran has a Tern. Sorensen has a Tern. Okafor's is nine years old and has been patched twice.\n\nCompany personnel travelling on inspection carry the Kestrel. Sealed hardshell. Regenerative scrubber on a six hour cycle rather than a bottle, so the limit is the cartridge and the cartridge recharges off any powered rack. Rated exposure six hours, hard ceiling nine.\n\nThe difference is not technology. Both suits were made in the same year, in the same yard. The difference is that one of us is insured as an asset and the rest of you are insured as a schedule.\n\n— T. Marsh",
+    "terminal.surrogate.site02.5.title": "RE: KESTREL",
+    "terminal.surrogate.site02.5.body": "Teo,\n\nYou walked here in a suit I assumed would kill you and you let me think that for four hours because you did not want to explain what was on your back.\n\nI have read the note. I understand why you did not want to explain it.\n\nWhen we get to the part of this where somebody has to go down somewhere and come back up, you are going to be the one who can. I want you to have thought about that before I ask.\n\n— I.H.",
+})
+print("survey page and Marsh's suit done")
 
 lang_path = os.path.join(ASSETS, "lang", "en_us.json")
 with open(lang_path, encoding="utf-8") as f:

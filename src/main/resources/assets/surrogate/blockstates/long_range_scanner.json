@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "lit=false": {
+      "model": "surrogate:block/long_range_scanner"
+    },
+    "lit=true": {
+      "model": "surrogate:block/long_range_scanner_lit"
+    }
+  }
+}

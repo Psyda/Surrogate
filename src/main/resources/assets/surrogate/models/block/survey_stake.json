@@ -1,0 +1,51 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "surrogate:block/survey_stake",
+    "stake": "surrogate:block/survey_stake"
+  },
+  "elements": [
+    {
+      "from": [
+        8,
+        0,
+        5
+      ],
+      "to": [
+        8,
+        16,
+        11
+      ],
+      "faces": {
+        "east": {
+          "texture": "#stake"
+        },
+        "west": {
+          "texture": "#stake"
+        }
+      },
+      "shade": false
+    },
+    {
+      "from": [
+        5,
+        0,
+        8
+      ],
+      "to": [
+        11,
+        16,
+        8
+      ],
+      "faces": {
+        "north": {
+          "texture": "#stake"
+        },
+        "south": {
+          "texture": "#stake"
+        }
+      },
+      "shade": false
+    }
+  ]
+}

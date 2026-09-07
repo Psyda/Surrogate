@@ -24,16 +24,25 @@ Pick **Toxic Wastes** as the world type when creating a world. Sallow is mesa co
 floors just above the acid, tables that rise twenty-odd blocks from them across a few blocks, acid seas in
 the deepest basins and acid rivers in the lowest channels. The floors are made for a slow, heavy vehicle (see
 `docs/DESIGN-crawler.md`): a one block step is a ramp, a two block step is a wall, and every base is placed
-on floor the crawler can reach from the pod. Vanilla caves and ores run underneath, never opening on a floor.
-Five biomes of its own sit on that shape:
+on floor the crawler can reach from the pod. Vanilla caves and ores run underneath, never opening on a floor,
+and the only chasm is the Rift, which is in the noise and not in a carver, so the mod always knows where it
+is. Seven biomes of its own sit on that shape:
 
 | Biome | Surface | Notes |
 | --- | --- | --- |
 | Toxic Desert | caustic sand over caustic sandstone | the valley corridors; sulfur crust and scrap heaps |
-| Ash Dunes | ash over tuff, banded rock beneath | the tables; smoking fumaroles, ash on the wind |
-| Acid Flats | mud and clay under green water | the seas and rivers; drowned come up out of them |
+| Ash Dunes | ash over tuff, banded rock beneath | the tables; smoking fumaroles, geysers, ash on the wind |
+| Acid Flats | mud and clay under green water | the seas and rivers; nothing comes out of them |
 | Salt Pans | calcite | the open basins; sulfur crust |
 | Dead Grove | coarse dirt and podzol | the damp corridors; petrified trees are the only wood |
+| Caustic Mire | mud and clay over caustic sand | the belt, downwind of the vent field; it rains here |
+| The Rift | raw section, mud at the bottom | the chasm across the floors; the only way over is a bridge |
+
+Nothing lives out there. Every biome's spawner lists are empty, the dungeons are out of the underground
+steps, and the server discards any hostile that arrives by some other route, so the only things that move on
+Sallow are chassis, the crawler, six people in six sealed rooms, and what is under the rock. Put the vanilla
+mobs back with `vanillaMonsters` in the config. What replaced them is in `docs/DESIGN-hazards.md`: borers in
+the deep, magnetic storms, geysers, and acid rain in the belt.
 
 **Sulfur crust** drops sulfur, which makes life support units and, with charcoal and bone meal, gunpowder.
 **Scrap heaps** hold iron nuggets, some copper, and the odd servo motor. Petrified logs are stripped dark oak.
@@ -108,13 +117,22 @@ spawn, each with a survivor holed up inside. Carry a **Field Radio** (or sit in 
 in) and every couple of minutes one of them calls in. Use the radio for a list of signals with strength, rough
 distance and a compass bearing.
 
+There are six of them, and where each one is placed is the campaign in map form. **Okafor** and **Sorensen**
+are within a drive. **Tanaka** is eleven hundred blocks out, past what the pod's mast can hear, so until you
+extend the band he is a bearing and a carrier with nothing on it. **Brandt** and **Reyes** are on the far
+side of the Rift, in the belt, where it rains something that eats machines; their shelters are built to a
+different pattern for it. **Novak** is not in a shelter at all. See `docs/DESIGN-campaign.md`.
+
 Each survivor needs something, says so, and pays back with a chassis upgrade: a fabricator module, a cargo
-bay, a battery expansion, reinforced plating. Every shelter has a **chassis port** in its south wall: a
-chassis that uses it talks to the room through a terminal, no door opened, and the nearest one, Greenhouse
-Station, sends the **Crawler Blueprint** over it, which the crawler kit recipe needs on the bench (and hands
-back). Every shelter also has a **collar** in its west wall: back the crawler onto it and the survivor walks
-aboard; couple at home and they step into the pod. That is the rescue. Once home they stay on the air with
-small talk, less often.
+bay, a battery expansion, reinforced plating, and the three modules that open the country past them. Every
+shelter has a **chassis port** in its south wall: a chassis that uses it talks to the room through a
+terminal, no door opened, and the nearest one, Greenhouse Station, sends the **Crawler Blueprint** over it,
+which the crawler kit recipe needs on the bench (and hands back). Every shelter also has a **collar** in its
+west wall: back the crawler onto it and the survivor walks aboard; couple at home and they step into the
+pod. That is the rescue. Once home they stay on the air with small talk, less often.
+
+Once the company's ship has gone, every shelter's scrubber starts losing a little each day. Nobody dies of
+it. It is a graph going the wrong way in six places at once, and it is what turns a contract into a rescue.
 
 ## Before the landing: the Provender
 
@@ -209,6 +227,52 @@ gets the plain welcome. Turn it off with `prologue` in the config, replay it wit
 or jump to a day with `/surrogate prologue day 2`. Replaying the ship week (`/surrogate transit start`) resets
 the opening so the landing tells it again, with one cat.
 
+## The research runs, and what is out there
+
+After the three days in the pod and before the company's contract, the two people within a drive have work
+for you. **Okafor** wants a twelve-block core sample out of the valley floor. **Sorensen** wants four
+**survey stakes** on four different biomes, eighty blocks apart, left overnight. Then the two of them
+together want a **sealed sample** out of an acid channel, brought home without opening it in the open air.
+Halloran opens and closes each on the radio, every objective times out and somebody works around it, and
+five errands sit around the edges and are never objectives: the packet of tomato seeds Castellanos put in
+your kit, a hull plate on Sorensen's blown airlock, and the three things people have been asking for.
+
+Out of it comes the **relay schematic**, and with it the fourth voice on the band. `/surrogate research
+start|stage <name>|skip|fast|status` drives it; `docs/DESIGN-campaign.md` is the whole plan, eight acts of it.
+
+Nothing lives on Sallow. The vanilla mobs are gone from the biomes and swept up by the server if they arrive
+some other way; what replaced them is weather, geology and one animal that has never seen the sky
+(`docs/DESIGN-hazards.md`):
+
+* **Borers.** Below y 8 the rock is somebody's. They hunt vibration, and a mining drill is the loudest thing
+  that has ever happened to them. A borer damages the stone it passes through using the same crack overlay
+  your own mining draws, so one pass leaves a seam and one circling a spot chews out a cavern — which is the
+  failure mode: you hear it working, you keep drilling, and then the ceiling is gone. Hull plating slows one
+  to a crawl, so a plated shaft is a real defence. There is always warning: a grind through the rock, dust
+  off the ceiling, and a seismic bar on the HUD. Tanaka's **resonance damper** buys you forty seconds of
+  drilling instead of eight; a **damper beacon** does the same for a mine that has to stay put.
+* **Magnetic storms.** Ninety seconds of warning, then twenty minutes of the sky going wrong. The uplink
+  tears and desaturates and eventually drops you back into your chair wherever the chassis was standing; the
+  radio goes to noise; the sonar fills with ghosts; solar collectors make almost nothing, so a base runs on
+  its buffer. A sealed room, a dock or a docked crawler shields the link completely. The rule you learn is:
+  when the mast calls it, park.
+* **Geysers.** A fumarole that still works, on a ninety-second clock you can watch: quiet, steam at the lip,
+  four seconds of rumble, then eight of a scalding column ten blocks high. Watch one cycle and you can walk
+  past it forever. Each eruption lays fresh sulfur crust, so a geyser field is a sulfur mine for anyone
+  working to a clock, and a **geothermal tap** capped on during the quiet part turns one into about a
+  hundred solar collectors.
+* **Acid rain.** Only in the **belt**, past the Rift, and on its own clock. It eats machines — collectors,
+  conduits, docks, life support, terminals, masts — and a machine's output falls as it corrodes until the
+  thing breaks and leaves a stub a hull plate can put back. A chassis in it loses hull; a crawler drains
+  four times as fast and then starts losing hull. Anything with a solid block above it is untouched, which
+  is the only building lesson the belt teaches, and it is why the shelters over there have sloped roofs and
+  no bare metal. **Acid coating** and **ceramic cladding** make it survivable, not pleasant.
+
+**The Rift** is a chasm in the noise, sixteen to forty blocks across and thirty-four deep, cut through every
+valley floor it crosses. It is continuous, so together with the tables it partitions the floor a crawler can
+drive: the far side is unreachable until somebody builds a bridge, and that is where the last three people
+are.
+
 ## Chassis tools
 
 | Item | What it does |
@@ -259,6 +323,14 @@ Apply by using the item on a powered-down chassis.
 | Battery Expansion | Power capacity ×2, stacks twice |
 | Cargo Bay | +9 cargo slots, stacks twice |
 | Fabricator Module | 3x3 crafting from the pilot menu |
+| Relay Module | Doubles link and radio range. Sorensen's schematic; it is what reaches Tanaka |
+| Resonance Damper | Plays a tone into the rock the borers steer by, so your drilling counts for a fraction and one that has fixed on you loses the fix. Tanaka's |
+| Acid Coating | Most of the belt's rain off a chassis |
+| Shielded Uplink | Halves what a magnetic storm does to the picture, and doubles the time before the link drops. Reyes' |
+
+The crawler takes modules too, fitted by using the item on a parked hull. There is one so far: **Ceramic
+Cladding**, Brandt's pattern, which is the difference between a dash into the belt and being able to work
+there.
 
 ## Blocks and power
 
@@ -286,6 +358,20 @@ Apply by using the item on a powered-down chassis.
   you place yourself carries the pilot manual. Pages live under `terminal.surrogate.<unit>.<n>.title/body`.
 * **Breached Plating**: not craftable; what a hull plate turns into when it lets go. A torn frame, not
   airtight. Use a hull plate on it to make it a wall again.
+* **Geyser**: not craftable in any useful sense; it generates. A fumarole that still works, on its own
+  ninety-second clock. Standing in the column kills a body and nearly kills a chassis.
+* **Geothermal Tap**: capped onto a live geyser during the quiet part of its cycle, and it pushes power into
+  its neighbours the way a solar collector does, on the order of a hundred of them. Try it during the rumble
+  and it comes straight back off.
+* **Relay Mast**: repeats the pod's band another 400 m while something feeds it. Two in a chain is how the
+  far side gets covered.
+* **Damper Beacon**: holds the rock quiet around a mine that has to stay put, for as long as it has power.
+* **Span Anchor**: the near end of a bridge. It remembers which way the deck runs; the kit that lays the
+  deck is act five and is not built yet.
+* **Survey Stake**: a ranging rod. Planting four of them on four biomes is Sorensen's wind count.
+* **Corroded Machine**: what the belt leaves of a machine that stood in its rain. Not a full cube, so a
+  corroded life support unit is also a hole in the wall, which is usually how you find out. A hull plate
+  puts back what it was.
 
 ## Configuration
 
@@ -300,6 +386,14 @@ how long the crew wait before doing an objective for you, and `prologueReadSpeed
 paces the subtitles. `transit` turns the week on the ship off, `transitDayTicks` is how long a ship day runs
 while you are awake, `transitObjectiveTimeoutTicks` is how long the ship's crew wait before doing something
 for you, and `transitRestTimeoutTicks` is how long you can ignore your bunk before the doctor steps in.
+`research` turns acts one and two off, and `assay` the contract.
+
+The whole hazard layer is in there too, in one block: `hazards` turns all four of them off at once, and
+`vanillaMonsters` puts the ordinary mobs back. Under that sit the borer line and how loud a broken block is,
+the storm's interval, warning, peak and what intensity drops an unshielded link, the geyser's cycle and what
+the tap makes, and the belt's rain clock, corrosion rate and what it does to a hull. `lockedSeed` is the map
+the campaign was designed against; the new-world screen offers it for a Toxic Wastes world unless you type
+your own, and blank offers nothing.
 
 ## Development
 
@@ -315,6 +409,8 @@ python3 tools/smoke_test_server.py # headless check: boots a Toxic Wastes server
 python3 tools/smoke_test_prologue.py # headless check: the three days on the ground with a fake player, ship week off, fast mode
 python3 tools/smoke_test_transit.py  # headless check: runs the whole week aboard the ship with a fake player in fast mode
 python3 tools/smoke_test_crawler.py  # headless check: collar door, cabin, helm drive, click-to-couple docking, bay, chair dive, the first shelter (boarding, blueprint at the port, homecoming)
+python3 tools/smoke_test_research.py # headless check: acts one and two, the three runs and the range gate at Tanaka
+python3 tools/seed_search.py [n] [from]        # scores n candidate seeds with no world behind them and names a winner
 python3 tools/terrain_scan.py [radius] [step]  # headless check: places the sites, drives the reachability grid from the pod to each, paints build/terrain_map.png
 gradle runClient -PquickPlay=<world> -PdevTransit=day4   # dev client straight into a world, restarting the ship week at a day
 gradle runClient -PquickPlay=<world> -PdevPrologue=day2  # the same, skipping the ship and restarting the days on the ground at a day
@@ -323,11 +419,15 @@ python3 tools/dev_client.py --day 5 --shots 40 --quit 2400 --fast --look 60,-6  
 ```
 
 `/surrogate prologue start|skip|day <n>|fast|status` (op level 2) replays the opening for you, cuts it short, toggles
-quarter-length timings for the next run, or reports where it is. `/surrogate transit start|skip|day <1-7>|fast|status`
+quarter-length timings for the next run, or reports where it is. `/surrogate research start|skip|stage <name>|fast|status`
+does the same for acts one and two. `/surrogate transit start|skip|day <1-7>|fast|status`
 does the same for the ship: start over, jump to the drop, jump to a day, or say where the week is. Both
 `fast` switches are the same switch. `/surrogate terrain scan|map [radius] [step]|here` reads the mesa
 valleys (see `docs/DESIGN-crawler.md`): the drives from the pod to every site and whether a crawler could take
-them, a painted map to `terrain_map.png` in the run directory, or what the ground under you is.
+them, a painted map to `terrain_map.png` in the run directory, or what the ground under you is. `/surrogate terrain seeds <count> [from]` scores that many candidate seeds
+in one run without creating a world for any of them, prints a ranked table and names a winner: that is how
+seed 3878 was chosen (`docs/DESIGN-campaign.md`, "The map"), and `tools/smoke_test_server.py` pins it so
+every headless run is the same map.
 `/surrogate crawler dockat home|<n>` moves the hull onto a collar and couples it there (a survivor boards at
 their shelter, steps into the pod at home). `/surrogate crawler spawn|dock|undock|charge` puts a charged hull on the starter pod's apron, backs it onto the
 collar and unlocks the collar door (or seals it again), or tops up every hull near the pod; `board`, `leave`,

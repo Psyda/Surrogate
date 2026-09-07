@@ -1,0 +1,42 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "surrogate:block/corroded_machine",
+    "skin": "surrogate:block/corroded_machine",
+    "top": "surrogate:block/corroded_machine_top"
+  },
+  "elements": [
+    {
+      "from": [
+        1,
+        0,
+        1
+      ],
+      "to": [
+        15,
+        13,
+        15
+      ],
+      "faces": {
+        "down": {
+          "texture": "#skin"
+        },
+        "up": {
+          "texture": "#top"
+        },
+        "north": {
+          "texture": "#skin"
+        },
+        "south": {
+          "texture": "#skin"
+        },
+        "west": {
+          "texture": "#skin"
+        },
+        "east": {
+          "texture": "#skin"
+        }
+      }
+    }
+  ]
+}

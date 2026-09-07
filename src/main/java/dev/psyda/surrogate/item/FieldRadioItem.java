@@ -1,5 +1,6 @@
 package dev.psyda.surrogate.item;
 
+import dev.psyda.surrogate.hazard.Hazards;
 import dev.psyda.surrogate.prologue.Crew;
 import dev.psyda.surrogate.prologue.Director;
 import dev.psyda.surrogate.prologue.Prologue;
@@ -38,6 +39,11 @@ public class FieldRadioItem extends Item {
 			player.getItemCooldownManager().set(this, 20);
 			world.playSound(null, player.getBlockPos(), SoundEvents.ENTITY_GENERIC_EXTINGUISH_FIRE, SoundCategory.PLAYERS, 0.3f, 0.5f);
 			Director.radioUsed(player);
+			// In a magnetic storm the band is carrier and hiss: no bearings, and nobody answers.
+			if (Hazards.radioNoise(player.getServerWorld())) {
+				player.sendMessage(Text.translatable("message.surrogate.radio.noise").formatted(Formatting.GRAY), false);
+				return TypedActionResult.success(user.getStackInHand(hand), world.isClient);
+			}
 			if (player.isSneaking()) callSiteTwo(player);
 			else SurvivorManager.get(player.server).report(player);
 		}

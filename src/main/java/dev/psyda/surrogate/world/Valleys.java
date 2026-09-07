@@ -22,9 +22,11 @@ import java.util.function.Predicate;
 /**
  * Reads the shape of the Toxic Wastes from the seed, without loading a chunk. The noise router's
  * {@code continents} output is the mesa mask (about -0.8 on a valley floor, +0.8 on a table, below -1.05 in
- * the acid) and its {@code depth} output is the river mask (see the terrain section of tools/gen_data.py), so
- * any column can be classified in microseconds. Sites go on floors a crawler can reach from the pod without a
- * climb, with a cliff close enough behind them to read against.
+ * the acid), its {@code depth} output is the river mask, its {@code temperature} the Rift and its
+ * {@code ridges} the acid belt (see the terrain section of tools/gen_data.py), so any column can be
+ * classified in microseconds. Sites go on floors a crawler can reach from the pod without a climb, with a
+ * cliff close enough behind them to read against. Everything here reads a {@link Masks}, which is either the
+ * world underfoot or a seed nobody has generated, so the same predicates judge a candidate map.
  */
 public final class Valleys {
 	public static final RegistryKey<ChunkGeneratorSettings> SETTINGS = RegistryKey.of(RegistryKeys.CHUNK_GENERATOR_SETTINGS, Surrogate.id("toxic_wastes"));
@@ -37,15 +39,19 @@ public final class Valleys {
 	public static final double FLAT = -0.795;
 	/** River mask above this is bank or water; the banks slope, so a crawler keeps off them too. */
 	public static final double RIVER_EDGE = 0.05;
+	/** Rift mask above this is the chasm: the floor has already started falling away from under it. */
+	public static final double RIFT_EDGE = 0.05;
+	/** Belt mask at or above this is the acid belt, on the same line the caustic biomes are drawn on. */
+	public static final double BELT_EDGE = 0.65;
 	/** Cell size of the reachability grid, in blocks. */
 	public static final int CELL = 8;
 	/** How far from a cell centre the ground must still be flat for the cell to count as drivable. */
 	private static final int MARGIN = 5;
 
 	public enum Kind {
-		SEA, RIVER, FLOOR, CLIFF, MESA;
+		SEA, RIVER, FLOOR, CLIFF, MESA, RIFT;
 
-		/** Ground a crawler can cross. */
+		/** Ground a crawler can cross. Never the Rift: that is thirty-four blocks down, and it is the point. */
 		public boolean drivable() {
 			return this == FLOOR;
 		}
@@ -62,6 +68,66 @@ public final class Valleys {
 
 	private static NoiseRouter router(ServerWorld world) {
 		return world.getChunkManager().getNoiseConfig().getNoiseRouter();
+	}
+
+	/**
+	 * Where a column's masks come from. The world underfoot has one; so does a seed nobody has generated
+	 * ({@link SeedSampler}), which is how a hundred candidate maps get judged before one is played. Null
+	 * stands for a world that is not the Toxic Wastes, and every predicate here answers permissively for it.
+	 */
+	public interface Masks {
+		/** The mesa mask: about -0.8 on a valley floor, +0.8 on a table, below -1.05 in the acid. */
+		double continents(int x, int z);
+
+		/** The river mask: above {@link #RIVER_EDGE} the ground is bank or water. */
+		double river(int x, int z);
+
+		/** The Rift mask: 0 out on the floor, 1 on the chasm floor thirty-four blocks below it. */
+		double rift(int x, int z);
+
+		/** The acid belt mask: 0 upwind of the vent field, 1 well inside the belt. */
+		double belt(int x, int z);
+
+		/** The height field the terrain is cut from, before caves. */
+		double surfaceHeight(int x, int z);
+	}
+
+	/** The masks of any noise router: the Rift and the belt ride out on temperature and ridges (gen_data.py). */
+	public static Masks masks(NoiseRouter router) {
+		return new RouterMasks(router);
+	}
+
+	/** The masks of the world underfoot, or null when it is not the Toxic Wastes. */
+	@Nullable
+	public static Masks masks(ServerWorld world) {
+		return isMesaWorld(world) ? masks(router(world)) : null;
+	}
+
+	private record RouterMasks(NoiseRouter router) implements Masks {
+		@Override
+		public double continents(int x, int z) {
+			return router.continents().sample(new DensityFunction.UnblendedNoisePos(x, 64, z));
+		}
+
+		@Override
+		public double river(int x, int z) {
+			return router.depth().sample(new DensityFunction.UnblendedNoisePos(x, 64, z));
+		}
+
+		@Override
+		public double rift(int x, int z) {
+			return (router.temperature().sample(new DensityFunction.UnblendedNoisePos(x, 64, z)) + 1.0) * 0.5;
+		}
+
+		@Override
+		public double belt(int x, int z) {
+			return (router.ridges().sample(new DensityFunction.UnblendedNoisePos(x, 64, z)) + 1.0) * 0.5;
+		}
+
+		@Override
+		public double surfaceHeight(int x, int z) {
+			return 64.0 + router.initialDensityWithoutJaggedness().sample(new DensityFunction.UnblendedNoisePos(x, 64, z)) / SLOPE;
+		}
 	}
 
 	public static double continents(ServerWorld world, int x, int z) {
@@ -86,29 +152,63 @@ public final class Valleys {
 	public static final double SLOPE = 0.25;
 
 	public static Kind classify(ServerWorld world, int x, int z) {
-		if (!isMesaWorld(world)) return Kind.FLOOR;
-		double c = continents(world, x, z);
+		return classify(masks(world), x, z);
+	}
+
+	public static Kind classify(@Nullable Masks masks, int x, int z) {
+		if (masks == null) return Kind.FLOOR;
+		double c = masks.continents(x, z);
 		if (c < SEA) return Kind.SEA;
 		if (c > MESA) return Kind.MESA;
+		// The chasm is cut into the floor after the mesa mask is drawn, so it has to be asked for separately
+		// or a column thirty blocks down still reads as ground a crawler could stand on.
+		if (masks.rift(x, z) > RIFT_EDGE) return Kind.RIFT;
 		if (c > FLOOR) return Kind.CLIFF;
-		return river(world, x, z) > RIVER_EDGE ? Kind.RIVER : Kind.FLOOR;
+		return masks.river(x, z) > RIVER_EDGE ? Kind.RIVER : Kind.FLOOR;
 	}
 
 	/** Dead flat floor, off the cliff toes and the river banks: where a crawler can actually drive. */
 	public static boolean flat(ServerWorld world, int x, int z) {
-		if (!isMesaWorld(world)) return true;
-		double c = continents(world, x, z);
-		return c <= FLAT && c >= SEA && river(world, x, z) <= RIVER_EDGE;
+		return flat(masks(world), x, z);
+	}
+
+	public static boolean flat(@Nullable Masks masks, int x, int z) {
+		if (masks == null) return true;
+		double c = masks.continents(x, z);
+		// The Rift last: it costs a noise sample and only a column that is otherwise good floor can be in it.
+		return c <= FLAT && c >= SEA && masks.river(x, z) <= RIVER_EDGE && masks.rift(x, z) <= RIFT_EDGE;
+	}
+
+	/** True in the chasm, where the ground is thirty-four blocks down and there is no way across without one. */
+	public static boolean inRift(ServerWorld world, int x, int z) {
+		return inRift(masks(world), x, z);
+	}
+
+	public static boolean inRift(@Nullable Masks masks, int x, int z) {
+		return masks != null && masks.rift(x, z) > RIFT_EDGE;
+	}
+
+	/** True downwind of the vent field, where the rain eats machines. False everywhere off the Toxic Wastes. */
+	public static boolean inBelt(ServerWorld world, int x, int z) {
+		return inBelt(masks(world), x, z);
+	}
+
+	public static boolean inBelt(@Nullable Masks masks, int x, int z) {
+		return masks != null && masks.belt(x, z) >= BELT_EDGE;
 	}
 
 	/** Floor at the point and on a ring {@code radius} out, so a footprint that size fits on the flat. */
 	public static boolean clear(ServerWorld world, int x, int z, int radius) {
-		if (!classify(world, x, z).drivable()) return false;
+		return clear(masks(world), x, z, radius);
+	}
+
+	public static boolean clear(@Nullable Masks masks, int x, int z, int radius) {
+		if (!classify(masks, x, z).drivable()) return false;
 		for (int i = 0; i < 8; i++) {
 			double angle = i * Math.PI / 4.0;
 			int px = x + (int) Math.round(Math.cos(angle) * radius);
 			int pz = z + (int) Math.round(Math.sin(angle) * radius);
-			if (!classify(world, px, pz).drivable()) return false;
+			if (!classify(masks, px, pz).drivable()) return false;
 		}
 		return true;
 	}
@@ -118,14 +218,18 @@ public final class Valleys {
 	 * because west of every pod is the docking collar and the apron a crawler backs onto.
 	 */
 	public static boolean nearWall(ServerWorld world, int x, int z, int min, int max) {
-		if (!isMesaWorld(world)) return false;
+		return nearWall(masks(world), x, z, min, max);
+	}
+
+	public static boolean nearWall(@Nullable Masks masks, int x, int z, int min, int max) {
+		if (masks == null) return false;
 		for (int i = 0; i < 8; i++) {
 			double angle = i * Math.PI / 4.0;
 			if (Math.cos(angle) < -0.1) continue;
 			for (int d = min; d <= max; d += CELL) {
 				int px = x + (int) Math.round(Math.cos(angle) * d);
 				int pz = z + (int) Math.round(Math.sin(angle) * d);
-				if (classify(world, px, pz) == Kind.MESA) return true;
+				if (classify(masks, px, pz) == Kind.MESA) return true;
 			}
 		}
 		return false;
@@ -133,8 +237,12 @@ public final class Valleys {
 
 	/** Flat floor for a crawler's run-up west of a pod: the apron, the hull and room to line up behind it. */
 	public static boolean approachClear(ServerWorld world, int x, int z) {
+		return approachClear(masks(world), x, z);
+	}
+
+	public static boolean approachClear(@Nullable Masks masks, int x, int z) {
 		for (int d = 16; d <= 48; d += 8) {
-			if (!flat(world, x - d, z) || !flat(world, x - d, z + 6) || !flat(world, x - d, z - 4)) return false;
+			if (!flat(masks, x - d, z) || !flat(masks, x - d, z + 6) || !flat(masks, x - d, z - 4)) return false;
 		}
 		return true;
 	}
@@ -174,6 +282,15 @@ public final class Valleys {
 			return index >= 0 && parents[index] != UNREACHED;
 		}
 
+		/**
+		 * Whether this fill has anything to say about a point at all. {@link #contains} answers false both
+		 * for floor the crawler cannot get to and for anywhere off the edge of the grid, and those are not
+		 * the same thing: a site placed past the radius would otherwise look like it was behind the Rift.
+		 */
+		public boolean inRange(int x, int z) {
+			return index(x, z) >= 0;
+		}
+
 		/** Cells reached, each {@link #CELL} blocks square. */
 		public int count() {
 			return count;
@@ -204,7 +321,12 @@ public final class Valleys {
 
 	@Nullable
 	public static Reach reach(ServerWorld world, int x, int z, int radius) {
-		if (!isMesaWorld(world)) return null;
+		return reach(masks(world), x, z, radius);
+	}
+
+	@Nullable
+	public static Reach reach(@Nullable Masks masks, int x, int z, int radius) {
+		if (masks == null) return null;
 		int radiusCells = Math.ceilDiv(radius, CELL);
 		int size = radiusCells * 2 + 1;
 		int originCellX = Math.floorDiv(x, CELL);
@@ -212,15 +334,19 @@ public final class Valleys {
 		int[] parents = new int[size * size];
 		java.util.Arrays.fill(parents, UNREACHED);
 		BitSet seen = new BitSet(size * size);
+		BitSet drivable = new BitSet(size * size);
 		ArrayDeque<Integer> queue = new ArrayDeque<>();
 		// Seed with every drivable cell within two of the origin, in case the pod itself sits on a cliff foot.
+		// The answer goes into `drivable` as well as `parents`, or a later diagonal step that cuts across one
+		// of these cells reads it as not drivable and is refused.
 		for (int dz = -2; dz <= 2; dz++) {
 			for (int dx = -2; dx <= 2; dx++) {
 				int cx = radiusCells + dx;
 				int cz = radiusCells + dz;
 				int index = cz * size + cx;
 				seen.set(index);
-				if (drivableCell(world, originCellX + dx, originCellZ + dz)) {
+				if (drivableCell(masks, originCellX + dx, originCellZ + dz)) {
+					drivable.set(index);
 					parents[index] = SEED;
 					queue.add(index);
 				}
@@ -230,7 +356,6 @@ public final class Valleys {
 		// Eight neighbours, so a drive can run diagonally; a diagonal step needs both cells it cuts between.
 		int[] dxs = {1, -1, 0, 0, 1, 1, -1, -1};
 		int[] dzs = {0, 0, 1, -1, 1, -1, 1, -1};
-		BitSet drivable = new BitSet(size * size);
 		while (!queue.isEmpty()) {
 			int index = queue.poll();
 			count++;
@@ -242,9 +367,9 @@ public final class Valleys {
 				if (nx < 0 || nz < 0 || nx >= size || nz >= size) continue;
 				int next = nz * size + nx;
 				if (parents[next] != UNREACHED) continue;
-				if (!drivableAt(world, seen, drivable, size, nx, nz, originCellX - radiusCells, originCellZ - radiusCells)) continue;
-				if (i >= 4 && (!drivableAt(world, seen, drivable, size, nx, cz, originCellX - radiusCells, originCellZ - radiusCells)
-						|| !drivableAt(world, seen, drivable, size, cx, nz, originCellX - radiusCells, originCellZ - radiusCells))) continue;
+				if (!drivableAt(masks, seen, drivable, size, nx, nz, originCellX - radiusCells, originCellZ - radiusCells)) continue;
+				if (i >= 4 && (!drivableAt(masks, seen, drivable, size, nx, cz, originCellX - radiusCells, originCellZ - radiusCells)
+						|| !drivableAt(masks, seen, drivable, size, cx, nz, originCellX - radiusCells, originCellZ - radiusCells))) continue;
 				parents[next] = index;
 				queue.add(next);
 			}
@@ -253,20 +378,20 @@ public final class Valleys {
 	}
 
 	/** Classifies a grid cell once and remembers the answer. */
-	private static boolean drivableAt(ServerWorld world, BitSet seen, BitSet drivable, int size, int cx, int cz, int cellOffsetX, int cellOffsetZ) {
+	private static boolean drivableAt(Masks masks, BitSet seen, BitSet drivable, int size, int cx, int cz, int cellOffsetX, int cellOffsetZ) {
 		int index = cz * size + cx;
 		if (!seen.get(index)) {
 			seen.set(index);
-			if (drivableCell(world, cx + cellOffsetX, cz + cellOffsetZ)) drivable.set(index);
+			if (drivableCell(masks, cx + cellOffsetX, cz + cellOffsetZ)) drivable.set(index);
 		}
 		return drivable.get(index);
 	}
 
 	/** A cell is drivable when its centre and the four points {@link #MARGIN} blocks out are all flat floor. */
-	private static boolean drivableCell(ServerWorld world, int cellX, int cellZ) {
+	private static boolean drivableCell(Masks masks, int cellX, int cellZ) {
 		int x = cellX * CELL + CELL / 2;
 		int z = cellZ * CELL + CELL / 2;
-		return flat(world, x, z) && flat(world, x + MARGIN, z) && flat(world, x - MARGIN, z) && flat(world, x, z + MARGIN) && flat(world, x, z - MARGIN);
+		return flat(masks, x, z) && flat(masks, x + MARGIN, z) && flat(masks, x - MARGIN, z) && flat(masks, x, z + MARGIN) && flat(masks, x, z - MARGIN);
 	}
 
 	/**
@@ -275,7 +400,11 @@ public final class Valleys {
 	 * clear floor, then to spawn itself.
 	 */
 	public static BlockPos pickStart(ServerWorld world, BlockPos spawn) {
-		if (!isMesaWorld(world)) return spawn;
+		return pickStart(masks(world), spawn);
+	}
+
+	public static BlockPos pickStart(@Nullable Masks masks, BlockPos spawn) {
+		if (masks == null) return spawn;
 		// Candidates nearest spawn first, so the first that opens onto a big floor wins.
 		// Spawn itself tends to land on a table, so look a long way: the pod has ended up 200 blocks out.
 		List<BlockPos> candidates = new ArrayList<>();
@@ -288,24 +417,24 @@ public final class Valleys {
 		BlockPos bestFloor = null;
 		int pockets = 0;
 		for (BlockPos pos : candidates) {
-			if (!clear(world, pos.getX(), pos.getZ(), 16) || !approachClear(world, pos.getX(), pos.getZ())) continue;
+			if (!clear(masks, pos.getX(), pos.getZ(), 16) || !approachClear(masks, pos.getX(), pos.getZ())) continue;
 			// A flat patch walled in by cliffs or a river is no place to start from: the floor beyond it has to
 			// be wide open, or nothing will ever be drivable from the pod.
-			if (!opensOntoFloor(world, pos.getX(), pos.getZ())) {
+			if (!opensOntoFloor(masks, pos.getX(), pos.getZ())) {
 				if (++pockets > 24) break;
 				continue;
 			}
-			if (nearWall(world, pos.getX(), pos.getZ(), 24, 64)) return pos;
+			if (nearWall(masks, pos.getX(), pos.getZ(), 24, 64)) return pos;
 			if (bestFloor == null) bestFloor = pos;
 		}
 		return bestFloor != null ? bestFloor : spawn;
 	}
 
 	/** Cells of reachable floor a start must open onto: about a square kilometre of it. */
-	private static final int OPEN_FLOOR_CELLS = 1500;
+	public static final int OPEN_FLOOR_CELLS = 1500;
 
-	private static boolean opensOntoFloor(ServerWorld world, int x, int z) {
-		Reach reach = reach(world, x, z, 640);
+	private static boolean opensOntoFloor(@Nullable Masks masks, int x, int z) {
+		Reach reach = reach(masks, x, z, 640);
 		return reach == null || reach.count() >= OPEN_FLOOR_CELLS;
 	}
 
@@ -318,6 +447,12 @@ public final class Valleys {
 	@Nullable
 	public static BlockPos pickSite(ServerWorld world, @Nullable Reach reach, BlockPos origin, Random random, double angle, double jitter,
 									int min, int max, int attempts, Predicate<BlockPos> accept) {
+		return pickSite(masks(world), reach, origin, random, angle, jitter, min, max, attempts, accept);
+	}
+
+	@Nullable
+	public static BlockPos pickSite(@Nullable Masks masks, @Nullable Reach reach, BlockPos origin, Random random, double angle, double jitter,
+									int min, int max, int attempts, Predicate<BlockPos> accept) {
 		BlockPos fallback = null;
 		for (int i = 0; i < attempts; i++) {
 			double a = angle + (random.nextDouble() * 2.0 - 1.0) * jitter;
@@ -327,8 +462,8 @@ public final class Valleys {
 			BlockPos candidate = new BlockPos(x, 0, z);
 			if (!accept.test(candidate)) continue;
 			if (reach != null && !reach.contains(x, z)) continue;
-			if (!clear(world, x, z, 12) || !approachClear(world, x, z)) continue;
-			if (nearWall(world, x, z, 20, 60)) return candidate;
+			if (!clear(masks, x, z, 12) || !approachClear(masks, x, z)) continue;
+			if (nearWall(masks, x, z, 20, 60)) return candidate;
 			if (fallback == null) fallback = candidate;
 		}
 		return fallback;

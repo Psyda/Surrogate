@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "surrogate:block/survey_station",
+      "y": 0
+    },
+    "facing=east": {
+      "model": "surrogate:block/survey_station",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "surrogate:block/survey_station",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "surrogate:block/survey_station",
+      "y": 270
+    }
+  }
+}

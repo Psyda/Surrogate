@@ -20,6 +20,8 @@ import net.minecraft.text.Text;
 /**
  * {@code /surrogate prologue start|skip|fast|status}: replay, cut short, speed up or inspect the opening in
  * the pod. {@code /surrogate transit start|skip|day <n>|fast|status}: the same for the week on the ship.
+ * {@code /surrogate research start|stage <name>|skip|fast|status}: the same for acts one and two, the
+ * neighbours' research runs and the range gate at Tanaka.
  * {@code /surrogate assay start|stage <name>|skip|site|status}: the same for Contract Seven, the corporation's
  * research task, where {@code site} teleports to the company's designated pad.
  */
@@ -44,6 +46,14 @@ public final class PrologueCommand {
 										.executes(context -> transitDay(context.getSource(), IntegerArgumentType.getInteger(context, "day")))))
 								.then(CommandManager.literal("fast").executes(context -> fast(context.getSource())))
 								.then(CommandManager.literal("status").executes(context -> transitStatus(context.getSource()))))
+						.then(CommandManager.literal("research")
+								.then(CommandManager.literal("start").executes(context -> researchAt(context.getSource(), "core")))
+								.then(CommandManager.literal("stage").then(CommandManager.argument("stage", StringArgumentType.word())
+										.suggests((context, builder) -> CommandSource.suggestMatching(RESEARCH_STAGES, builder))
+										.executes(context -> researchAt(context.getSource(), StringArgumentType.getString(context, "stage")))))
+								.then(CommandManager.literal("skip").executes(context -> researchSkip(context.getSource())))
+								.then(CommandManager.literal("fast").executes(context -> fast(context.getSource())))
+								.then(CommandManager.literal("status").executes(context -> researchStatus(context.getSource()))))
 						.then(CommandManager.literal("assay")
 								.then(CommandManager.literal("start").executes(context -> assayAt(context.getSource(), "stake")))
 								.then(CommandManager.literal("stage").then(CommandManager.argument("stage", StringArgumentType.word())
@@ -55,7 +65,9 @@ public final class PrologueCommand {
 								.then(CommandManager.literal("ship").executes(context -> assayShip(context.getSource())))
 								.then(CommandManager.literal("status").executes(context -> assayStatus(context.getSource()))))
 						.then(TerrainScan.command())
-						.then(CrawlerCommand.command())));
+						.then(CrawlerCommand.command())
+						.then(dev.psyda.surrogate.errand.ErrandCommand.errandCommand())
+						.then(dev.psyda.surrogate.errand.ErrandCommand.faunaCommand())));
 	}
 
 	private static int start(ServerCommandSource source) throws CommandSyntaxException {
@@ -135,6 +147,53 @@ public final class PrologueCommand {
 		}
 		Transit.jumpToDay(player, day);
 		source.sendFeedback(() -> Text.literal("Transit jumped to day " + day + "."), true);
+		return 1;
+	}
+
+	private static final java.util.List<String> RESEARCH_STAGES = java.util.List.of("core", "wind", "seep", "range");
+
+	private static int researchAt(ServerCommandSource source, String stage) throws CommandSyntaxException {
+		ServerPlayerEntity player = source.getPlayerOrThrow();
+		if (!RESEARCH_STAGES.contains(stage)) {
+			source.sendError(Text.literal("Stages: " + String.join(", ", RESEARCH_STAGES)));
+			return 0;
+		}
+		HabitatState state = HabitatState.get(source.getServer());
+		if (state.origin == null) {
+			source.sendError(Text.literal("No starter habitat in this world yet."));
+			return 0;
+		}
+		dev.psyda.surrogate.research.Research.restartAt(player, stage);
+		source.sendFeedback(() -> Text.literal("Research restarted at " + stage + "."), true);
+		return 1;
+	}
+
+	private static int researchSkip(ServerCommandSource source) throws CommandSyntaxException {
+		ServerPlayerEntity player = source.getPlayerOrThrow();
+		if (!dev.psyda.surrogate.research.Research.isRunning()) {
+			source.sendError(Text.literal("The research runs are not running."));
+			return 0;
+		}
+		Director.skipRequested(player);
+		source.sendFeedback(() -> Text.literal("Research run skipped."), true);
+		return 1;
+	}
+
+	private static int researchStatus(ServerCommandSource source) {
+		dev.psyda.surrogate.research.ResearchState research = dev.psyda.surrogate.research.ResearchState.get(source.getServer());
+		dev.psyda.surrogate.research.Research running = dev.psyda.surrogate.research.Research.running();
+		String seep = research.seepHome ? "home" : research.seepTaken ? "taken" : "none";
+		String text = "Research stage " + research.stage
+				+ ", core " + research.coreDepth + "/" + dev.psyda.surrogate.research.ResearchState.CORE_DEPTH
+				+ ", stakes " + research.stakes.size() + "/" + dev.psyda.surrogate.research.ResearchState.STAKES
+				+ ", seep " + seep
+				+ (research.schematic ? ", schematic" : "")
+				+ (research.relay ? ", relay" : "")
+				+ (research.damper ? ", damper" : "")
+				+ ", errands " + research.errandsDone() + "/" + dev.psyda.surrogate.research.ResearchState.ERRANDS
+				+ (running == null ? ", not running" : ", running at " + running.currentLabel())
+				+ (Director.fast ? ", fast" : "");
+		source.sendFeedback(() -> Text.literal(text), false);
 		return 1;
 	}
 

@@ -235,7 +235,12 @@ public final class HabitatBuilder {
 		if (Transit.onJoin(player, state)) return;
 		// The protagonist of a half-told opening picks it up where it stopped.
 		if (Prologue.onJoin(player, state)) return;
-		// The opening is over: a half-run contract resumes, and a finished opening opens one.
+		// The opening is over: acts one and two come first, and the contract waits behind them.
+		if (dev.psyda.surrogate.research.Research.onJoin(player, state)) return;
+		if (dev.psyda.surrogate.research.Research.shouldBegin(player.server, state) && !Transit.inProgress(player.server)) {
+			dev.psyda.surrogate.research.Research.begin(player.server);
+		}
+		// A half-run contract resumes, and a finished opening with the research filed opens one.
 		if (dev.psyda.surrogate.assay.Assay.onJoin(player, state)) return;
 		if (dev.psyda.surrogate.assay.Assay.shouldBegin(player.server, state) && !Transit.inProgress(player.server)) {
 			dev.psyda.surrogate.assay.Assay.begin(player.server);

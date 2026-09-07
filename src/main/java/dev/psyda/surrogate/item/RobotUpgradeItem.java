@@ -16,7 +16,13 @@ public class RobotUpgradeItem extends Item {
 		PLATING_MK2,
 		BATTERY,
 		CARGO_BAY,
-		FABRICATOR
+		FABRICATOR,
+		RELAY,
+		DAMPER,
+		COATING,
+		SHIELD,
+		SAMPLER,
+		COLLECTOR
 	}
 
 	private final Kind kind;
@@ -38,6 +44,15 @@ public class RobotUpgradeItem extends Item {
 			case BATTERY -> tooltip.add(Text.translatable("tooltip.surrogate.battery", Surrogate.CONFIG.batteryTierMultiplier).formatted(Formatting.GRAY));
 			case CARGO_BAY -> tooltip.add(Text.translatable("tooltip.surrogate.cargo_bay", Surrogate.CONFIG.cargoSlotsPerBay, Surrogate.CONFIG.cargoBayMaxTier).formatted(Formatting.GRAY));
 			case FABRICATOR -> tooltip.add(Text.translatable("tooltip.surrogate.fabricator").formatted(Formatting.GRAY));
+			case RELAY -> tooltip.add(Text.translatable("tooltip.surrogate.relay_module", Surrogate.CONFIG.relayModuleRangeBonus).formatted(Formatting.GRAY));
+			case DAMPER -> tooltip.add(Text.translatable("tooltip.surrogate.resonance_damper",
+					Math.round(Surrogate.CONFIG.borerDamperFactor * 100.0), Surrogate.CONFIG.borerDepthY).formatted(Formatting.GRAY));
+			case COATING -> tooltip.add(Text.translatable("tooltip.surrogate.acid_coating",
+					Math.round(Surrogate.CONFIG.acidCoatingFactor * 100.0)).formatted(Formatting.GRAY));
+			case SAMPLER -> tooltip.add(Text.translatable("tooltip.surrogate.bio_sampler").formatted(Formatting.GRAY));
+			case COLLECTOR -> tooltip.add(Text.translatable("tooltip.surrogate.specimen_bag").formatted(Formatting.GRAY));
+			case SHIELD -> tooltip.add(Text.translatable("tooltip.surrogate.shielded_uplink",
+					Math.round(Surrogate.CONFIG.stormShieldFactor * 100.0)).formatted(Formatting.GRAY));
 		}
 		tooltip.add(Text.translatable("tooltip.surrogate.offline_only").formatted(Formatting.DARK_GRAY));
 	}

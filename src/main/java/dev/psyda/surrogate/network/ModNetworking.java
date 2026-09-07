@@ -21,6 +21,8 @@ public final class ModNetworking {
 		PayloadTypeRegistry.playS2C().register(CinematicPayloads.Hint.ID, CinematicPayloads.Hint.CODEC);
 		PayloadTypeRegistry.playS2C().register(TransitPayload.ID, TransitPayload.CODEC);
 		PayloadTypeRegistry.playS2C().register(TerminalPayload.ID, TerminalPayload.CODEC);
+		PayloadTypeRegistry.playS2C().register(SurveyPayloads.Survey.ID, SurveyPayloads.Survey.CODEC);
+		PayloadTypeRegistry.playS2C().register(HazardPayload.ID, HazardPayload.CODEC);
 		PayloadTypeRegistry.playC2S().register(CinematicPayloads.Skip.ID, CinematicPayloads.Skip.CODEC);
 		PayloadTypeRegistry.playS2C().register(CrawlerPayloads.State.ID, CrawlerPayloads.State.CODEC);
 		PayloadTypeRegistry.playS2C().register(CrawlerPayloads.Scan.ID, CrawlerPayloads.Scan.CODEC);

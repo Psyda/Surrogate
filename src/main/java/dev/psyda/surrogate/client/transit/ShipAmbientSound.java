@@ -10,7 +10,7 @@ import net.minecraft.sound.SoundEvent;
 /** A loop with no position that fades in when the ship needs it and out when it does not. */
 @Environment(EnvType.CLIENT)
 public class ShipAmbientSound extends MovingSoundInstance {
-	private final float target;
+	private float target;
 	private boolean fading;
 
 	public ShipAmbientSound(SoundEvent sound, float volume) {
@@ -27,6 +27,11 @@ public class ShipAmbientSound extends MovingSoundInstance {
 		fading = true;
 	}
 
+	/** Move the level the loop is creeping towards, for a loop whose source rises and falls as it plays. */
+	public void setTarget(float volume) {
+		this.target = volume;
+	}
+
 	@Override
 	public void tick() {
 		if (fading) {
@@ -34,6 +39,8 @@ public class ShipAmbientSound extends MovingSoundInstance {
 			if (volume <= 0f) setDone();
 		} else if (volume < target) {
 			volume = Math.min(target, volume + 0.015f);
+		} else if (volume > target) {
+			volume = Math.max(target, volume - 0.015f);
 		}
 	}
 }

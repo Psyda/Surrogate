@@ -3,8 +3,10 @@ package dev.psyda.surrogate.registry;
 import dev.psyda.surrogate.Surrogate;
 import dev.psyda.surrogate.item.ArcCutterItem;
 import dev.psyda.surrogate.item.AtmoScannerItem;
+import dev.psyda.surrogate.entity.CrawlerModule;
 import dev.psyda.surrogate.item.CrawlerBlueprintItem;
 import dev.psyda.surrogate.item.CrawlerKitItem;
+import dev.psyda.surrogate.item.CrawlerModuleItem;
 import dev.psyda.surrogate.item.FieldRadioItem;
 import dev.psyda.surrogate.item.TomatoSeedsItem;
 import dev.psyda.surrogate.item.LockedBayItem;
@@ -15,6 +17,7 @@ import dev.psyda.surrogate.item.RepairKitItem;
 import dev.psyda.surrogate.item.RobotChassisItem;
 import dev.psyda.surrogate.item.RobotUpgradeItem;
 import dev.psyda.surrogate.item.ScrapChassisItem;
+import dev.psyda.surrogate.item.SealedSampleItem;
 import dev.psyda.surrogate.item.UplinkCardItem;
 import dev.psyda.surrogate.item.WrenchItem;
 import net.minecraft.item.BlockItem;
@@ -55,6 +58,8 @@ public final class ModItems {
 	public static final Item FIELD_RADIO = register("field_radio", new FieldRadioItem(new Item.Settings().maxCount(1)));
 	/** A packet from the Provender's galley. Halloran asked; the company said no; Castellanos said nothing. */
 	public static final Item TOMATO_SEEDS = register("tomato_seeds", new TomatoSeedsItem(new Item.Settings().maxCount(1)));
+	/** A litre of the seep, crimped shut. Opening it outdoors is the only way to waste the trip. */
+	public static final Item SEALED_SAMPLE = register("sealed_sample", new SealedSampleItem(new Item.Settings().maxCount(4)));
 	/** Placeholder for inventory slots without a cargo bay; never obtainable on purpose. */
 	public static final Item LOCKED_BAY = register("locked_bay", new LockedBayItem(new Item.Settings().maxCount(1)));
 
@@ -64,6 +69,29 @@ public final class ModItems {
 	public static final Item BATTERY_UPGRADE = register("battery_upgrade", new RobotUpgradeItem(RobotUpgradeItem.Kind.BATTERY, new Item.Settings()));
 	public static final Item CARGO_BAY = register("cargo_bay", new RobotUpgradeItem(RobotUpgradeItem.Kind.CARGO_BAY, new Item.Settings()));
 	public static final Item FABRICATOR = register("fabricator", new RobotUpgradeItem(RobotUpgradeItem.Kind.FABRICATOR, new Item.Settings()));
+
+	// Countermeasures: one for each of the four things on Sallow, and one bolted to the crawler instead.
+	/** Sorensen's, from act one: the link and the radio reach the far side of a table. */
+	public static final Item RELAY_MODULE = register("relay_module", new RobotUpgradeItem(RobotUpgradeItem.Kind.RELAY, new Item.Settings()));
+	/** Tanaka's, from act two: forty seconds of drilling below the line instead of eight. */
+	public static final Item RESONANCE_DAMPER = register("resonance_damper", new RobotUpgradeItem(RobotUpgradeItem.Kind.DAMPER, new Item.Settings()));
+	/** Brandt's pattern, cut down to a chassis: the belt's rain takes the coating first. */
+	public static final Item ACID_COATING = register("acid_coating", new RobotUpgradeItem(RobotUpgradeItem.Kind.COATING, new Item.Settings()));
+	/** Reyes', from act five: a storm still costs the picture, but it holds twice as long. */
+	public static final Item SHIELDED_UPLINK = register("shielded_uplink", new RobotUpgradeItem(RobotUpgradeItem.Kind.SHIELD, new Item.Settings()));
+	/** Brandt's pattern at full size, in panels, for the hull that has to live over there. */
+	public static final Item CERAMIC_CLADDING = register("ceramic_cladding", new CrawlerModuleItem(CrawlerModule.CLADDING, new Item.Settings()));
+
+	// Okafor's survey and Brandt's ark. Neither is a countermeasure; both are bays on the same chassis.
+	/** Okafor's probe. Fitted, a chassis can take a reading off anything living by touching it. */
+	public static final Item BIO_SAMPLER = register("bio_sampler", new RobotUpgradeItem(RobotUpgradeItem.Kind.SAMPLER, new Item.Settings()));
+	/** Brandt's crate and padded arm. Fitted, a chassis can pick one of each up without hurting it. */
+	public static final Item SPECIMEN_BAG = register("specimen_bag", new RobotUpgradeItem(RobotUpgradeItem.Kind.COLLECTOR, new Item.Settings()));
+	/**
+	 * The other half of the sampler: without this in a terminal, a reading is a number nobody can read.
+	 * Used on any hub terminal, once.
+	 */
+	public static final Item ANALYSIS_DISK = register("analysis_disk", new dev.psyda.surrogate.item.AnalysisDiskItem(new Item.Settings().maxCount(1)));
 
 	// Blocks
 	public static final Item DIVE_CHAIR = register("dive_chair", new BlockItem(ModBlocks.DIVE_CHAIR, new Item.Settings()));
@@ -84,6 +112,11 @@ public final class ModItems {
 	public static final Item SULFUR_CRUST = register("sulfur_crust", new BlockItem(ModBlocks.SULFUR_CRUST, new Item.Settings()));
 	public static final Item SCRAP_HEAP = register("scrap_heap", new BlockItem(ModBlocks.SCRAP_HEAP, new Item.Settings()));
 	public static final Item VENT = register("vent", new BlockItem(ModBlocks.VENT, new Item.Settings()));
+	public static final Item GEYSER = register("geyser", new BlockItem(ModBlocks.GEYSER, new Item.Settings()));
+	public static final Item GEOTHERMAL_TAP = register("geothermal_tap", new BlockItem(ModBlocks.GEOTHERMAL_TAP, new Item.Settings()));
+	public static final Item RELAY_MAST = register("relay_mast", new BlockItem(ModBlocks.RELAY_MAST, new Item.Settings()));
+	public static final Item DAMPER_BEACON = register("damper_beacon", new BlockItem(ModBlocks.DAMPER_BEACON, new Item.Settings()));
+	public static final Item SPAN_ANCHOR = register("span_anchor", new BlockItem(ModBlocks.SPAN_ANCHOR, new Item.Settings()));
 
 	// The fabricator, the props and the ores
 	public static final Item VEHICLE_FABRICATOR = register("vehicle_fabricator", new BlockItem(ModBlocks.VEHICLE_FABRICATOR, new Item.Settings()));
@@ -107,8 +140,12 @@ public final class ModItems {
 	public static final Item BUNK = register("bunk", new BlockItem(ModBlocks.BUNK, new Item.Settings()));
 	public static final Item CHEM_DRUM = register("chem_drum", new BlockItem(ModBlocks.CHEM_DRUM, new Item.Settings()));
 	public static final Item SURVEY_MARKER = register("survey_marker", new BlockItem(ModBlocks.SURVEY_MARKER, new Item.Settings()));
+	public static final Item SURVEY_STATION = register("survey_station", new BlockItem(ModBlocks.SURVEY_STATION, new Item.Settings()));
+	public static final Item SURVEY_BEACON = register("survey_beacon", new BlockItem(ModBlocks.SURVEY_BEACON, new Item.Settings()));
+	public static final Item LONG_RANGE_SCANNER = register("long_range_scanner", new BlockItem(ModBlocks.LONG_RANGE_SCANNER, new Item.Settings()));
 	public static final Item PAD_LIGHT = register("pad_light", new BlockItem(ModBlocks.PAD_LIGHT, new Item.Settings()));
 	public static final Item ANTENNA_MAST = register("antenna_mast", new BlockItem(ModBlocks.ANTENNA_MAST, new Item.Settings()));
+	public static final Item SURVEY_STAKE = register("survey_stake", new BlockItem(ModBlocks.SURVEY_STAKE, new Item.Settings()));
 	public static final Item CINNABAR_ORE = register("cinnabar_ore", new BlockItem(ModBlocks.CINNABAR_ORE, new Item.Settings()));
 	public static final Item HALITE_ORE = register("halite_ore", new BlockItem(ModBlocks.HALITE_ORE, new Item.Settings()));
 	public static final Item COBALT_ORE = register("cobalt_ore", new BlockItem(ModBlocks.COBALT_ORE, new Item.Settings()));

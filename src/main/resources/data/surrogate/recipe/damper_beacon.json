@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "PCP",
+    "CSC",
+    "PRP"
+  ],
+  "key": {
+    "P": {
+      "item": "surrogate:hull_plating"
+    },
+    "C": {
+      "item": "surrogate:cobalt_ingot"
+    },
+    "S": {
+      "item": "surrogate:servo_motor"
+    },
+    "R": {
+      "item": "minecraft:redstone_block"
+    }
+  },
+  "result": {
+    "id": "surrogate:damper_beacon",
+    "count": 1
+  }
+}

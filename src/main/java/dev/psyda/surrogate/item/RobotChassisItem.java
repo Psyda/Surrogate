@@ -2,6 +2,7 @@ package dev.psyda.surrogate.item;
 
 import dev.psyda.surrogate.Surrogate;
 import dev.psyda.surrogate.entity.RobotEntity;
+import dev.psyda.surrogate.entity.RobotModule;
 import dev.psyda.surrogate.pilot.RobotRegistry;
 import dev.psyda.surrogate.registry.ModComponents;
 import dev.psyda.surrogate.registry.ModEntities;
@@ -119,6 +120,12 @@ public class RobotChassisItem extends Item {
 		tooltip.add(Text.translatable("tooltip.surrogate.tiers", plating, battery).formatted(Formatting.DARK_GRAY));
 		tooltip.add(Text.translatable("tooltip.surrogate.cargo", Surrogate.CONFIG.cargoSlots(data.getInt("CargoTier"))).formatted(Formatting.DARK_GRAY));
 		if (data.getBoolean("Fabricator")) tooltip.add(Text.translatable("tooltip.surrogate.fabricator_fitted").formatted(Formatting.DARK_GRAY));
+		int modules = data.getInt("Modules");
+		for (RobotModule module : RobotModule.all()) {
+			if ((modules & (1 << module.ordinal())) != 0) {
+				tooltip.add(Text.translatable("tooltip.surrogate.module_fitted", Text.translatable(module.translationKey())).formatted(Formatting.DARK_GRAY));
+			}
+		}
 	}
 
 	private static String format(float value) {

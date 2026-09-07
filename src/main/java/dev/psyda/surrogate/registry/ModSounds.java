@@ -60,6 +60,27 @@ public final class ModSounds {
 	public static final SoundEvent DOCK_LOCK = register("crawler.dock_lock");
 	public static final SoundEvent DOCK_ERROR = register("crawler.dock_error");
 
+	/** A magnetic storm: the band washing out under the run-up, and the upper air letting go at the peak. */
+	public static final SoundEvent STORM_WASH = register("hazard.storm_wash");
+	public static final SoundEvent STORM_CRACK = register("hazard.storm_crack");
+
+	/** A geyser: four seconds of ground moving, then the column, then the cap going on and shutting it up. */
+	public static final SoundEvent GEYSER_RUMBLE = register("hazard.geyser_rumble");
+	public static final SoundEvent GEYSER_ERUPT = register("hazard.geyser_erupt");
+	public static final SoundEvent TAP_CAP = register("hazard.tap_cap");
+
+	// The weather on Sallow. All three loop, and all three are held at a level that follows the reading.
+	/** The storm blowing over the site. */
+	public static final SoundEvent STORM_WIND = register("weather.storm_wind");
+	/** The belt's rain going to work on the plating. */
+	public static final SoundEvent ACID_RAIN = register("weather.acid_rain");
+	/** The uplink losing its picture, under the snow. */
+	public static final SoundEvent LINK_HISS = register("weather.link_hiss");
+
+	/** Something working through the rock towards you, and the moment it arrives. */
+	public static final SoundEvent BORER_GRIND = register("hazard.borer_grind");
+	public static final SoundEvent BORER_LUNGE = register("hazard.borer_lunge");
+
 	/** The galley unit running, one second of it, and the ding at the end. */
 	public static final SoundEvent MICROWAVE_HUM = register("block.microwave_hum");
 	public static final SoundEvent MICROWAVE_DING = register("block.microwave_ding");

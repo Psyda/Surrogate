@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    " S ",
+    "SCS",
+    " P "
+  ],
+  "key": {
+    "S": {
+      "item": "surrogate:servo_motor"
+    },
+    "C": {
+      "item": "surrogate:robot_core"
+    },
+    "P": {
+      "item": "surrogate:hull_plating"
+    }
+  },
+  "result": {
+    "id": "surrogate:bio_sampler",
+    "count": 1
+  }
+}

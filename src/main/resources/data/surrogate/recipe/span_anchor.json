@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "PPP",
+    "III",
+    "PPP"
+  ],
+  "key": {
+    "P": {
+      "item": "surrogate:hull_plating"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "result": {
+    "id": "surrogate:span_anchor",
+    "count": 2
+  }
+}

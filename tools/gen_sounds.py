@@ -472,6 +472,167 @@ EVENTS.update({
 })
 
 
+# Magnetic storms.
+def storm_wash():
+    """The band washing out under the run-up: hiss coming up behind a carrier that will not sit still."""
+    n = seconds(4.0)
+    rise = np.linspace(0.05, 1.0, n) ** 1.6
+    hiss = bandpass(white(n), 300, 7000) * rise
+    flutter = 1.0 + 0.35 * sine(3.1, n) * rise
+    carrier = 0.25 * sine(430.0, n) * (1.0 + 0.5 * sine(0.7, n)) * rise
+    return (hiss * flutter + carrier) * env(n, 0.6, 1.2) * 0.9
+
+
+def storm_crack():
+    """The upper air letting go: a dry snap with a long rumble under it."""
+    n = seconds(2.6)
+    snap = bandpass(white(seconds(0.12)), 800, 9000) * decay(seconds(0.12), 0.02)
+    rumble = lowpass(white(n), 130.0) * decay(n, 0.9)
+    body = 0.4 * sweep(90.0, 38.0, n) * decay(n, 0.7)
+    out = np.zeros(n)
+    out[: len(snap)] += 1.4 * snap
+    out += 1.1 * rumble + body
+    return out * env(n, 0.002, 0.5)
+
+
+EFFECTS.update({
+    "hazard/storm_wash": storm_wash,
+    "hazard/storm_crack": storm_crack,
+})
+
+EVENTS.update({
+    "hazard.storm_wash": ("hazard/storm_wash", "subtitles.surrogate.storm_wash", False),
+    "hazard.storm_crack": ("hazard/storm_crack", "subtitles.surrogate.storm_crack", False),
+})
+
+
+# Geysers and the cap that shuts one up.
+def geyser_rumble():
+    """Four seconds of the ground moving: brown noise under a slow grind, building the whole way."""
+    n = seconds(4.0)
+    brown = highpass(np.cumsum(white(n)), 5.0)
+    ground = lowpass(brown, 90.0)
+    ground = ground / (np.max(np.abs(ground)) + 1e-9)
+    grind = 0.35 * bandpass(white(n), 120, 900) * (0.5 + 0.5 * sine(6.5, n))
+    sub = 0.5 * sine(27.0, n) * (0.7 + 0.3 * sine(1.1, n))
+    build = np.linspace(0.2, 1.0, n) ** 1.4
+    return (ground + grind + sub) * build * env(n, 0.25, 0.35)
+
+
+def geyser_erupt():
+    """The column arriving: a wet whoomph and then broadband roar that will not stop for eight seconds."""
+    n = seconds(4.5)
+    whoomph = 1.3 * sweep(120.0, 40.0, seconds(0.7)) * env(seconds(0.7), 0.004, 0.5)
+    roar = bandpass(white(n), 250, 8000)
+    roar = roar / (np.max(np.abs(roar)) + 1e-9)
+    shape = np.concatenate([np.linspace(0.0, 1.0, seconds(0.25)), np.full(n - seconds(0.25), 1.0)])
+    shape[seconds(2.6):] *= np.linspace(1.0, 0.15, n - seconds(2.6))
+    spit = lowpass(white(n), 400.0) * (rng.random(n) > 0.995) * 3.0
+    out = roar * shape * (1.0 + 0.25 * sine(4.3, n)) + spit * shape
+    out[: len(whoomph)] += whoomph
+    return out * 0.9
+
+
+def tap_cap():
+    """The cap seating: a heavy clamp, a thread taking up, and the hiss underneath it going away."""
+    n = seconds(1.6)
+    clamp = lowpass(white(seconds(0.22)), 260.0) * decay(seconds(0.22), 0.05) * 1.4
+    ring = (sine(310.0, seconds(0.5)) + 0.4 * sine(465.0, seconds(0.5))) * decay(seconds(0.5), 0.14)
+    hiss = bandpass(white(n), 900, 6000) * np.linspace(0.7, 0.0, n) ** 2.0
+    out = 0.5 * hiss
+    out[: len(clamp)] += clamp
+    start = seconds(0.18)
+    out[start:start + len(ring)] += 0.55 * ring
+    return out
+
+
+EFFECTS.update({
+    "hazard/geyser_rumble": geyser_rumble,
+    "hazard/geyser_erupt": geyser_erupt,
+    "hazard/tap_cap": tap_cap,
+})
+
+EVENTS.update({
+    "hazard.geyser_rumble": ("hazard/geyser_rumble", "subtitles.surrogate.geyser_rumble", False),
+    "hazard.geyser_erupt": ("hazard/geyser_erupt", "subtitles.surrogate.geyser_erupt", False),
+    "hazard.tap_cap": ("hazard/tap_cap", "subtitles.surrogate.tap_cap", False),
+})
+
+
+# --------------------------------------------------------------------------------------
+# The weather
+# --------------------------------------------------------------------------------------
+def storm_wind():
+    """A magnetic storm over the site: wind with a slow gust and a low body under it."""
+    n = seconds(6.0)
+    gust = bandpass(white(n), 200.0, 1800.0) * (0.6 + 0.4 * sine(0.23, n))
+    body = 0.3 * lowpass(white(n), 260.0)
+    whine = 0.05 * sine(220.0, n) * (0.5 + 0.5 * sine(0.11, n))
+    return loopify(gust + body + whine, 0.5) * 0.8
+
+
+def acid_rain():
+    """Rain that eats the plating: a wet hiss with a sizzle riding on it."""
+    n = seconds(5.0)
+    hiss = bandpass(white(n), 900.0, 7000.0) * (0.7 + 0.3 * sine(0.31, n))
+    patter = bandpass(white(n), 2000.0, 9000.0) * (rng.random(n) > 0.993) * 2.5
+    return loopify(hiss + patter, 0.4) * 0.8
+
+
+def link_hiss():
+    """The uplink coming apart: broadband snow with the carrier wandering about in it."""
+    n = seconds(4.0)
+    snow = bandpass(white(n), 600.0, 9000.0)
+    carrier = 0.25 * sine(1400.0, n) * (0.5 + 0.5 * sine(0.7, n))
+    return loopify(snow + carrier, 0.4) * 0.8
+
+
+EFFECTS.update({
+    "weather/storm_wind": storm_wind,
+    "weather/acid_rain": acid_rain,
+    "weather/link_hiss": link_hiss,
+})
+
+EVENTS.update({
+    "weather.storm_wind": ("weather/storm_wind", "subtitles.surrogate.storm_wind", True),
+    "weather.acid_rain": ("weather/acid_rain", "subtitles.surrogate.acid_rain", True),
+    "weather.link_hiss": ("weather/link_hiss", "subtitles.surrogate.link_hiss", True),
+})
+
+
+# Borers. Both are meant to be unpleasant: the first is the only warning there is, and the second is late.
+def borer_grind():
+    """Something working stone from the other side of it: a dry grind under a lot of rock."""
+    n = seconds(3.2)
+    stone = lowpass(white(n), 900.0)
+    bite = 1.0 + 0.8 * np.abs(sine(11.0, n)) * (0.6 + 0.4 * sine(0.9, n))
+    body = 0.5 * sweep(64.0, 52.0, n)
+    return loopify(stone * bite * 0.7 + body, 0.35) * 0.9
+
+
+def borer_lunge():
+    """It reaches the air you are standing in, once."""
+    n = seconds(1.3)
+    hit = bandpass(white(seconds(0.09)), 400, 5200) * decay(seconds(0.09), 0.015)
+    crush = lowpass(white(n), 500.0) * decay(n, 0.28)
+    drop = 0.7 * sweep(190.0, 44.0, n) * decay(n, 0.22)
+    out = np.zeros(n)
+    out[: len(hit)] += 1.6 * hit
+    out += 1.2 * crush + drop
+    return out * env(n, 0.001, 0.3)
+
+
+EFFECTS.update({
+    "hazard/borer_grind": borer_grind,
+    "hazard/borer_lunge": borer_lunge,
+})
+
+EVENTS.update({
+    "hazard.borer_grind": ("hazard/borer_grind", "subtitles.surrogate.borer_grind", True),
+    "hazard.borer_lunge": ("hazard/borer_lunge", "subtitles.surrogate.borer_lunge", False),
+})
+
+
 def main():
     if shutil.which("ffmpeg") is None:
         print("ffmpeg not found on PATH", file=sys.stderr)

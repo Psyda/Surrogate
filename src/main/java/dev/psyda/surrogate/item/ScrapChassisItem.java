@@ -31,6 +31,7 @@ public class ScrapChassisItem extends Item {
 			robot.putInt("Battery", data.getInt("Battery"));
 			robot.putInt("CargoTier", data.getInt("CargoTier"));
 			robot.putBoolean("Fabricator", data.getBoolean("Fabricator"));
+			robot.putInt("Modules", data.getInt("Modules"));
 			if (data.contains("RobotName", NbtElement.STRING_TYPE)) {
 				robot.putString("CustomName", data.getString("RobotName"));
 				try {

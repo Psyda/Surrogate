@@ -40,6 +40,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -51,7 +52,9 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -76,6 +79,8 @@ public class RobotEntity extends MobEntity {
 	private static final TrackedData<Integer> BATTERY = DataTracker.registerData(RobotEntity.class, TrackedDataHandlerRegistry.INTEGER);
 	private static final TrackedData<Integer> CARGO_TIER = DataTracker.registerData(RobotEntity.class, TrackedDataHandlerRegistry.INTEGER);
 	private static final TrackedData<Boolean> FABRICATOR = DataTracker.registerData(RobotEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+	/** The countermeasures bolted on, one bit per {@link RobotModule}. One field, because sync slots are not free. */
+	private static final TrackedData<Integer> MODULES = DataTracker.registerData(RobotEntity.class, TrackedDataHandlerRegistry.INTEGER);
 	private static final TrackedData<Float> CONTAMINATION = DataTracker.registerData(RobotEntity.class, TrackedDataHandlerRegistry.FLOAT);
 	private static final TrackedData<Optional<UUID>> PILOT = DataTracker.registerData(RobotEntity.class, TrackedDataHandlerRegistry.OPTIONAL_UUID);
 	/** Driven by a script rather than a pilot: the vanilla move and look controls are live. */
@@ -191,6 +196,7 @@ public class RobotEntity extends MobEntity {
 		builder.add(BATTERY, 0);
 		builder.add(CARGO_TIER, 0);
 		builder.add(FABRICATOR, false);
+		builder.add(MODULES, 0);
 		builder.add(CONTAMINATION, 0f);
 		builder.add(PILOT, Optional.empty());
 		builder.add(SCRIPTED, false);
@@ -274,6 +280,24 @@ public class RobotEntity extends MobEntity {
 
 	public void setFabricator(boolean fitted) {
 		this.dataTracker.set(FABRICATOR, fitted);
+	}
+
+	public boolean hasModule(RobotModule module) {
+		return (this.dataTracker.get(MODULES) & (1 << module.ordinal())) != 0;
+	}
+
+	public void setModule(RobotModule module, boolean fitted) {
+		int mask = this.dataTracker.get(MODULES);
+		this.dataTracker.set(MODULES, fitted ? mask | (1 << module.ordinal()) : mask & ~(1 << module.ordinal()));
+	}
+
+	/** Every module fitted, in enum order, for a status line or a menu. */
+	public List<RobotModule> getModules() {
+		List<RobotModule> fitted = new ArrayList<>();
+		for (RobotModule module : RobotModule.all()) {
+			if (hasModule(module)) fitted.add(module);
+		}
+		return fitted;
 	}
 
 	/** Outside grime on the hull, 0 to 1. Only a decon shower takes it off. */
@@ -684,10 +708,38 @@ public class RobotEntity extends MobEntity {
 				}
 				setFabricator(true);
 			}
+			case RELAY -> {
+				if (!fitModule(player, RobotModule.RELAY)) return false;
+			}
+			case DAMPER -> {
+				if (!fitModule(player, RobotModule.DAMPER)) return false;
+			}
+			case COATING -> {
+				if (!fitModule(player, RobotModule.COATING)) return false;
+			}
+			case SHIELD -> {
+				if (!fitModule(player, RobotModule.SHIELD)) return false;
+			}
+			case SAMPLER -> {
+				if (!fitModule(player, RobotModule.SAMPLER)) return false;
+			}
+			case COLLECTOR -> {
+				if (!fitModule(player, RobotModule.COLLECTOR)) return false;
+			}
 		}
 		if (!player.getAbilities().creativeMode) stack.decrement(1);
 		playSound(SoundEvents.BLOCK_ANVIL_USE, 0.8f, 1.3f);
 		player.sendMessage(Text.translatable("message.surrogate.upgraded", stack.getName()), true);
+		return true;
+	}
+
+	/** One bay per module: the second one has nowhere to go. */
+	private boolean fitModule(PlayerEntity player, RobotModule module) {
+		if (hasModule(module)) {
+			player.sendMessage(Text.translatable("message.surrogate.module_fitted", Text.translatable(module.translationKey())), true);
+			return false;
+		}
+		setModule(module, true);
 		return true;
 	}
 
@@ -700,6 +752,15 @@ public class RobotEntity extends MobEntity {
 				getPlatingTier(), getBatteryTier(), getCargoSlots(),
 				Text.translatable(hasFabricator() ? "message.surrogate.status.fabricator" : "message.surrogate.status.no_fabricator"),
 				Math.round(getContamination() * 100)), false);
+		List<RobotModule> modules = getModules();
+		if (!modules.isEmpty()) {
+			MutableText list = Text.empty();
+			for (int i = 0; i < modules.size(); i++) {
+				if (i > 0) list.append(Text.literal(", "));
+				list.append(Text.translatable(modules.get(i).translationKey()));
+			}
+			player.sendMessage(Text.translatable("message.surrogate.status.modules", list), false);
+		}
 	}
 
 	private static String formatHealth(float health) {
@@ -824,7 +885,8 @@ public class RobotEntity extends MobEntity {
 		if (!(getWorld() instanceof ServerWorld world)) return;
 		RobotWreckEntity wreckEntity = new RobotWreckEntity(ModEntities.ROBOT_WRECK, world);
 		wreckEntity.refreshPositionAndAngles(getX(), getY(), getZ(), getYaw(), 0.0f);
-		wreckEntity.setSalvageData(getUuid(), getPlatingTier(), getBatteryTier(), getCargoTier(), hasFabricator(), getCustomName());
+		wreckEntity.setSalvageData(getUuid(), getPlatingTier(), getBatteryTier(), getCargoTier(), hasFabricator(),
+				this.dataTracker.get(MODULES), getCustomName());
 
 		ServerPlayerEntity pilot = getPilotPlayer();
 		if (pilot != null) {
@@ -855,6 +917,7 @@ public class RobotEntity extends MobEntity {
 		nbt.putInt("Battery", getBatteryTier());
 		nbt.putInt("CargoTier", getCargoTier());
 		nbt.putBoolean("Fabricator", hasFabricator());
+		nbt.putInt("Modules", this.dataTracker.get(MODULES));
 		nbt.putFloat("Contamination", getContamination());
 		nbt.putBoolean("Scripted", isScripted());
 		nbt.putInt("Paint", this.dataTracker.get(PAINT));
@@ -872,6 +935,7 @@ public class RobotEntity extends MobEntity {
 		this.dataTracker.set(BATTERY, nbt.getInt("Battery"));
 		this.dataTracker.set(CARGO_TIER, nbt.getInt("CargoTier"));
 		this.dataTracker.set(FABRICATOR, nbt.getBoolean("Fabricator"));
+		this.dataTracker.set(MODULES, nbt.getInt("Modules"));
 		setContamination(nbt.getFloat("Contamination"));
 		if (nbt.getBoolean("Scripted") != isScripted()) setScripted(nbt.getBoolean("Scripted"));
 		this.dataTracker.set(PAINT, nbt.getInt("Paint"));

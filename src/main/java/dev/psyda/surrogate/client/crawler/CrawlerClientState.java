@@ -29,6 +29,10 @@ public final class CrawlerClientState {
 	public static boolean collar;
 	public static float dockOffset;
 	public static float dockAngle;
+	/** Whether the ceramic is on the hull; the readout says so, because the belt does not warn twice. */
+	public static boolean cladding;
+	/** How far the rain has got with the hull, 0 to 100. The gauge, so the four warnings are not the only word. */
+	public static int wear;
 	/** Client ticks since the last readout; the HUD goes away when it stops coming. */
 	private static int staleTicks = 1000;
 
@@ -65,11 +69,15 @@ public final class CrawlerClientState {
 		collar = state.collar();
 		dockOffset = state.dockOffset();
 		dockAngle = state.dockAngle();
+		cladding = state.cladding();
+		wear = state.wear();
 		staleTicks = 0;
 	}
 
 	public static void reset() {
 		seat = 0;
+		cladding = false;
+		wear = 0;
 		scan = null;
 		camera = null;
 		staleTicks = 1000;

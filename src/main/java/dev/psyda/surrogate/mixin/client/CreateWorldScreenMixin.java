@@ -32,6 +32,28 @@ public abstract class CreateWorldScreenMixin {
 	@Unique
 	private boolean surrogate$presetApplied;
 
+	@Unique
+	private boolean surrogate$seedOffered;
+
+	/**
+	 * The seed the campaign was designed against, offered rather than forced: only into an empty box, and
+	 * only where the world is going to be a Toxic Wastes one. Anything the player types stays typed. It goes
+	 * in at the head of init, because the seed field reads the creator once when it is built.
+	 */
+	@Inject(method = "init", at = @At("HEAD"))
+	private void surrogate$offerLockedSeed(CallbackInfo ci) {
+		if (surrogate$seedOffered) return;
+		surrogate$seedOffered = true;
+		String locked = Surrogate.CONFIG.lockedSeed;
+		if (locked == null || locked.isBlank()) return;
+		String current = worldCreator.getSeed();
+		if (current != null && !current.isBlank()) return;
+		WorldCreator.WorldType type = worldCreator.getWorldType();
+		// Either it is already ours, or it is the vanilla default and the tail of init is about to make it ours.
+		if (type != null && !type.preset().matchesKey(WorldPresets.DEFAULT) && !type.preset().matchesKey(SURROGATE$TOXIC_WASTES)) return;
+		worldCreator.setSeed(locked);
+	}
+
 	@Inject(method = "init", at = @At("TAIL"))
 	private void surrogate$defaultPreset(CallbackInfo ci) {
 		if (surrogate$presetApplied) return;

@@ -1,6 +1,8 @@
 package dev.psyda.surrogate;
 
 import dev.psyda.surrogate.crawler.CrawlerInterior;
+import dev.psyda.surrogate.hazard.Hazards;
+import dev.psyda.surrogate.hazard.NoMonsters;
 import dev.psyda.surrogate.network.ModNetworking;
 import dev.psyda.surrogate.registry.ModGameRules;
 import dev.psyda.surrogate.world.LightRefresh;
@@ -56,6 +58,13 @@ public class Surrogate implements ModInitializer {
 		SiteTwo.registerEvents();
 		dev.psyda.surrogate.assay.Assay.registerEvents();
 		dev.psyda.surrogate.assay.PadSite.registerEvents();
+		dev.psyda.surrogate.hazard.Borers.registerEvents();
+		dev.psyda.surrogate.research.Research.registerEvents();
+		Hazards.registerEvents();
+		dev.psyda.surrogate.hazard.AcidRain.registerEvents();
+		NoMonsters.registerEvents();
+		dev.psyda.surrogate.fauna.Fauna.registerEvents();
+		dev.psyda.surrogate.errand.Errands.registerEvents();
 		Transit.registerEvents();
 		CrawlerInterior.registerEvents();
 		LightRefresh.registerEvents();

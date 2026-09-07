@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "SSS",
+    "PPP",
+    "SSS"
+  ],
+  "key": {
+    "S": {
+      "item": "surrogate:caustic_sandstone"
+    },
+    "P": {
+      "item": "surrogate:hull_plating"
+    }
+  },
+  "result": {
+    "id": "surrogate:ceramic_cladding",
+    "count": 1
+  }
+}

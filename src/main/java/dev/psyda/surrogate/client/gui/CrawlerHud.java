@@ -127,6 +127,25 @@ public final class CrawlerHud {
 		ringOutline(context, cx, cy, radius, 0xFF86EFAC);
 	}
 
+	/**
+	 * The hull's corrosion, beside the charge: a plain bar that fills as the belt eats. Four radio warnings
+	 * were the only word on it before, and a driver needs to see what the last trip out cost before the
+	 * hull seizes somewhere it cannot be walked back from.
+	 */
+	private static void drawWear(DrawContext context, int x, int y, int wear) {
+		MinecraftClient client = MinecraftClient.getInstance();
+		int eaten = Math.max(0, Math.min(100, wear));
+		int width = 34;
+		int height = 6;
+		int top = y + 1;
+		int color = eaten >= 75 ? 0xFFFF6060 : eaten >= 40 ? 0xFFFDE047 : 0xFF86EFAC;
+		context.fill(x - 1, top - 1, x + width + 1, top + height + 1, 0xCC0A1410);
+		context.fill(x, top, x + width, top + height, 0xFF13251C);
+		int filled = Math.round(width * eaten / 100f);
+		if (filled > 0) context.fill(x, top, x + filled, top + height, color);
+		context.drawTextWithShadow(client.textRenderer, Text.translatable("hud.surrogate.crawler.wear", eaten), x + width + 4, y, color & 0xFFFFFF);
+	}
+
 	private static int cellColor(int value) {
 		if ((value & CrawlerSonar.FLAG_UNKNOWN) != 0) return 0;
 		if ((value & CrawlerSonar.FLAG_ENTITY) != 0) return 0xFFFFFFFF;
@@ -182,6 +201,10 @@ public final class CrawlerHud {
 		Text dock = Text.translatable(CrawlerClientState.docked ? "hud.surrogate.crawler.docked" : "hud.surrogate.crawler.free");
 		Text line = Text.translatable("hud.surrogate.crawler", String.format("%03d", Math.round(heading) % 360), point, speed, charge, dock);
 		context.drawTextWithShadow(client.textRenderer, line, x, y, charge <= 10 ? 0xFF6060 : 0xA5F3FC);
+		drawWear(context, x + client.textRenderer.getWidth(line) + 8, y, CrawlerClientState.wear);
+		context.drawTextWithShadow(client.textRenderer,
+				Text.translatable(CrawlerClientState.cladding ? "hud.surrogate.crawler.cladding" : "hud.surrogate.crawler.bare"),
+				x, y - 12, CrawlerClientState.cladding ? 0x86EFAC : 0x9CA3AF);
 		if (CrawlerClientState.seat == CrawlerInterior.SEAT_HELM) {
 			context.drawTextWithShadow(client.textRenderer, Text.translatable("hud.surrogate.crawler.helm"), x, y + 12, 0x9CA3AF);
 		} else if (CrawlerClientState.seat == CrawlerInterior.SEAT_DOCK) {

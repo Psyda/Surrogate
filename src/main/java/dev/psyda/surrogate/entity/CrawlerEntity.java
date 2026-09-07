@@ -3,6 +3,8 @@ package dev.psyda.surrogate.entity;
 import dev.psyda.surrogate.Surrogate;
 import dev.psyda.surrogate.SurrogateConfig;
 import dev.psyda.surrogate.crawler.CrawlerInterior;
+import dev.psyda.surrogate.hazard.AcidRain;
+import dev.psyda.surrogate.item.CrawlerModuleItem;
 import dev.psyda.surrogate.registry.ModItems;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.entity.Entity;
@@ -43,6 +45,8 @@ public class CrawlerEntity extends Entity {
 	private static final TrackedData<Integer> ENERGY = DataTracker.registerData(CrawlerEntity.class, TrackedDataHandlerRegistry.INTEGER);
 	private static final TrackedData<Float> SPEED = DataTracker.registerData(CrawlerEntity.class, TrackedDataHandlerRegistry.FLOAT);
 	private static final TrackedData<Boolean> DOCKED = DataTracker.registerData(CrawlerEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+	/** What is bolted to the hull, one bit per {@link CrawlerModule}. One field: the hull's sync slots are not free. */
+	private static final TrackedData<Integer> MODULES = DataTracker.registerData(CrawlerEntity.class, TrackedDataHandlerRegistry.INTEGER);
 
 	/** The controls, as last set: throttle ahead positive, steer left positive; they lapse if nobody holds them. */
 	private float throttle;
@@ -67,6 +71,7 @@ public class CrawlerEntity extends Entity {
 		builder.add(ENERGY, 0);
 		builder.add(SPEED, 0f);
 		builder.add(DOCKED, false);
+		builder.add(MODULES, 0);
 	}
 
 	// ------------------------------------------------------------------ state
@@ -114,6 +119,24 @@ public class CrawlerEntity extends Entity {
 	public void setDocked(boolean docked) {
 		this.dataTracker.set(DOCKED, docked);
 		if (docked) setSpeed(0f);
+	}
+
+	public boolean hasModule(CrawlerModule module) {
+		return (this.dataTracker.get(MODULES) & (1 << module.ordinal())) != 0;
+	}
+
+	public void setModule(CrawlerModule module, boolean fitted) {
+		int mask = this.dataTracker.get(MODULES);
+		this.dataTracker.set(MODULES, fitted ? mask | (1 << module.ordinal()) : mask & ~(1 << module.ordinal()));
+	}
+
+	/** Ceramic panels over the hull: the belt's rain runs off instead of in. */
+	public boolean hasCladding() {
+		return hasModule(CrawlerModule.CLADDING);
+	}
+
+	public void setCladding(boolean fitted) {
+		setModule(CrawlerModule.CLADDING, fitted);
 	}
 
 	public int getInterior() {
@@ -256,11 +279,41 @@ public class CrawlerEntity extends Entity {
 			player.sendMessage(Text.translatable("message.surrogate.crawler.charged", Math.round(getEnergyFraction() * 100f)).formatted(Formatting.AQUA), true);
 			return ActionResult.CONSUME;
 		}
+		if (stack.isOf(ModItems.HULL_PLATING) || stack.isOf(ModItems.REPAIR_KIT)) {
+			// The only way a hull's corrosion ever comes down, and the only way a seized one moves again.
+			if (getWorld().isClient) return ActionResult.SUCCESS;
+			if (AcidRain.mend(player, stack, this)) return ActionResult.CONSUME;
+			player.sendMessage(Text.translatable("message.surrogate.acid.hull_sound").formatted(Formatting.GRAY), true);
+			return ActionResult.CONSUME;
+		}
+		if (stack.getItem() instanceof CrawlerModuleItem item) {
+			if (getWorld().isClient) return ActionResult.SUCCESS;
+			return tryFit(player, stack, item.getModule()) ? ActionResult.CONSUME : ActionResult.PASS;
+		}
 		if (player.shouldCancelInteraction()) return ActionResult.PASS;
 		if (getWorld().isClient) return ActionResult.SUCCESS;
 		if (!(player instanceof ServerPlayerEntity serverPlayer)) return ActionResult.PASS;
 		if (RobotEntity.isPiloting(player)) return CrawlerInterior.recall(serverPlayer, this) ? ActionResult.CONSUME : ActionResult.PASS;
 		return CrawlerInterior.board(serverPlayer, this) ? ActionResult.CONSUME : ActionResult.PASS;
+	}
+
+	/** Bolting a module to the hull: it has to be standing still, and it only takes one of each. */
+	public boolean tryFit(PlayerEntity player, ItemStack stack, CrawlerModule module) {
+		if (getSpeed() != 0f) {
+			player.sendMessage(Text.translatable("message.surrogate.crawler.module_moving").formatted(Formatting.GRAY), true);
+			return false;
+		}
+		if (hasModule(module)) {
+			player.sendMessage(Text.translatable("message.surrogate.crawler.module_fitted",
+					Text.translatable(module.translationKey())).formatted(Formatting.GRAY), true);
+			return false;
+		}
+		Text name = stack.getName();
+		setModule(module, true);
+		if (!player.isCreative()) stack.decrement(1);
+		playSound(SoundEvents.BLOCK_ANVIL_USE, 0.8f, 1.3f);
+		player.sendMessage(Text.translatable("message.surrogate.crawler.module_added", name).formatted(Formatting.AQUA), true);
+		return true;
 	}
 
 	// ------------------------------------------------------------------ client interpolation
@@ -314,6 +367,7 @@ public class CrawlerEntity extends Entity {
 		nbt.putInt("Energy", getEnergy());
 		nbt.putFloat("Speed", getSpeed());
 		nbt.putBoolean("Docked", isDocked());
+		nbt.putInt("Modules", this.dataTracker.get(MODULES));
 		nbt.putInt("Interior", interior);
 	}
 
@@ -322,6 +376,7 @@ public class CrawlerEntity extends Entity {
 		setEnergy(nbt.getInt("Energy"));
 		setSpeed(nbt.getFloat("Speed"));
 		setDocked(nbt.getBoolean("Docked"));
+		this.dataTracker.set(MODULES, nbt.getInt("Modules"));
 		interior = nbt.contains("Interior") ? nbt.getInt("Interior") : -1;
 	}
 

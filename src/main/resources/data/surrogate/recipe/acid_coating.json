@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "SSS",
+    "SPS",
+    "SSS"
+  ],
+  "key": {
+    "S": {
+      "item": "surrogate:caustic_sandstone"
+    },
+    "P": {
+      "item": "surrogate:hull_plating"
+    }
+  },
+  "result": {
+    "id": "surrogate:acid_coating",
+    "count": 1
+  }
+}

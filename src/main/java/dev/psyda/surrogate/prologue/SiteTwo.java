@@ -47,7 +47,8 @@ public final class SiteTwo {
 	 */
 	public static void choose(ServerWorld world, HabitatState state) {
 		if (state.siteTwo != null || state.origin == null) return;
-		Random random = world.getRandom();
+		// Off the world seed, so the same seed always puts Site Two in the same place. See SurvivorManager.
+		Random random = Random.create(world.getSeed() ^ 0x53495445L);
 		SurvivorManager survivors = SurvivorManager.get(world.getServer());
 		Predicate<BlockPos> awayFromShelters = pos -> survivors.sites().stream()
 				.noneMatch(site -> Math.abs(site.x - pos.getX()) < 80 && Math.abs(site.z - pos.getZ()) < 80);

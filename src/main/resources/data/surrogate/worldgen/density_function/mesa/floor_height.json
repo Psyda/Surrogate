@@ -19,14 +19,22 @@
     "argument2": {
       "type": "minecraft:add",
       "argument1": {
-        "type": "minecraft:mul",
-        "argument1": -10.0,
-        "argument2": "surrogate:mesa/sea"
+        "type": "minecraft:add",
+        "argument1": {
+          "type": "minecraft:mul",
+          "argument1": -10.0,
+          "argument2": "surrogate:mesa/sea"
+        },
+        "argument2": {
+          "type": "minecraft:mul",
+          "argument1": -5.0,
+          "argument2": "surrogate:mesa/river"
+        }
       },
       "argument2": {
         "type": "minecraft:mul",
-        "argument1": -5.0,
-        "argument2": "surrogate:mesa/river"
+        "argument1": -34.0,
+        "argument2": "surrogate:mesa/rift"
       }
     }
   }

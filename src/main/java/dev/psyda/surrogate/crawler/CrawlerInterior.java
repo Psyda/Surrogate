@@ -6,6 +6,7 @@ import dev.psyda.surrogate.block.DiveChairBlockEntity;
 import dev.psyda.surrogate.block.LifeSupportBlockEntity;
 import dev.psyda.surrogate.entity.CrawlerEntity;
 import dev.psyda.surrogate.entity.RobotEntity;
+import dev.psyda.surrogate.hazard.AcidRain;
 import dev.psyda.surrogate.item.RobotChassisItem;
 import dev.psyda.surrogate.network.CinematicPayloads;
 import dev.psyda.surrogate.network.CrawlerPayloads;
@@ -523,12 +524,13 @@ public final class CrawlerInterior {
 	private static void sendState(ServerPlayerEntity player, @Nullable CrawlerEntity hull, @Nullable Seat seat) {
 		int kind = seat == null ? SEAT_NONE : seat.kind;
 		if (hull == null) {
-			ServerPlayNetworking.send(player, new CrawlerPayloads.State(kind, true, 0f, 0f, 0, false, false, 0f, 0f));
+			ServerPlayNetworking.send(player, new CrawlerPayloads.State(kind, true, 0f, 0f, 0, false, false, 0f, 0f, false, 0));
 			return;
 		}
 		CrawlerDocking.Status status = CrawlerDocking.status(player.server, hull);
 		ServerPlayNetworking.send(player, new CrawlerPayloads.State(kind, false, hull.getHeading(), hull.getSpeed(), Math.round(hull.getEnergyFraction() * 100f),
-				hull.isDocked(), status.collar(), status.offset(), status.angle()));
+				hull.isDocked(), status.collar(), status.offset(), status.angle(), hull.hasCladding(),
+				AcidRain.hullPercent(player.server, hull)));
 	}
 
 	// ------------------------------------------------------------------ the chassis bay

@@ -3,6 +3,10 @@ package dev.psyda.surrogate.item;
 import dev.psyda.surrogate.atmosphere.Atmosphere;
 import dev.psyda.surrogate.atmosphere.Exposure;
 import dev.psyda.surrogate.atmosphere.SealedVolume;
+import dev.psyda.surrogate.hazard.AcidRain;
+import dev.psyda.surrogate.hazard.Hazards;
+import dev.psyda.surrogate.registry.ModBlocks;
+import dev.psyda.surrogate.world.Valleys;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -56,6 +60,7 @@ public class AtmoScannerItem extends Item {
 			boolean airtight = Atmosphere.isAirtight(world, pos, state);
 			player.sendMessage(Text.translatable(airtight ? "message.surrogate.scanner.airtight" : "message.surrogate.scanner.porous", state.getBlock().getName())
 					.formatted(airtight ? Formatting.GREEN : Formatting.YELLOW), true);
+			reportCorrosion(serverWorld, player, pos, state);
 		} else {
 			scan(serverWorld, player);
 		}
@@ -68,6 +73,7 @@ public class AtmoScannerItem extends Item {
 		boolean toxic = Atmosphere.isToxic(world, pos);
 		SealedVolume volume = Atmosphere.volumeAt(world, pos);
 		world.playSound(null, pos, SoundEvents.BLOCK_NOTE_BLOCK_BIT.value(), SoundCategory.PLAYERS, 0.5f, 1.4f);
+		reportBelt(world, player, pos);
 
 		if (volume == null) {
 			player.sendMessage(Text.translatable(toxic ? "message.surrogate.scanner.open_toxic" : "message.surrogate.scanner.open_clean")
@@ -100,6 +106,33 @@ public class AtmoScannerItem extends Item {
 				Text.translatable("direction.surrogate." + toward.asString()), Exposure.percent(volume.quality)).formatted(Formatting.RED), false);
 		world.spawnParticles(LEAK_MARKER, leak.getX() + 0.5, leak.getY() + 0.5, leak.getZ() + 0.5, 40, 0.4, 0.4, 0.4, 0.0);
 		world.playSound(null, leak, SoundEvents.BLOCK_NOTE_BLOCK_PLING.value(), SoundCategory.BLOCKS, 1.0f, 0.6f);
+	}
+
+	/**
+	 * Whether this column is in the belt and whether it is falling. The mask is read straight out of the
+	 * noise, so the answer costs nothing and does not need a chunk; outside Sallow there is no belt to name.
+	 */
+	private static void reportBelt(ServerWorld world, PlayerEntity player, BlockPos pos) {
+		if (!Valleys.isMesaWorld(world)) return;
+		if (!Valleys.inBelt(world, pos.getX(), pos.getZ())) {
+			player.sendMessage(Text.translatable("message.surrogate.scanner.belt_out").formatted(Formatting.GRAY), false);
+			return;
+		}
+		boolean falling = Hazards.acidRain(world);
+		player.sendMessage(Text.translatable(falling ? "message.surrogate.scanner.belt_rain" : "message.surrogate.scanner.belt_dry")
+				.formatted(falling ? Formatting.RED : Formatting.YELLOW), false);
+	}
+
+	/** How eaten the machine under the crosshair is: the other half of what the scanner is for in the belt. */
+	private static void reportCorrosion(ServerWorld world, PlayerEntity player, BlockPos pos, BlockState state) {
+		if (!AcidRain.corrodible(state) && !state.isOf(ModBlocks.CORRODED_MACHINE)) return;
+		int eaten = AcidRain.percent(world, pos);
+		if (eaten <= 0) {
+			player.sendMessage(Text.translatable("message.surrogate.scanner.machine_sound").formatted(Formatting.GREEN), false);
+			return;
+		}
+		player.sendMessage(Text.translatable("message.surrogate.acid.corroded", eaten)
+				.formatted(eaten >= 50 ? Formatting.RED : Formatting.YELLOW), false);
 	}
 
 	@Override

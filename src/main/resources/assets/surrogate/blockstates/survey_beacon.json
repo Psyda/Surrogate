@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "linked=false": {
+      "model": "surrogate:block/survey_beacon"
+    },
+    "linked=true": {
+      "model": "surrogate:block/survey_beacon_linked"
+    }
+  }
+}

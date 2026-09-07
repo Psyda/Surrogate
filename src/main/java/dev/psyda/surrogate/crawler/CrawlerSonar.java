@@ -77,17 +77,23 @@ public final class CrawlerSonar {
 			targetX = (float) -local.x;
 			targetZ = (float) local.z;
 		}
-		ServerPlayNetworking.send(player, new CrawlerPayloads.Scan(SIZE, STEP, hasTarget, targetX, targetZ, cells, radar(server, hull)));
+		ServerPlayNetworking.send(player, new CrawlerPayloads.Scan(SIZE, STEP, hasTarget, targetX, targetZ, cells, radar(server, hull, player)));
 	}
 
-	/** The bases within radar range, as {@code x, z, kind} triples in the hull's frame (right positive). */
-	private static float[] radar(MinecraftServer server, CrawlerEntity hull) {
+	/**
+	 * The bases within radar range, as {@code x, z, kind} triples in the hull's frame (right positive). A
+	 * shelter the band cannot hear from here has no fix at all, only a direction, so it goes on the rim of
+	 * the scope at its bearing and stays there however far you drive.
+	 */
+	private static float[] radar(MinecraftServer server, CrawlerEntity hull, ServerPlayerEntity player) {
 		List<Float> blips = new ArrayList<>();
 		HabitatState state = HabitatState.get(server);
 		if (state.origin != null) blip(blips, hull, state.origin.getX(), state.origin.getZ(), CrawlerPayloads.Scan.POI_HOME);
 		if (state.siteTwo != null) blip(blips, hull, state.siteTwo.getX(), state.siteTwo.getZ(), CrawlerPayloads.Scan.POI_SITE_TWO);
 		for (SurvivorManager.Site site : SurvivorManager.get(server).sites()) {
-			blip(blips, hull, site.x, site.z, site.rescued || site.aboard ? CrawlerPayloads.Scan.POI_SHELTER_DONE : CrawlerPayloads.Scan.POI_SHELTER);
+			int kind = site.rescued || site.aboard ? CrawlerPayloads.Scan.POI_SHELTER_DONE : CrawlerPayloads.Scan.POI_SHELTER;
+			if (SurvivorManager.heard(player, site.x, site.z)) blip(blips, hull, site.x, site.z, kind);
+			else carrier(blips, hull, site.x, site.z, kind);
 		}
 		float[] packed = new float[blips.size()];
 		for (int i = 0; i < packed.length; i++) packed[i] = blips.get(i);
@@ -99,6 +105,17 @@ public final class CrawlerSonar {
 		if (local.horizontalLength() > RADAR_RANGE) return;
 		blips.add((float) -local.x);
 		blips.add((float) local.z);
+		blips.add((float) kind);
+	}
+
+	/** A carrier: the bearing is real, the distance is not, so it is drawn at the edge of the sweep. */
+	private static void carrier(List<Float> blips, CrawlerEntity hull, int x, int z, int kind) {
+		Vec3d local = toLocal(hull, new Vec3d(x + 0.5, hull.getY(), z + 0.5));
+		double length = local.horizontalLength();
+		if (length < 1.0e-3) return;
+		double scale = RADAR_RANGE * 0.98 / length;
+		blips.add((float) (-local.x * scale));
+		blips.add((float) (local.z * scale));
 		blips.add((float) kind);
 	}
 

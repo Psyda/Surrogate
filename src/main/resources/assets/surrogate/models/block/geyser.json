@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "surrogate:block/geyser_top",
+    "bottom": "surrogate:block/vent_side",
+    "side": "surrogate:block/vent_side"
+  }
+}

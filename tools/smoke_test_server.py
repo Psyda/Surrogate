@@ -14,8 +14,14 @@ LOG = os.path.join(SCRATCH, "server.log")
 RCON_PORT = 25575
 RCON_PASS = "surrogate"
 RUN = os.path.join(ROOT, "run")
-SERVER_PROPERTIES = """level-type=surrogate:toxic_wastes
+# The map the campaign is designed against (docs/DESIGN-campaign.md, "The map"; SurrogateConfig.lockedSeed).
+# Every headless run used to get its own random world, so a test could pass on a map nobody would ever play
+# and the next run would place the sites somewhere else entirely. Set SURROGATE_SEED to sweep other maps.
+LOCKED_SEED = os.environ.get("SURROGATE_SEED", "3878")
+
+SERVER_PROPERTIES = f"""level-type=surrogate:toxic_wastes
 level-name=toxic_test
+level-seed={LOCKED_SEED}
 online-mode=false
 enable-rcon=true
 rcon.port=25575
@@ -60,13 +66,41 @@ class Rcon:
         body = struct.pack("<ii", self.req, kind) + payload.encode("utf-8") + b"\x00\x00"
         self.sock.sendall(struct.pack("<i", len(body)) + body)
 
-    def _recv(self):
-        raw = self.sock.recv(4)
+    def _packet(self):
+        raw = b""
+        while len(raw) < 4:
+            chunk = self.sock.recv(4 - len(raw))
+            if not chunk:
+                raise ConnectionError("rcon closed while reading a length")
+            raw += chunk
         (length,) = struct.unpack("<i", raw)
         data = b""
         while len(data) < length:
-            data += self.sock.recv(length - len(data))
+            chunk = self.sock.recv(length - len(data))
+            if not chunk:
+                raise ConnectionError("rcon closed mid-packet")
+            data += chunk
         return data[8:-2].decode("utf-8", "replace")
+
+    def _recv(self):
+        """One reply, however many packets the server split it into.
+
+        Vanilla cuts a reply at 4096 bytes and sends the rest as more packets with the same request id. Reading
+        only the first left the tail in the socket, where it came back as the *next* command's reply and put
+        every command after it one behind - which is exactly the kind of fault a test harness must not have.
+        Anything at the boundary is followed by a short wait for more.
+        """
+        body = self._packet()
+        while len(body.encode("utf-8", "replace")) >= 4090:
+            was = self.sock.gettimeout()
+            self.sock.settimeout(1.0)
+            try:
+                body += self._packet()
+            except (socket.timeout, TimeoutError):
+                break
+            finally:
+                self.sock.settimeout(was)
+        return body
 
     def cmd(self, command):
         self._send(2, command)
@@ -243,7 +277,7 @@ def main():
         # A survivor shelter: walk the chunk in and see it get built.
         with open(LOG, encoding="utf-8", errors="replace") as f:
             text = f.read()
-        m = re.search(r"Survivor shelter for (\w+) at x=(-?\d+), z=(-?\d+)", text)
+        m = re.search(r"Survivor site for (\w+) at x=(-?\d+), z=(-?\d+)", text)
         if m:
             sx, sz = int(m.group(2)), int(m.group(3))
             rcon.cmd(f"{ow}forceload add {sx} {sz}")

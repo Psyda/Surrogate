@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "CCC",
+    "CUC",
+    "IGI"
+  ],
+  "key": {
+    "C": {
+      "item": "surrogate:cobalt_ingot"
+    },
+    "U": {
+      "item": "surrogate:uplink_card"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "G": {
+      "item": "surrogate:reinforced_glass"
+    }
+  },
+  "result": {
+    "id": "surrogate:shielded_uplink",
+    "count": 1
+  }
+}

@@ -16,6 +16,8 @@ public final class ModTags {
 	public static final TagKey<Item> CAUSTIC_ITEMS = TagKey.of(RegistryKeys.ITEM, Surrogate.id("caustic"));
 	/** Blocks that foul the air of a sealed room they border. */
 	public static final TagKey<Block> CAUSTIC_BLOCKS = TagKey.of(RegistryKeys.BLOCK, Surrogate.id("caustic"));
+	/** Machines the belt's rain eats when they stand in it with nothing over them. */
+	public static final TagKey<Block> CORRODIBLE = TagKey.of(RegistryKeys.BLOCK, Surrogate.id("corrodible"));
 
 	private ModTags() {
 	}

@@ -21,7 +21,9 @@ public enum Crew {
 	/** Mikkel Sorensen at Survey Two, who sends his chassis to the pad because his rover is dead. */
 	SORENSEN("sorensen"),
 	/** Grace Okafor, who patches in from her own failing habitat while the payload is loaded. */
-	OKAFOR("okafor");
+	OKAFOR("okafor"),
+	/** Yuki Tanaka of the Sulfur Works, past the mast's reach, who is a carrier before she is a voice. */
+	TANAKA("tanaka");
 
 	private static final Crew[] VALUES = values();
 	private final String key;

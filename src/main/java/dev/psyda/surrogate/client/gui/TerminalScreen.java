@@ -44,6 +44,10 @@ public class TerminalScreen extends Screen {
 	private int listWidth;
 
 	public TerminalScreen(String unit) {
+		this(unit, -1);
+	}
+
+	public TerminalScreen(String unit, int survey) {
 		super(Text.translatable("screen.surrogate.terminal"));
 		this.unit = unit;
 		titles.add(I18n.translate("terminal.surrogate.status"));
@@ -54,7 +58,31 @@ public class TerminalScreen extends Screen {
 			titles.add(I18n.translate(titleKey));
 			bodies.add(I18n.translate("terminal.surrogate." + unit + "." + i + ".body"));
 		}
+		// Okafor's survey, last, and only on a hub that has had the disk put in it. A mask of -1 means no
+		// disk; a mask of 0 means the software is running and nobody has filed anything yet, which is worth
+		// a page of its own because it tells the player where to start.
+		if (survey >= 0) {
+			titles.add(I18n.translate("terminal.surrogate.survey.title"));
+			bodies.add(surveyPage(survey));
+		}
 		openedAt = Util.getMeasuringTimeMs();
+	}
+
+	/**
+	 * The survey page: every subject on the table, with Okafor's note under the ones that have a reading
+	 * and a blank under the ones that do not. The blanks are the point — the page is the checklist.
+	 */
+	private static String surveyPage(int survey) {
+		StringBuilder out = new StringBuilder();
+		dev.psyda.surrogate.fauna.Specimen[] all = dev.psyda.surrogate.fauna.Specimen.all();
+		out.append(I18n.translate("terminal.surrogate.survey.header", Integer.bitCount(survey), all.length)).append("\n\n");
+		for (dev.psyda.surrogate.fauna.Specimen specimen : all) {
+			boolean known = (survey & specimen.bit()) != 0;
+			out.append(known ? "+ " : "- ").append(I18n.translate(specimen.nameKey())).append('\n');
+			out.append("  ").append(known ? I18n.translate(specimen.noteKey())
+					: I18n.translate("terminal.surrogate.survey.unread")).append("\n\n");
+		}
+		return out.toString();
 	}
 
 	@Override
