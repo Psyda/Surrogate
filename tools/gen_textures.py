@@ -64,7 +64,17 @@ def from_map(rows):
     return img
 
 
+# Textures that are painted by hand and must not be written over. The call that would have made one is
+# still made, and only the save is skipped: this file shares one random stream in file order, so deleting or
+# commenting out a painting call re-rolls the noise of every painted texture after it and produces a diff of
+# sixty-odd PNGs that have nothing to do with the change.
+HAND_PAINTED = {"entity/crew_ferreira.png"}
+
+
 def save(img, rel):
+    if rel.replace("\\", "/") in HAND_PAINTED:
+        print("kept  ", rel, "(hand painted)")
+        return
     path = os.path.join(TEX, rel)
     os.makedirs(os.path.dirname(path), exist_ok=True)
     img.save(path)
@@ -1309,7 +1319,9 @@ def paint_person(name, suit, trim, skin, hair, prefix="crew"):
 
 
 paint_person("castellanos", (36, 48, 78, 255), (220, 200, 150, 255), (166, 118, 86, 255), (30, 26, 24, 255))
-#paint_person("ferreira", (222, 226, 230, 255), (60, 160, 170, 255), (120, 80, 60, 255), (20, 16, 14, 255))
+# Ferreira's is hand painted; the call stays so the random stream does not move, and HAND_PAINTED above
+# stops it being written over.
+paint_person("ferreira", (222, 226, 230, 255), (60, 160, 170, 255), (120, 80, 60, 255), (20, 16, 14, 255))
 paint_person("teague", (205, 110, 40, 255), (40, 40, 44, 255), (228, 194, 164, 255), (150, 90, 40, 255))
 paint_person("sleeper", (170, 190, 178, 255), (90, 110, 100, 255), (200, 172, 150, 255), (70, 60, 50, 255))
 
