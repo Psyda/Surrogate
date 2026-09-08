@@ -307,7 +307,8 @@
   "flashback.television": {
     "sounds": [
       {
-        "name": "surrogate:flashback/television"
+        "name": "surrogate:flashback/television",
+        "stream": true
       }
     ],
     "subtitle": "subtitles.surrogate.flashback_television"
@@ -547,10 +548,122 @@
       }
     ]
   },
+  "voice.housewarming.goodbye": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/housewarming.goodbye",
+        "stream": true
+      }
+    ]
+  },
+  "voice.housewarming.landed_1": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/housewarming.landed_1",
+        "stream": true
+      }
+    ]
+  },
+  "voice.housewarming.offer_2": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/housewarming.offer_2",
+        "stream": true
+      }
+    ]
+  },
+  "voice.housewarming.suits": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/housewarming.suits",
+        "stream": true
+      }
+    ]
+  },
+  "voice.housewarming.unwatched": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/housewarming.unwatched",
+        "stream": true
+      }
+    ]
+  },
+  "voice.housewarming.wait_1": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/housewarming.wait_1",
+        "stream": true
+      }
+    ]
+  },
+  "voice.housewarming.wake_1": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/housewarming.wake_1",
+        "stream": true
+      }
+    ]
+  },
+  "voice.housewarming.wake_3": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/housewarming.wake_3",
+        "stream": true
+      }
+    ]
+  },
+  "voice.okafor.aboard": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/okafor.aboard",
+        "stream": true
+      }
+    ]
+  },
+  "voice.okafor.decline.1": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/okafor.decline.1",
+        "stream": true
+      }
+    ]
+  },
+  "voice.okafor.decline.2": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/okafor.decline.2",
+        "stream": true
+      }
+    ]
+  },
+  "voice.okafor.decline.3": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/okafor.decline.3",
+        "stream": true
+      }
+    ]
+  },
   "voice.okafor.greet": {
     "sounds": [
       {
         "name": "surrogate:voice/okafor.greet",
+        "stream": true
+      }
+    ]
+  },
+  "voice.okafor.home": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/okafor.home",
+        "stream": true
+      }
+    ]
+  },
+  "voice.okafor.home_radio": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/okafor.home_radio",
         "stream": true
       }
     ]
@@ -583,6 +696,38 @@
     "sounds": [
       {
         "name": "surrogate:voice/okafor.plea",
+        "stream": true
+      }
+    ]
+  },
+  "voice.okafor.port.again": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/okafor.port.again",
+        "stream": true
+      }
+    ]
+  },
+  "voice.okafor.port.blueprint": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/okafor.port.blueprint",
+        "stream": true
+      }
+    ]
+  },
+  "voice.okafor.port.empty": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/okafor.port.empty",
+        "stream": true
+      }
+    ]
+  },
+  "voice.okafor.port.greet": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/okafor.port.greet",
         "stream": true
       }
     ]

@@ -114,7 +114,9 @@ public class SlagbackEntity extends FaunaEntity {
 	@Nullable
 	private LivingEntity steppedOn() {
 		Box top = getBoundingBox().withMinY(getBoundingBox().maxY - 0.05).stretch(0.0, 1.0, 0.0);
-		for (Entity e : getWorld().getOtherEntities(this, top, e -> e instanceof LivingEntity && e.isAlive())) {
+		// Other animals do not count: a trundle rolling over a field of these used to keep the whole field
+		// opening and closing, and every open and close is a noise.
+		for (Entity e : getWorld().getOtherEntities(this, top, e -> e instanceof LivingEntity && e.isAlive() && !(e instanceof FaunaEntity))) {
 			return (LivingEntity) e;
 		}
 		return null;
@@ -175,6 +177,12 @@ public class SlagbackEntity extends FaunaEntity {
 	@Override
 	protected SoundEvent getAmbientSound() {
 		return isRoused() ? SoundEvents.BLOCK_BASALT_HIT : null;
+	}
+
+	/** Roused, it grinds now and then, not constantly. Folded, it says nothing at all. */
+	@Override
+	public int getMinAmbientSoundDelay() {
+		return 240;
 	}
 
 	@Nullable

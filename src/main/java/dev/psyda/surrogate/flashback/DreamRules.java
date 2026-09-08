@@ -3,6 +3,11 @@ package dev.psyda.surrogate.flashback;
 import dev.psyda.surrogate.Surrogate;
 import dev.psyda.surrogate.registry.ModTags;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
+import net.fabricmc.fabric.api.event.player.UseBlockCallback;
+import net.minecraft.block.BedBlock;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
+import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -35,6 +40,21 @@ public final class DreamRules {
 
 	public static void registerEvents() {
 		PlayerBlockBreakEvents.BEFORE.register(DreamRules::onBreak);
+		UseBlockCallback.EVENT.register(DreamRules::onUse);
+	}
+
+	/**
+	 * The beds are furniture. The dream is a dimension where beds do not work, and a bed that does not work
+	 * is, to vanilla, a bed that explodes: the first player to try lying down in their own memory blew the
+	 * bedroom up. They get a line instead.
+	 */
+	private static ActionResult onUse(PlayerEntity player, World world, Hand hand, BlockHitResult hit) {
+		if (!DreamDimension.isDream(world)) return ActionResult.PASS;
+		if (!(world.getBlockState(hit.getBlockPos()).getBlock() instanceof BedBlock)) return ActionResult.PASS;
+		if (player instanceof ServerPlayerEntity served) {
+			served.sendMessage(Text.translatable("message.surrogate.dream.bed").formatted(Formatting.GRAY), true);
+		}
+		return ActionResult.FAIL;
 	}
 
 	private static boolean onBreak(World world, PlayerEntity player, BlockPos pos, BlockState state, net.minecraft.block.entity.BlockEntity entity) {

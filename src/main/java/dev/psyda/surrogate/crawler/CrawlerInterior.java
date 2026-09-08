@@ -236,8 +236,9 @@ public final class CrawlerInterior {
 		}
 		standUp(player);
 		ServerPlayNetworking.send(player, new CinematicPayloads.Fade(255, 0));
-		Vec3d catAt = at;
-		bringCat(player, overworld, catAt);
+		// The cat only comes when the hatch opens into the pod. Out on the ground is open air, and a cat put
+		// down on the sand beside the hull is a cat nobody sees again.
+		if (hull.isDocked()) bringCat(player, overworld, at);
 		player.teleport(overworld, at.x, at.y, at.z, yaw, 0f);
 		ServerPlayNetworking.send(player, new CinematicPayloads.Fade(0, 40));
 		player.sendMessage(Text.translatable(message).formatted(Formatting.AQUA), true);

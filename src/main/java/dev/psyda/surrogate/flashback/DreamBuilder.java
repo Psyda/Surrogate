@@ -35,6 +35,8 @@ import net.minecraft.text.Text;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.block.ConnectingBlock;
+import net.minecraft.block.PaneBlock;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.function.Predicate;
@@ -471,16 +473,23 @@ public final class DreamBuilder {
 		s.set(-1, 1, 5, facing(ModBlocks.NIGHTSTAND, HouseContainerBlock.FACING, Direction.EAST));
 		s.set(-1, 2, 5, prop(ModBlocks.TELEPHONE, Direction.EAST));
 		s.set(0, 3, -1, ModBlocks.PENDANT_LAMP.getDefaultState());
-		s.set(1, 2, 6, wall(ModBlocks.LIGHT_SWITCH, Direction.EAST).with(LightSwitchBlock.ON, true));
+		s.set(1, 2, 6, wall(ModBlocks.LIGHT_SWITCH, Direction.NORTH).with(LightSwitchBlock.ON, true));
 		s.set(-1, 2, -1, wall(ModBlocks.PHOTO_FRAME, Direction.EAST));
 		for (int z = -5; z <= 5; z += 5) s.set(0, 1, z, Blocks.RED_CARPET.getDefaultState());
 
 		// ---- Upstairs: the landing, the bedroom, the bathroom, and the room that is not yours.
 		s.set(0, 7, 0, ModBlocks.PENDANT_LAMP.getDefaultState());
-		s.set(1, 6, 0, wall(ModBlocks.LIGHT_SWITCH, Direction.EAST).with(LightSwitchBlock.ON, true));
+		s.set(1, 6, 0, wall(ModBlocks.LIGHT_SWITCH, Direction.WEST).with(LightSwitchBlock.ON, true));
 		s.set(0, 7, -5, ModBlocks.PENDANT_LAMP.getDefaultState());
-		s.set(0, 5, -5, Blocks.WHITE_BED.getDefaultState().with(HorizontalFacingBlock.FACING, Direction.NORTH).with(BedBlock.PART, BedPart.HEAD));
-		s.set(0, 5, -4, Blocks.WHITE_BED.getDefaultState().with(HorizontalFacingBlock.FACING, Direction.NORTH).with(BedBlock.PART, BedPart.FOOT));
+		// The room at the end of the landing is a closet: a wardrobe, a shelf, and a box of things nobody has
+		// looked at in years. The middle of it stays clear so the door can open.
+		s.set(-1, 5, -6, facing(ModBlocks.WARDROBE, HouseContainerBlock.FACING, Direction.SOUTH));
+		fill(s, -1, 5, -6, Items.LEATHER_HELMET, Items.RED_WOOL, Items.LEAD, Items.FISHING_ROD);
+		s.set(1, 5, -6, Blocks.BOOKSHELF.getDefaultState());
+		s.set(1, 6, -6, ModBlocks.SNOW_GLOBE.getDefaultState());
+		s.set(1, 5, -5, facing(ModBlocks.CARDBOARD_BOX, HouseContainerBlock.FACING, Direction.WEST));
+		fill(s, 1, 5, -5, Items.COMPASS, Items.MUSIC_DISC_13, Items.PAINTING, Items.NAME_TAG, Items.FLOWER_POT, Items.BOOK);
+		s.set(-1, 6, -5, wall(ModBlocks.PHOTO_FRAME, Direction.EAST));
 
 		s.set(-6, 5, -5, Blocks.WHITE_BED.getDefaultState().with(HorizontalFacingBlock.FACING, Direction.NORTH).with(BedBlock.PART, BedPart.HEAD));
 		s.set(-6, 5, -4, Blocks.WHITE_BED.getDefaultState().with(HorizontalFacingBlock.FACING, Direction.NORTH).with(BedBlock.PART, BedPart.FOOT));
@@ -826,8 +835,24 @@ public final class DreamBuilder {
 		/** No neighbour updates and no drops: a room that builds itself must not rain furniture. */
 		BlockPos set(int x, int y, int z, BlockState state) {
 			BlockPos pos = at(x, y, z);
+			if (state.getBlock() instanceof PaneBlock pane) state = settled(pane, state, pos);
 			world.setBlockState(pos, state, Block.NOTIFY_LISTENERS | Block.FORCE_STATE | Block.SKIP_DROPS);
 			return pos;
+		}
+
+		/**
+		 * A pane with its arms out to whatever is beside it. Placed without neighbour updates, a pane is a
+		 * post: the connections are worked out on update, and there is none. So they are worked out here,
+		 * from the wall the window sits in, which is already there because the shell goes up first.
+		 */
+		private BlockState settled(PaneBlock pane, BlockState state, BlockPos pos) {
+			for (Direction side : Direction.Type.HORIZONTAL) {
+				BlockPos beside = pos.offset(side);
+				BlockState other = world.getBlockState(beside);
+				boolean joins = pane.connectsTo(other, other.isSideSolidFullSquare(world, beside, side.getOpposite()));
+				state = state.with(ConnectingBlock.FACING_PROPERTIES.get(side), joins);
+			}
+			return state;
 		}
 
 		BlockPos set(BlockPos rel, BlockState state) {

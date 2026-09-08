@@ -9,7 +9,9 @@
     "CraftingInventoryAccessor",
     "PlayerScreenHandlerAccessor",
     "RegistryLoaderMixin",
-    "DimensionOptionsRegistryHolderMixin"
+    "DimensionOptionsRegistryHolderMixin",
+    "FollowOwnerGoalMixin",
+    "TameableEntityMixin"
   ],
   "client": [
     "client.PlayerEntityRendererMixin",

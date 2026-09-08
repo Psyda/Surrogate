@@ -10,6 +10,7 @@ import dev.psyda.surrogate.world.HabitatBuilder;
 import dev.psyda.surrogate.world.HabitatState;
 import dev.psyda.surrogate.world.LightRefresh;
 import dev.psyda.surrogate.world.ModuleTwo;
+import net.minecraft.command.argument.EntityAnchorArgumentType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.FallingBlockEntity;
 import net.minecraft.particle.ParticleTypes;
@@ -78,7 +79,7 @@ public final class Housewarming extends Director {
 	private static final int NUDGE_AFTER = 1200;
 	/** How far south of the pod counts as out, and how near the pad counts as with them. */
 	private static final double OUTSIDE_Z = 8.0;
-	private static final double NEAR_PAD = 14.0;
+	private static final double NEAR_PAD = 24.0;
 
 	@Nullable
 	private static Housewarming running;
@@ -299,21 +300,16 @@ public final class Housewarming extends Director {
 	}
 
 	/**
-	 * The shot. Taken here rather than at the top of the scene: everything before this is the player's own
-	 * to walk through, and a camera held across it is a camera held across an objective nobody can finish.
-	 *
-	 * <p>Aimed from where the player actually ended up, at the patch of sky the module is coming out of.
+	 * A nudge, not a shot. The player is turned to face the sky over the slab once and keeps the camera from
+	 * there. The earlier version held the camera on a fixed point in the sky for the whole fall, which is a
+	 * camera pointed at the one place the module is not: it starts there and leaves. Free to look, the player
+	 * follows it down and sees the room arrive, which is what they walked out here for.
 	 */
 	private void lookUp() {
-		cinematic();
 		ServerPlayerEntity player = player();
 		if (player == null) return;
-		Entity body = player.hasVehicle() ? player.getRootVehicle() : player;
-		Vec3d eye = body.getPos().add(0, 2, 0);
-		Vec3d sky = Vec3d.of(origin.add(ModuleTwo.CENTRE)).add(0, DROP_FROM, 0);
-		send(new dev.psyda.surrogate.network.CinematicPayloads.Camera(List.of(
-				frame(eye, sky, 0, 0),
-				frame(eye.add(0, 1, 0), sky, DROP_TICKS + 60, dev.psyda.surrogate.network.CinematicPayloads.EASE_SMOOTH))));
+		Vec3d sky = Vec3d.of(origin.add(ModuleTwo.CENTRE)).add(0, DROP_FROM / 2.0, 0);
+		player.lookAt(EntityAnchorArgumentType.EntityAnchor.EYES, sky);
 		for (CrewEntity person : visitors) {
 			if (person != null && person.isAlive()) person.setLookTarget(null);
 		}

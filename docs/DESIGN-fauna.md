@@ -30,14 +30,20 @@ analysis disk is the shortest one on the table and is not about biology.
 
 ## Where they come from
 
-Trundles and tockers are ordinary `SpawnGroup.CREATURE` entries on the biome spawner lists, so a fresh world
-already has some in it before anybody walks outside. Weights are low and group sizes are one to three: a
-trundle should be a thing you notice, not a herd you walk through.
+All four are placed by `Fauna`'s own sweep, every three seconds, near players, under a local population cap.
+None of them are on the biome spawner lists. Trundles and tockers were, once, and that is how a player came
+home from an idle hour to a few hundred of them: nothing of ours despawns, and vanilla does not count a mob
+that cannot despawn towards its creature cap, so the biome spawner never believed it had enough. Now the
+sweep counts. A trundle or a tocker turns up on open ground in its own biomes, between sixteen and forty
+eight blocks from the player, no more than two of each in that radius. Three animals in sight is company.
 
-The other two cannot be spawned that way and are placed by `Fauna`'s own sweep, every three seconds, near
-players, under a local population cap:
+- A **trundle** lives in the desert, the dunes, the pans and the grove.
+- A **tocker** lives in the desert, the flats, the pans and the grove.
 
-- A **slagback** needs to be beside a geyser, and the vanilla spawner has no idea where those are.
+The other two need a place the sweep has to look for:
+
+- A **slagback** needs to be beside a geyser, and the vanilla spawner has no idea where those are. They
+  come as a group of two to five per geyser, placed once, and a geyser that has any is left alone.
 - A **lantern slug** needs a cave ceiling. The spawner works downwards from a heightmap, and a cave roof is
   not on any heightmap, so the sweep walks up from a random point underground until it finds air with rock
   over it.

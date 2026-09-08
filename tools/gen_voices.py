@@ -1,5 +1,6 @@
 """Records the spoken lines with ElevenLabs.
 
+    python tools/gen_voices.py --missing                # every spoken lang key against the ogg files on disk
     python tools/gen_voices.py --lines                  # every line and who says it (from the scripts and lang)
     python tools/gen_voices.py --audition               # one sample per candidate voice, to run/voice_auditions
     python tools/gen_voices.py --audition halloran marsh
@@ -287,8 +288,36 @@ def cmd_render(cast, lang, who_list, force, dry):
         print("now run: python tools/gen_sounds.py   (to list the new lines in sounds.json)")
 
 
+# Prefixes of lang keys that are spoken aloud, and key suffixes that are labels rather than lines.
+SPOKEN_PREFIXES = ("cinematic.surrogate.", "survivor.surrogate.", "crew.surrogate.", "errand.surrogate.")
+LABEL_SUFFIXES = (".objective.", ".title", ".chapter", ".sign.", ".place.", ".reason.", ".name", ".pod", ".end")
+
+
+def cmd_missing(cast, lang):
+    """Counts from the lang file, not from the scripts, so scenes this tool cannot parse still show up."""
+    spoken = {k: v for k, v in lang.items() if k.startswith(SPOKEN_PREFIXES) and not any(x in k for x in LABEL_SUFFIXES)}
+    have = {f[:-4] for f in os.listdir(VOICE_DIR) if f.endswith(".ogg")} if os.path.isdir(VOICE_DIR) else set()
+    seen = collect_lines(cast, lang)
+    missing = {}
+    for k in spoken:
+        vk = voice_key(k)
+        if vk not in have:
+            missing.setdefault(".".join(k.split(".")[:3]), []).append(vk)
+    print(f"spoken lang keys: {len(spoken)}   recordings: {len(have)}   missing: {sum(map(len, missing.values()))}")
+    print(f"lines this tool can attribute to a speaker: {len(seen)} (the rest need their scene added to SCRIPTS or a prefix in speakers)")
+    for group, keys in sorted(missing.items()):
+        print(f"  {group}: {len(keys)} missing")
+    unlisted = sorted(k for k in spoken if k not in seen and voice_key(k) not in have)
+    print(f"missing lines with no known speaker: {len(unlisted)}")
+    for k in unlisted[:20]:
+        print(f"    {k}")
+    if len(unlisted) > 20:
+        print("    ...")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--missing", action="store_true", help="count every spoken lang key against the recordings on disk")
     parser.add_argument("--lines", action="store_true", help="list every spoken line with its speaker")
     parser.add_argument("--estimate", action="store_true", help="count characters a full render would bill")
     parser.add_argument("--audition", nargs="*", metavar="WHO", help="record candidate samples (optionally for these characters)")
@@ -301,6 +330,8 @@ def main():
     args = parser.parse_args()
     cast = load_cast()
     lang = load_lang()
+    if args.missing:
+        cmd_missing(cast, lang)
     if args.lines:
         cmd_lines(cast, lang)
     if args.estimate:
@@ -309,7 +340,7 @@ def main():
         cmd_audition(cast, args.audition, args.models, args.proposed, args.round)
     if args.render is not None:
         cmd_render(cast, lang, args.render, args.force, args.dry)
-    if not (args.lines or args.estimate or args.audition is not None or args.render is not None):
+    if not (args.missing or args.lines or args.estimate or args.audition is not None or args.render is not None):
         parser.print_help()
 
 

@@ -512,14 +512,13 @@ def spawn(name, weight, lo, hi):
 
 
 # Nothing lives on Sallow except what grew here (docs/DESIGN-fauna.md). Four animals, none of them a threat
-# in the way an empty monster list is a promise that there are none. Only two of the four come off these
-# lists: a slagback wants to be beside a geyser and a lantern slug wants a cave ceiling, and the vanilla
-# spawner can aim at neither, so Fauna.java places those two itself.
-#
-# The weights are low and the group sizes small on purpose. A trundle should be a thing you notice, not a
-# herd you walk through.
-TRUNDLES = [spawn("trundle", 8, 1, 2)]
-TOCKERS = [spawn("tocker", 6, 1, 3)]
+# in the way an empty monster list is a promise that there are none. None of them come off these lists any
+# more: Fauna.java seeds all four itself, near players, with a cap per species. They were on the lists once,
+# and because nothing of ours despawns and vanilla does not count a mob that cannot despawn towards its
+# creature cap, the biome spawner never thought it had enough and a player came home to hundreds. The lists
+# stay empty so that world generation does not put any down either.
+TRUNDLES = []
+TOCKERS = []
 
 
 def wildlife(*groups):
@@ -1498,24 +1497,12 @@ prop_model("chem_drum", {"side": tex("drum_side"), "top": tex("drum_top"), "fram
            cylinder("#side", "#top", [2, 2, 14, 14]), particle=tex("drum_side"))
 blockstate("chem_drum", {"": {"model": f"{MOD}:block/chem_drum"}})
 
-# Bunk: two blocks long, like a bed. The foot end has the legs and the blanket; the head end has the pillow.
-# Both halves share the frame and mattress; only the top surface differs.
-BUNK_TEX = {"top": tex("bunk_top"), "side": tex("bunk_side"), "frame": FM, "pillow": WHITE}
-BUNK_BASE = [
-    box([0, 3, 0], [16, 5, 16], all_faces("#frame", [0, 0, 16, 2], up=face("#frame"), down=face("#frame"))),
-    box([0, 0, 0], [2, 3, 2], all_faces("#frame", [0, 0, 2, 3])),
-    box([14, 0, 0], [16, 3, 2], all_faces("#frame", [0, 0, 2, 3])),
-    box([0, 0, 14], [2, 3, 16], all_faces("#frame", [0, 0, 2, 3])),
-    box([14, 0, 14], [16, 3, 16], all_faces("#frame", [0, 0, 2, 3])),
-    box([1, 5, 1], [15, 8, 15], all_faces("#side", [0, 0, 14, 3], up=face("#top", [1, 1, 15, 15]), down=face("#frame"))),
-]
-prop_model("bunk_foot", BUNK_TEX, BUNK_BASE, particle=tex("bunk_top"))
-prop_model("bunk_head", BUNK_TEX,
-           BUNK_BASE + [box([3, 8, 2], [13, 10, 6], all_faces("#pillow", [3, 0, 13, 2], up=face("#pillow", [3, 2, 13, 6])))],
-           particle=tex("bunk_top"))
+# Bunk: two blocks long, like a bed. The three models (bunk_foot, bunk_head, and bunk_held, which is both
+# halves at once for the hand and the inventory) are made by hand in Blockbench and live in
+# assets/surrogate/models/block; this script does not write them. It only wires them up.
 # The head half sits one step along FACING, so it is drawn turned to face back down the bunk.
 blockstate("bunk", {**facing_variants({"part=foot": "bunk_foot"}), **facing_variants({"part=head": "bunk_head"})})
-model("item/bunk", {"parent": f"{MOD}:block/bunk_foot"})
+model("item/bunk", {"parent": f"{MOD}:block/bunk_held"})
 
 # Survey marker: a stake and a flag on a cross of planes.
 prop_model("survey_marker", {"marker": tex("survey_marker")}, cross_planes("#marker", 0, 16))
@@ -2302,6 +2289,10 @@ LANG.update({
     "cinematic.surrogate.housewarming.landed_1": "On the slab. Near enough on the slab. That is four hundred days of paperwork settling into your garden.",
     "cinematic.surrogate.housewarming.landed_2": "Six bunks in there. Which is six more than anyone on this planet has spare.",
     "cinematic.surrogate.housewarming.goodbye": "We are going to go and be in our own kitchens now. Sleep in your own bed tonight, not the new ones. They are not for you.",
+    # While a scene has them, and the one line the dream has for its beds.
+    "crew.surrogate.sorensen.busy": "Give me a minute. I'm in the middle of something.",
+    "crew.surrogate.okafor.busy": "Not now. Ask me after.",
+    "message.surrogate.dream.bed": "Not tonight. You board in the morning.",
 })
 print("fauna, errand and survey data done")
 

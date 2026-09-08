@@ -78,7 +78,23 @@ public final class ErrandCommand {
 												StringArgumentType.getString(context, "species"),
 												IntegerArgumentType.getInteger(context, "count"))))))
 				.then(CommandManager.literal("read")
-						.executes(context -> readAll(context.getSource())));
+						.executes(context -> readAll(context.getSource())))
+				.then(CommandManager.literal("cull")
+						.executes(context -> cull(context.getSource(), 128))
+						.then(CommandManager.argument("radius", IntegerArgumentType.integer(1, 2048))
+								.executes(context -> cull(context.getSource(), IntegerArgumentType.getInteger(context, "radius")))));
+	}
+
+	/** Every animal of ours within the radius, removed. For worlds that filled up before the spawner was capped. */
+	private static int cull(ServerCommandSource source, int radius) {
+		net.minecraft.server.world.ServerWorld world = source.getWorld();
+		net.minecraft.util.math.Vec3d at = source.getPosition();
+		java.util.List<dev.psyda.surrogate.fauna.FaunaEntity> found = world.getEntitiesByClass(
+				dev.psyda.surrogate.fauna.FaunaEntity.class, new net.minecraft.util.math.Box(at, at).expand(radius), e -> true);
+		for (dev.psyda.surrogate.fauna.FaunaEntity animal : found) animal.discard();
+		int count = found.size();
+		source.sendFeedback(() -> Text.literal("Culled " + count + " animals within " + radius + " blocks"), false);
+		return count;
 	}
 
 	private static String name(CommandContext<ServerCommandSource> context) {

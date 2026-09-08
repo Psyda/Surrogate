@@ -678,7 +678,7 @@ EFFECTS.update({
 })
 EVENTS.update({
     "flashback.radio": ("flashback/radio", "subtitles.surrogate.flashback_radio", False),
-    "flashback.television": ("flashback/television", "subtitles.surrogate.flashback_television", False),
+    "flashback.television": ("flashback/television", "subtitles.surrogate.flashback_television", True),
 })
 # The rest of the house, the office and the bar are recordings rather than synthesis: tools/gen_sfx.py
 # writes them with ElevenLabs, and this only lists them. The long loops stream.

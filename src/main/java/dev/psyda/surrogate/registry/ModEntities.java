@@ -81,8 +81,8 @@ public final class ModEntities {
 					.build("borer"));
 
 	/**
-	 * The slow one. {@link SpawnGroup#CREATURE} so it comes off the biome lists on world generation and
-	 * stays put after: the wastes should already have some in them the first time a player walks out.
+	 * The slow one. {@link SpawnGroup#CREATURE} for the sampler's sake; it is not on any biome list. Every
+	 * animal here is placed by {@link dev.psyda.surrogate.fauna.Fauna}, which keeps the count.
 	 */
 	public static final EntityType<dev.psyda.surrogate.fauna.TrundleEntity> TRUNDLE = Registry.register(Registries.ENTITY_TYPE, Surrogate.id("trundle"),
 			EntityType.Builder.<dev.psyda.surrogate.fauna.TrundleEntity>create(dev.psyda.surrogate.fauna.TrundleEntity::new, SpawnGroup.CREATURE)

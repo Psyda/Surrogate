@@ -101,14 +101,7 @@
   ],
   "spawners": {
     "monster": [],
-    "creature": [
-      {
-        "type": "surrogate:trundle",
-        "weight": 8,
-        "minCount": 1,
-        "maxCount": 2
-      }
-    ],
+    "creature": [],
     "ambient": [],
     "axolotls": [],
     "misc": [],
