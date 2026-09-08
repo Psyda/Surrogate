@@ -11,9 +11,8 @@
 	"elements": [
 		{
 			"name": "Frame",
-			"from": [0, 3, -7],
-			"to": [16, 5, 9],
-			"rotation": {"angle": 0, "axis": "y", "origin": [0, 0, -7]},
+			"from": [0, 3, 0],
+			"to": [16, 5, 16],
 			"faces": {
 				"north": {"uv": [0, 0, 16, 2], "texture": "#frame"},
 				"east": {"uv": [0, 2, 16, 4], "texture": "#frame"},
@@ -25,9 +24,8 @@
 		},
 		{
 			"name": "Leg",
-			"from": [14, 0, -7],
-			"to": [16, 3, -5],
-			"rotation": {"angle": 0, "axis": "y", "origin": [0, 0, -7]},
+			"from": [14, 0, 0],
+			"to": [16, 3, 2],
 			"faces": {
 				"north": {"uv": [0, 0, 2, 3], "texture": "#frame"},
 				"east": {"uv": [0, 0, 2, 3], "texture": "#frame"},
@@ -39,9 +37,8 @@
 		},
 		{
 			"name": "Leg",
-			"from": [0, 0, -7],
-			"to": [2, 3, -5],
-			"rotation": {"angle": 0, "axis": "y", "origin": [0, 0, -7]},
+			"from": [0, 0, 0],
+			"to": [2, 3, 2],
 			"faces": {
 				"north": {"uv": [0, 0, 2, 3], "texture": "#frame"},
 				"east": {"uv": [0, 0, 2, 3], "texture": "#frame"},
@@ -53,9 +50,8 @@
 		},
 		{
 			"name": "Mattress",
-			"from": [1, 5, -6],
-			"to": [15, 8, 9],
-			"rotation": {"angle": 0, "axis": "y", "origin": [0, 0, -7]},
+			"from": [1, 5, 1],
+			"to": [15, 8, 16],
 			"faces": {
 				"north": {"uv": [2, 1, 13, 2], "texture": "#top"},
 				"east": {"uv": [14, 0, 15, 15], "rotation": 90, "texture": "#top"},
@@ -67,9 +63,8 @@
 		},
 		{
 			"name": "Pillow",
-			"from": [3, 8, -5],
-			"to": [13, 10, -1],
-			"rotation": {"angle": 0, "axis": "y", "origin": [0, 0, -7]},
+			"from": [3, 8, 2],
+			"to": [13, 10, 6],
 			"faces": {
 				"north": {"uv": [3, 0, 13, 2], "texture": "#pillow"},
 				"east": {"uv": [3, 0, 13, 2], "texture": "#pillow"},
