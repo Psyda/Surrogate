@@ -1,0 +1,165 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "surrogate:block/neon_sign",
+    "n": "surrogate:block/neon_sign"
+  },
+  "elements": [
+    {
+      "from": [
+        1,
+        4,
+        15
+      ],
+      "to": [
+        15,
+        12,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#n",
+          "uv": [
+            1,
+            4,
+            2,
+            5
+          ]
+        },
+        "south": {
+          "texture": "#n",
+          "uv": [
+            1,
+            4,
+            2,
+            5
+          ]
+        },
+        "east": {
+          "texture": "#n",
+          "uv": [
+            1,
+            4,
+            2,
+            5
+          ]
+        },
+        "west": {
+          "texture": "#n",
+          "uv": [
+            1,
+            4,
+            2,
+            5
+          ]
+        },
+        "up": {
+          "texture": "#n",
+          "uv": [
+            1,
+            4,
+            2,
+            5
+          ]
+        },
+        "down": {
+          "texture": "#n",
+          "uv": [
+            1,
+            4,
+            2,
+            5
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        4,
+        14
+      ],
+      "to": [
+        15,
+        12,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#n",
+          "uv": [
+            1,
+            4,
+            15,
+            12
+          ]
+        },
+        "south": {
+          "texture": "#n",
+          "uv": [
+            1,
+            4,
+            2,
+            5
+          ]
+        },
+        "east": {
+          "texture": "#n",
+          "uv": [
+            1,
+            4,
+            2,
+            5
+          ]
+        },
+        "west": {
+          "texture": "#n",
+          "uv": [
+            1,
+            4,
+            2,
+            5
+          ]
+        },
+        "up": {
+          "texture": "#n",
+          "uv": [
+            1,
+            4,
+            2,
+            5
+          ]
+        },
+        "down": {
+          "texture": "#n",
+          "uv": [
+            1,
+            4,
+            2,
+            5
+          ]
+        }
+      },
+      "shade": false
+    }
+  ],
+  "display": {
+    "gui": {
+      "rotation": [
+        30,
+        225,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    }
+  }
+}

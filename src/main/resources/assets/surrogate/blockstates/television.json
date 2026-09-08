@@ -1,0 +1,64 @@
+{
+  "variants": {
+    "facing=north,channel=off": {
+      "model": "surrogate:block/television_off"
+    },
+    "facing=north,channel=news": {
+      "model": "surrogate:block/television_news"
+    },
+    "facing=north,channel=credits": {
+      "model": "surrogate:block/television_credits"
+    },
+    "facing=north,channel=static": {
+      "model": "surrogate:block/television_static"
+    },
+    "facing=east,channel=off": {
+      "model": "surrogate:block/television_off",
+      "y": 90
+    },
+    "facing=east,channel=news": {
+      "model": "surrogate:block/television_news",
+      "y": 90
+    },
+    "facing=east,channel=credits": {
+      "model": "surrogate:block/television_credits",
+      "y": 90
+    },
+    "facing=east,channel=static": {
+      "model": "surrogate:block/television_static",
+      "y": 90
+    },
+    "facing=south,channel=off": {
+      "model": "surrogate:block/television_off",
+      "y": 180
+    },
+    "facing=south,channel=news": {
+      "model": "surrogate:block/television_news",
+      "y": 180
+    },
+    "facing=south,channel=credits": {
+      "model": "surrogate:block/television_credits",
+      "y": 180
+    },
+    "facing=south,channel=static": {
+      "model": "surrogate:block/television_static",
+      "y": 180
+    },
+    "facing=west,channel=off": {
+      "model": "surrogate:block/television_off",
+      "y": 270
+    },
+    "facing=west,channel=news": {
+      "model": "surrogate:block/television_news",
+      "y": 270
+    },
+    "facing=west,channel=credits": {
+      "model": "surrogate:block/television_credits",
+      "y": 270
+    },
+    "facing=west,channel=static": {
+      "model": "surrogate:block/television_static",
+      "y": 270
+    }
+  }
+}

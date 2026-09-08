@@ -145,6 +145,35 @@ def check_entity_textures(used_textures):
                     note("missing entity texture", rel(path), match.group(1))
 
 
+def check_composed_entity_textures():
+    """The entity textures whose names are built at run time from an enum key rather than written out.
+
+    `SurvivorEntityRenderer` asks for "survivor_" plus the character's key, so a survivor with no skin is
+    not a dangling reference anywhere a grep can see: it is a magenta cube the first time somebody stands in
+    front of that particular person. Reyes and Novak shipped like that from the day they went into the
+    roster until act five went looking for their faces. The enum is short and the rule is exact, so check it.
+    """
+    src = os.path.join(ROOT, "src", "main", "java", "dev", "psyda", "surrogate")
+    survivors = os.path.join(src, "survivor", "Survivor.java")
+    if os.path.isfile(survivors):
+        with open(survivors, encoding="utf-8") as f:
+            text = f.read()
+        # Entries look like `OKAFOR("okafor", () -> ...`; the key is the first string of each.
+        for key in re.findall(r'^\t[A-Z_]+\("([a-z_]+)"', text, re.MULTILINE):
+            want = os.path.join("entity", "survivor_%s.png" % key)
+            if not os.path.isfile(os.path.join(ASSETS, "textures", want)):
+                note("missing entity texture", "survivor/Survivor.java", want.replace("\\", "/"))
+    # The conference call names each face's sheet outright, so those can simply be read off.
+    panels = os.path.join(src, "rescue", "CallPanel.java")
+    if os.path.isfile(panels):
+        with open(panels, encoding="utf-8") as f:
+            text = f.read()
+        for skin in re.findall(r'^\t[A-Z_]+\("[a-z_]+", "([a-z_]+)"\)', text, re.MULTILINE):
+            want = os.path.join("entity", "%s.png" % skin)
+            if not os.path.isfile(os.path.join(ASSETS, "textures", want)):
+                note("missing entity texture", "rescue/CallPanel.java", want.replace("\\", "/"))
+
+
 def check_lang():
     """Every translation key the Java source names as a whole literal has to exist.
 
@@ -178,6 +207,43 @@ def check_lang():
     return seen
 
 
+def check_every_key_literal():
+    """The same idea as check_lang, but for keys the code never hands to Text.translatable.
+
+    The client builds several pages by handing plain strings to I18n.translate -- the terminal's survey and
+    mission board pages, the call panel's labels -- and the mission board goes further and passes a key
+    around as data, choosing between nine of them. None of that is visible to a search for translatable(),
+    and a key that is missing renders as itself on a page nobody is reading by eye.
+
+    A literal that is a prefix of keys that do exist is a stem the code completes at run time, so it is not
+    a missing key and is passed over. That is the same rule check_lang uses, applied by shape rather than by
+    the shape of the call.
+    """
+    lang_path = os.path.join(ASSETS, "lang", "en_us.json")
+    if not os.path.isfile(lang_path):
+        return
+    lang = read(lang_path)
+    src = os.path.join(ROOT, "src", "main", "java")
+    pattern = re.compile(r'"((?:terminal|board|cinematic|message|item|tooltip|survivor|crew|screen|hud|title'
+                         r'|key|subtitles|block|entity|specimen|errand)\.surrogate\.[a-z0-9_.]+)"')
+    found = []
+    for base, _, files in os.walk(src):
+        for name in files:
+            if not name.endswith(".java"):
+                continue
+            path = os.path.join(base, name)
+            with open(path, encoding="utf-8") as f:
+                text = f.read()
+            for match in pattern.finditer(text):
+                key = match.group(1)
+                if key not in lang:
+                    found.append((path, key))
+    stems = {key for _, key in found if any(full.startswith(key) for full in lang)}
+    for path, key in found:
+        if key not in stems:
+            note("missing lang key", rel(path), key)
+
+
 def check_loot_and_recipes():
     """Every block that drops itself needs a loot table, or it drops nothing and nobody notices until they
     break one. Read off the blockstates, which is the list of blocks that actually exist."""
@@ -195,6 +261,54 @@ def check_loot_and_recipes():
         if name in have or name in EXEMPT:
             continue
         note("no loot table", "blockstates/" + name, "data/loot_table/blocks/" + name + ".json")
+
+
+def check_registered_blocks():
+    """Every block registered in Java needs a blockstate file.
+
+    The other way round from every check above, and the reason it exists: this file walks *outward* from the
+    blockstates, so a block that has no blockstate at all is a block nothing here ever looks at. In game it
+    is a black and magenta cube with no complaint in any log. Read the registrations out of the source rather
+    than the registry, because that does not need a running game.
+    """
+    java = os.path.join(ROOT, "src", "main", "java", "dev", "psyda", "surrogate", "registry", "ModBlocks.java")
+    states = os.path.join(ASSETS, "blockstates")
+    if not os.path.isfile(java) or not os.path.isdir(states):
+        return
+    have = {os.path.splitext(f)[0] for f in os.listdir(states)}
+    with open(java, encoding="utf-8") as f:
+        source = f.read()
+    for name in sorted(set(re.findall(r'register\("([a-z0-9_]+)"', source))):
+        if name not in have:
+            note("no blockstate", "ModBlocks." + name, "assets/blockstates/" + name + ".json")
+
+
+def check_orphan_models(used_models):
+    """Models nothing points at.
+
+    A block model is reached from a blockstate or from another model's parent; an item model is reached by
+    having the same name as a registered item. Anything else is a rename or a deletion that only happened on
+    one side, and Minecraft says so once, in one line, during the resource reload:
+    "Invalid path in mod resource-pack surrogate: surrogate:models/block/OLD_chem_drum.json, ignoring".
+    """
+    folder = os.path.join(ASSETS, "models")
+    if not os.path.isdir(folder):
+        return
+    items = set()
+    for name in ("ModItems.java", "ModBlocks.java"):
+        path = os.path.join(ROOT, "src", "main", "java", "dev", "psyda", "surrogate", "registry", name)
+        if not os.path.isfile(path):
+            continue
+        with open(path, encoding="utf-8") as f:
+            items.update(re.findall(r'register\("([a-z0-9_]+)"', f.read()))
+    for path in walk(folder):
+        ident = MOD + ":" + os.path.relpath(path, folder).replace("\\", "/")[:-5]
+        if ident in used_models:
+            continue
+        # An item model is named after its item rather than referenced by anything.
+        if ident.startswith(MOD + ":item/") and ident[len(MOD) + 6:] in items:
+            continue
+        note("orphan model", rel(path), "nothing references it and no item is named after it")
 
 
 def check_orphan_textures(used_textures):
@@ -223,8 +337,12 @@ def main():
     check_blockstates(used_models)
     check_models(used_models, used_textures)
     check_entity_textures(used_textures)
+    check_composed_entity_textures()
     check_lang()
+    check_every_key_literal()
     check_loot_and_recipes()
+    check_registered_blocks()
+    check_orphan_models(used_models)
     check_orphan_textures(used_textures)
 
     if not problems:

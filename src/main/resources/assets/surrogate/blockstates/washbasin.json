@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "surrogate:block/washbasin"
+    },
+    "facing=east": {
+      "model": "surrogate:block/washbasin",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "surrogate:block/washbasin",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "surrogate:block/washbasin",
+      "y": 270
+    }
+  }
+}

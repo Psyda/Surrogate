@@ -1,0 +1,164 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "surrogate:block/snow_globe",
+    "g": "surrogate:block/snow_globe"
+  },
+  "elements": [
+    {
+      "from": [
+        4,
+        0,
+        4
+      ],
+      "to": [
+        12,
+        2,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#g",
+          "uv": [
+            4,
+            10,
+            12,
+            14
+          ]
+        },
+        "south": {
+          "texture": "#g",
+          "uv": [
+            4,
+            10,
+            12,
+            14
+          ]
+        },
+        "east": {
+          "texture": "#g",
+          "uv": [
+            4,
+            10,
+            12,
+            14
+          ]
+        },
+        "west": {
+          "texture": "#g",
+          "uv": [
+            4,
+            10,
+            12,
+            14
+          ]
+        },
+        "up": {
+          "texture": "#g",
+          "uv": [
+            4,
+            10,
+            12,
+            14
+          ]
+        },
+        "down": {
+          "texture": "#g",
+          "uv": [
+            4,
+            10,
+            12,
+            14
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        2,
+        5
+      ],
+      "to": [
+        11,
+        8,
+        11
+      ],
+      "faces": {
+        "north": {
+          "texture": "#g",
+          "uv": [
+            3,
+            0,
+            13,
+            10
+          ]
+        },
+        "south": {
+          "texture": "#g",
+          "uv": [
+            3,
+            0,
+            13,
+            10
+          ]
+        },
+        "east": {
+          "texture": "#g",
+          "uv": [
+            3,
+            0,
+            13,
+            10
+          ]
+        },
+        "west": {
+          "texture": "#g",
+          "uv": [
+            3,
+            0,
+            13,
+            10
+          ]
+        },
+        "up": {
+          "texture": "#g",
+          "uv": [
+            3,
+            0,
+            13,
+            10
+          ]
+        },
+        "down": {
+          "texture": "#g",
+          "uv": [
+            3,
+            0,
+            13,
+            10
+          ]
+        }
+      }
+    }
+  ],
+  "display": {
+    "gui": {
+      "rotation": [
+        30,
+        225,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    }
+  }
+}

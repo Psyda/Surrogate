@@ -46,6 +46,19 @@ PAL = {
     "u": (55, 48, 163, 255),     # indigo dark (card)
     "U": (99, 102, 241, 255),    # indigo
     "a": (10, 12, 16, 255),      # panel black
+    # Earth, 2189. Nothing on Sallow is any of these colours, which is the whole reason the flashback works:
+    # the palette above is steel and copper and cyan, and a room painted out of the one below reads as a
+    # different planet before a single line is spoken.
+    "1": (232, 220, 196, 255),   # wallpaper cream
+    "2": (198, 176, 142, 255),   # wallpaper stripe
+    "3": (186, 120, 128, 255),   # faded rose
+    "4": (74, 50, 33, 255),      # walnut, dark
+    "5": (120, 82, 52, 255),     # walnut
+    "6": (166, 122, 82, 255),    # walnut, light
+    "7": (58, 38, 28, 255),      # bakelite
+    "8": (198, 158, 84, 255),    # brass
+    "9": (176, 214, 210, 255),   # screen glow
+    "0": (196, 46, 60, 255),     # bar neon
 }
 
 
@@ -64,7 +77,17 @@ def from_map(rows):
     return img
 
 
+# Textures that are painted by hand and must not be written over. The call that would have made one is
+# still made, and only the save is skipped: this file shares one random stream in file order, so deleting or
+# commenting out a painting call re-rolls the noise of every painted texture after it and produces a diff of
+# sixty-odd PNGs that have nothing to do with the change.
+HAND_PAINTED = {"entity/crew_ferreira.png"}
+
+
 def save(img, rel):
+    if rel.replace("\\", "/") in HAND_PAINTED:
+        print("kept  ", rel, "(hand painted)")
+        return
     path = os.path.join(TEX, rel)
     os.makedirs(os.path.dirname(path), exist_ok=True)
     img.save(path)
@@ -1309,6 +1332,8 @@ def paint_person(name, suit, trim, skin, hair, prefix="crew"):
 
 
 paint_person("castellanos", (36, 48, 78, 255), (220, 200, 150, 255), (166, 118, 86, 255), (30, 26, 24, 255))
+# Ferreira's is hand painted; the call stays so the random stream does not move, and HAND_PAINTED above
+# stops it being written over.
 paint_person("ferreira", (222, 226, 230, 255), (60, 160, 170, 255), (120, 80, 60, 255), (20, 16, 14, 255))
 paint_person("teague", (205, 110, 40, 255), (40, 40, 44, 255), (228, 194, 164, 255), (150, 90, 40, 255))
 paint_person("sleeper", (170, 190, 178, 255), (90, 110, 100, 255), (200, 172, 150, 255), (70, 60, 50, 255))
@@ -2629,4 +2654,66 @@ for name, rows in ITEMS_SURVEY.items():
     save(from_map(rows), "item/%s.png" % name)
 print("survey textures done")
 
+# ======================================================================================
+# Acts four and five: the span kit, and the two faces the game never had (2026-09-06)
+# ======================================================================================
+# The icon is an ASCII map and touches no RNG, so it could go anywhere. The two suits are painted with
+# panel() and therefore consume the shared rng stream, which is why this whole section sits at the very end
+# of the file: inserting a painted texture anywhere earlier re-rolls the noise of every painted texture
+# after it and produces a large and entirely spurious diff across tracked PNGs.
+
+ITEMS_SPAN = {}
+# A deck section strapped into a crate: the straps are the only part of it that is not steel, because the
+# only thing anybody remembers about a flat-pack is the strapping.
+ITEMS_SPAN["span_kit"] = [
+    "................",
+    "................",
+    "..kkkkkkkkkkkk..",
+    "..kmmmmmmmmmmk..",
+    "..kmllllllllmk..",
+    "..kmlgggggglmk..",
+    "..kmldhhhhhdmk..",
+    "..kmldxxxxxdmk..",
+    "..kmldhhhhhdmk..",
+    "..kmldxxxxxdmk..",
+    "..kmldhhhhhdmk..",
+    "..kmlgggggglmk..",
+    "..kmllllllllmk..",
+    "..kmmmmmmmmmmk..",
+    "..kkkkkkkkkkkk..",
+    "................",
+]
+for name, rows in ITEMS_SPAN.items():
+    save(from_map(rows), "item/%s.png" % name)
+
+# Reyes and Novak have been in the roster, on the radio and on the terminals since the campaign was laid
+# out, and neither of them has ever had a skin: their renderer builds the path from the character key at run
+# time, so nothing static ever noticed, and both of them have been rendering as the missing texture. Act
+# five is the act they are in and act four puts their faces on a screen, so they get suits.
+#
+# Reyes is medical: the pale kit, and the only red trim on the planet that means something. Novak is survey
+# contract 39, the same programme as Brandt, in a suit that has been under a crawler for eleven days.
+paint_survivor("reyes", (208, 210, 214, 255), (198, 64, 64, 255))
+paint_survivor("novak", (74, 92, 98, 255), (232, 172, 60, 255))
+print("span kit and the last two suits done")
+
+# Okafor and Sorensen come to the housewarming in person rather than sending their chassis, so the scripted
+# side of them needs a skin as well as the shelter side: the same suit and the same trim, because it is the
+# same person in the same suit, and a visitor who changed colour walking through your door is a different
+# visitor. On the end, like everything else added since, because every panel() draws from one noise stream
+# and a call inserted in the middle repaints every texture after it.
+paint_survivor("okafor", (222, 122, 47, 255), (250, 210, 90, 255), prefix="crew")
+paint_survivor("sorensen", (52, 96, 170, 255), (200, 210, 230, 255), prefix="crew")
+print("the two housewarming visitors done")
+
 print("done")
+
+
+# --------------------------------------------------------------------------------------
+# The flashback: a house on Earth, 2189, and everything in it worth stealing (tools/gen_house.py)
+# --------------------------------------------------------------------------------------
+# Painted by its own module, with its own random stream, so a couch can be repainted without re-rolling the
+# noise of every hull plate above. Kept last so nothing here can shift anything else.
+import gen_house  # noqa: E402
+
+gen_house.paint_all()

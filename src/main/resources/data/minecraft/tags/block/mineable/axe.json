@@ -1,0 +1,27 @@
+{
+  "replace": false,
+  "values": [
+    "surrogate:radio_set",
+    "surrogate:television",
+    "surrogate:photo_frame",
+    "surrogate:wall_clock",
+    "surrogate:telephone",
+    "surrogate:wallpaper_stripe",
+    "surrogate:wallpaper_floral",
+    "surrogate:couch",
+    "surrogate:coffee_table",
+    "surrogate:dining_table",
+    "surrogate:dining_chair",
+    "surrogate:wardrobe",
+    "surrogate:nightstand",
+    "surrogate:office_desk",
+    "surrogate:bar_counter",
+    "surrogate:bar_stool",
+    "surrogate:back_bar",
+    "surrogate:cardboard_box",
+    "surrogate:suitcase",
+    "surrogate:dog_carrier",
+    "surrogate:kitchen_counter",
+    "surrogate:kitchen_sink"
+  ]
+}

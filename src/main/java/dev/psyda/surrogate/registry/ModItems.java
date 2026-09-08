@@ -117,6 +117,8 @@ public final class ModItems {
 	public static final Item RELAY_MAST = register("relay_mast", new BlockItem(ModBlocks.RELAY_MAST, new Item.Settings()));
 	public static final Item DAMPER_BEACON = register("damper_beacon", new BlockItem(ModBlocks.DAMPER_BEACON, new Item.Settings()));
 	public static final Item SPAN_ANCHOR = register("span_anchor", new BlockItem(ModBlocks.SPAN_ANCHOR, new Item.Settings()));
+	/** A bridge in a box: one course of five-wide deck a use, out of the plating in your pockets. */
+	public static final Item SPAN_KIT = register("span_kit", new dev.psyda.surrogate.item.SpanKitItem(new Item.Settings().maxCount(1)));
 
 	// The fabricator, the props and the ores
 	public static final Item VEHICLE_FABRICATOR = register("vehicle_fabricator", new BlockItem(ModBlocks.VEHICLE_FABRICATOR, new Item.Settings()));
@@ -140,6 +142,61 @@ public final class ModItems {
 	public static final Item BUNK = register("bunk", new BlockItem(ModBlocks.BUNK, new Item.Settings()));
 	public static final Item CHEM_DRUM = register("chem_drum", new BlockItem(ModBlocks.CHEM_DRUM, new Item.Settings()));
 	public static final Item SURVEY_MARKER = register("survey_marker", new BlockItem(ModBlocks.SURVEY_MARKER, new Item.Settings()));
+
+	// Earth, 2189: the flashback's furniture, carried home in a suitcase and craftable nowhere.
+	public static final Item WALLPAPER_STRIPE = register("wallpaper_stripe", new BlockItem(ModBlocks.WALLPAPER_STRIPE, new Item.Settings()));
+	public static final Item WALLPAPER_FLORAL = register("wallpaper_floral", new BlockItem(ModBlocks.WALLPAPER_FLORAL, new Item.Settings()));
+	public static final Item RADIO_SET = register("radio_set", new BlockItem(ModBlocks.RADIO_SET, new Item.Settings()));
+	public static final Item TELEVISION = register("television", new BlockItem(ModBlocks.TELEVISION, new Item.Settings()));
+	// The house, the office and the bar (2026-09-07).
+	public static final Item COUCH = register("couch", new BlockItem(ModBlocks.COUCH, new Item.Settings()));
+	public static final Item COFFEE_TABLE = register("coffee_table", new BlockItem(ModBlocks.COFFEE_TABLE, new Item.Settings()));
+	public static final Item DINING_TABLE = register("dining_table", new BlockItem(ModBlocks.DINING_TABLE, new Item.Settings()));
+	public static final Item DINING_CHAIR = register("dining_chair", new BlockItem(ModBlocks.DINING_CHAIR, new Item.Settings()));
+	public static final Item PIZZA_BOX = register("pizza_box", new BlockItem(ModBlocks.PIZZA_BOX, new Item.Settings()));
+	public static final Item PIZZA_SLICE = register("pizza_slice", new dev.psyda.surrogate.item.PizzaSliceItem(new Item.Settings()));
+	public static final Item PENDANT_LAMP = register("pendant_lamp", new BlockItem(ModBlocks.PENDANT_LAMP, new Item.Settings()));
+	public static final Item PANEL_LIGHT = register("panel_light", new BlockItem(ModBlocks.PANEL_LIGHT, new Item.Settings()));
+	public static final Item LIGHT_SWITCH = register("light_switch", new BlockItem(ModBlocks.LIGHT_SWITCH, new Item.Settings()));
+	public static final Item BILLS = register("bills", new BlockItem(ModBlocks.BILLS, new Item.Settings()));
+	public static final Item CALENDAR = register("calendar", new BlockItem(ModBlocks.CALENDAR, new Item.Settings()));
+	public static final Item PRINTOUT = register("printout", new BlockItem(ModBlocks.PRINTOUT, new Item.Settings()));
+	public static final Item DOG_CARRIER = register("dog_carrier", new dev.psyda.surrogate.item.DogCarrierItem(ModBlocks.DOG_CARRIER, new Item.Settings().maxCount(1)));
+	public static final Item DOG_BOWL = register("dog_bowl", new BlockItem(ModBlocks.DOG_BOWL, new Item.Settings()));
+	public static final Item FRIDGE = register("fridge", new BlockItem(ModBlocks.FRIDGE, new Item.Settings()));
+	public static final Item KITCHEN_COUNTER = register("kitchen_counter", new BlockItem(ModBlocks.KITCHEN_COUNTER, new Item.Settings()));
+	public static final Item KITCHEN_SINK = register("kitchen_sink", new BlockItem(ModBlocks.KITCHEN_SINK, new Item.Settings()));
+	public static final Item STOVE = register("stove", new BlockItem(ModBlocks.STOVE, new Item.Settings()));
+	public static final Item WARDROBE = register("wardrobe", new BlockItem(ModBlocks.WARDROBE, new Item.Settings()));
+	public static final Item NIGHTSTAND = register("nightstand", new BlockItem(ModBlocks.NIGHTSTAND, new Item.Settings()));
+	public static final Item TOILET = register("toilet", new BlockItem(ModBlocks.TOILET, new Item.Settings()));
+	public static final Item WASHBASIN = register("washbasin", new BlockItem(ModBlocks.WASHBASIN, new Item.Settings()));
+	public static final Item BATHTUB = register("bathtub", new BlockItem(ModBlocks.BATHTUB, new Item.Settings()));
+	public static final Item MIRROR = register("mirror", new BlockItem(ModBlocks.MIRROR, new Item.Settings()));
+	public static final Item SUITCASE = register("suitcase", new BlockItem(ModBlocks.SUITCASE, new Item.Settings().maxCount(1)));
+	public static final Item OFFICE_DESK = register("office_desk", new BlockItem(ModBlocks.OFFICE_DESK, new Item.Settings()));
+	public static final Item OFFICE_CHAIR = register("office_chair", new BlockItem(ModBlocks.OFFICE_CHAIR, new Item.Settings()));
+	public static final Item MONITOR = register("monitor", new BlockItem(ModBlocks.MONITOR, new Item.Settings()));
+	public static final Item FILING_CABINET = register("filing_cabinet", new BlockItem(ModBlocks.FILING_CABINET, new Item.Settings()));
+	public static final Item WATER_COOLER = register("water_cooler", new BlockItem(ModBlocks.WATER_COOLER, new Item.Settings()));
+	public static final Item WHITEBOARD = register("whiteboard", new BlockItem(ModBlocks.WHITEBOARD, new Item.Settings()));
+	public static final Item PRINTER = register("printer", new BlockItem(ModBlocks.PRINTER, new Item.Settings()));
+	public static final Item CARDBOARD_BOX = register("cardboard_box", new BlockItem(ModBlocks.CARDBOARD_BOX, new Item.Settings().maxCount(1)));
+	public static final Item BAR_COUNTER = register("bar_counter", new BlockItem(ModBlocks.BAR_COUNTER, new Item.Settings()));
+	public static final Item BAR_STOOL = register("bar_stool", new BlockItem(ModBlocks.BAR_STOOL, new Item.Settings()));
+	public static final Item PINT_GLASS = register("pint_glass", new BlockItem(ModBlocks.PINT_GLASS, new Item.Settings()));
+	public static final Item DARTBOARD = register("dartboard", new BlockItem(ModBlocks.DARTBOARD, new Item.Settings()));
+	public static final Item DART = register("dart", new dev.psyda.surrogate.item.DartItem(new Item.Settings().maxCount(16)));
+	public static final Item BACK_BAR = register("back_bar", new BlockItem(ModBlocks.BACK_BAR, new Item.Settings()));
+	public static final Item BEER_TAP = register("beer_tap", new BlockItem(ModBlocks.BEER_TAP, new Item.Settings()));
+	public static final Item NEON_SIGN = register("neon_sign", new BlockItem(ModBlocks.NEON_SIGN, new Item.Settings()));
+	public static final Item DESK_LAMP = register("desk_lamp", new BlockItem(ModBlocks.DESK_LAMP, new Item.Settings()));
+	public static final Item PHOTO_FRAME = register("photo_frame", new BlockItem(ModBlocks.PHOTO_FRAME, new Item.Settings()));
+	public static final Item WALL_CLOCK = register("wall_clock", new BlockItem(ModBlocks.WALL_CLOCK, new Item.Settings()));
+	public static final Item SNOW_GLOBE = register("snow_globe", new BlockItem(ModBlocks.SNOW_GLOBE, new Item.Settings()));
+	public static final Item MUG = register("mug", new BlockItem(ModBlocks.MUG, new Item.Settings()));
+	public static final Item HOUSEPLANT = register("houseplant", new BlockItem(ModBlocks.HOUSEPLANT, new Item.Settings()));
+	public static final Item TELEPHONE = register("telephone", new BlockItem(ModBlocks.TELEPHONE, new Item.Settings()));
 	public static final Item SURVEY_STATION = register("survey_station", new BlockItem(ModBlocks.SURVEY_STATION, new Item.Settings()));
 	public static final Item SURVEY_BEACON = register("survey_beacon", new BlockItem(ModBlocks.SURVEY_BEACON, new Item.Settings()));
 	public static final Item LONG_RANGE_SCANNER = register("long_range_scanner", new BlockItem(ModBlocks.LONG_RANGE_SCANNER, new Item.Settings()));

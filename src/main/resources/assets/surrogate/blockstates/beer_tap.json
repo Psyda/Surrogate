@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "surrogate:block/beer_tap"
+    },
+    "facing=east": {
+      "model": "surrogate:block/beer_tap",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "surrogate:block/beer_tap",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "surrogate:block/beer_tap",
+      "y": 270
+    }
+  }
+}

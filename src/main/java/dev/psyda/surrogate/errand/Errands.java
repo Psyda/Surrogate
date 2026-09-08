@@ -33,6 +33,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
+import net.minecraft.util.math.EulerAngle;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
@@ -356,8 +357,17 @@ public final class Errands {
 	 */
 	private static boolean liftBody(ServerPlayerEntity player, ArmorStandEntity stand) {
 		ErrandState errands = ErrandState.get(player.server);
-		if (!errands.offered(Errand.BURIAL) || errands.done(Errand.BURIAL)) return false;
 		if (errands.bodyId == null || !stand.getUuid().equals(errands.bodyId)) return false;
+		return lift(player, errands, stand);
+	}
+
+	/**
+	 * Picking him up, or putting him down again. Shared with {@code /surrogate errand lift}, which is the
+	 * only way to reach this without a chassis and a right-click on an entity: the smoke test cannot land a
+	 * click on one, and the half of this errand worth testing is what happens afterwards.
+	 */
+	public static boolean lift(ServerPlayerEntity player, ErrandState errands, ArmorStandEntity stand) {
+		if (!errands.offered(Errand.BURIAL) || errands.done(Errand.BURIAL)) return false;
 		Entity ride = player.getVehicle() != null ? player.getVehicle() : player;
 		if (stand.hasVehicle()) {
 			stand.stopRiding();
@@ -368,10 +378,23 @@ public final class Errands {
 		return true;
 	}
 
+	/** The armour stand this save calls Petrov, wherever it is, or null when nothing has been placed. */
+	@Nullable
+	public static ArmorStandEntity body(MinecraftServer server, ErrandState errands) {
+		if (errands.bodyId == null) return null;
+		return server.getOverworld().getEntity(errands.bodyId) instanceof ArmorStandEntity stand ? stand : null;
+	}
+
 	/**
-	 * Digging the grave. Called when a survey marker is placed while the body is being carried: it opens the
-	 * ground, lays him in it, closes it and leaves the marker standing. One action, because the alternative
-	 * was asking the player to shovel, and that is not what this scene is.
+	 * Digging the grave. Called when a survey marker is used on the ground while the body is being carried:
+	 * it opens the ground, lays him in it, closes it and leaves the marker standing. One action, because the
+	 * alternative was asking the player to shovel, and that is not what this scene is.
+	 *
+	 * <p>The marker really is raised. It used to be taken out of the hand and never put anywhere, which left
+	 * a patch of ash in the middle of a hundred kilometres of identical ash and an errand that had quietly
+	 * finished; the one thing the errand is named for was the one thing it did not do.
+	 *
+	 * @param marker the cell the marker would stand in, which is the one above the block that was clicked
 	 */
 	public static boolean buryHere(ServerPlayerEntity player, BlockPos marker) {
 		ErrandState errands = ErrandState.get(player.server);
@@ -384,12 +407,28 @@ public final class Errands {
 			return false;
 		}
 		ServerWorld world = player.getServerWorld();
-		body.stopRiding();
 		BlockPos grave = marker.down();
-		world.setBlockState(grave, ModBlocks.ASH.getDefaultState());
+		// Ground to dig, ground under that, and room to stand a marker in. A click on the side of a boulder
+		// answers none of them, and burying him inside one would be a worse ending than leaving him on her
+		// step. The floor below matters because the grave is ash and ash falls: laid over a hollow, the whole
+		// thing drops out from under the marker within a second of being made.
+		BlockPos under = grave.down();
+		if (!world.getBlockState(grave).isSolidBlock(world, grave)
+				|| !world.getBlockState(under).isSolidBlock(world, under)
+				|| !world.getBlockState(marker).isReplaceable()) {
+			player.sendMessage(Errand.BURIAL.line("no_ground").formatted(Formatting.RED), true);
+			return false;
+		}
+		body.stopRiding();
 		body.discard();
+		world.setBlockState(grave, ModBlocks.ASH.getDefaultState());
+		world.setBlockState(marker, ModBlocks.SURVEY_MARKER.getDefaultState());
 		errands.gravePos = grave;
+		errands.markDirty();
 		world.playSound(null, marker, SoundEvents.BLOCK_ROOTED_DIRT_PLACE, SoundCategory.BLOCKS, 0.8f, 0.7f);
+		world.playSound(null, marker, SoundEvents.BLOCK_NETHERITE_BLOCK_PLACE, SoundCategory.BLOCKS, 0.7f, 0.8f);
+		world.spawnParticles(net.minecraft.particle.ParticleTypes.ASH, marker.getX() + 0.5, marker.getY() + 0.2,
+				marker.getZ() + 0.5, 40, 0.5, 0.4, 0.5, 0.01);
 		finish(player.server, errands, Errand.BURIAL);
 		return true;
 	}
@@ -447,7 +486,7 @@ public final class Errands {
 
 	// ------------------------------------------------------------------ setting the scene
 
-	/** Reyes' companion, where he fell: fifteen metres out, face down, in a suit that did not hold. */
+	/** Reyes' companion, where he fell: fifteen metres out, slumped, in a suit that did not hold. */
 	private static void placeBody(MinecraftServer server, ErrandState errands) {
 		SurvivorManager.Site clinic = siteOf(server, Survivor.REYES);
 		if (clinic == null) return;
@@ -459,6 +498,16 @@ public final class Errands {
 		stand.setHideBasePlate(true);
 		stand.setNoGravity(false);
 		stand.setInvulnerable(true);
+		// Slumped forward and turned whichever way he fell, rather than nine weeks at attention facing north.
+		// Not laid flat: an armour stand rotates its torso about the hip, so a face-down pose renders the
+		// whole body horizontally about a block off the ground, which looks worse than standing does. A body
+		// that actually lies down wants the collapsed CrewEntity pose the prologue's dead use, and that is a
+		// bigger change than this errand needed.
+		stand.setYaw(world.random.nextFloat() * 360f);
+		stand.setHeadRotation(new EulerAngle(-18f, 12f, 0f));
+		stand.setBodyRotation(new EulerAngle(-22f, 0f, 0f));
+		stand.setLeftArmRotation(new EulerAngle(-16f, 0f, -14f));
+		stand.setRightArmRotation(new EulerAngle(-12f, 0f, 10f));
 		world.spawnEntity(stand);
 		errands.bodyPos = at;
 		errands.bodyId = stand.getUuid();

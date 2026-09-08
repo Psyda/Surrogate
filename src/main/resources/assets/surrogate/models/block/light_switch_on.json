@@ -1,0 +1,164 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "surrogate:block/light_switch_on",
+    "plate": "surrogate:block/light_switch_on"
+  },
+  "elements": [
+    {
+      "from": [
+        6,
+        5,
+        15
+      ],
+      "to": [
+        10,
+        11,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#plate",
+          "uv": [
+            6,
+            5,
+            10,
+            11
+          ]
+        },
+        "south": {
+          "texture": "#plate",
+          "uv": [
+            6,
+            5,
+            7,
+            6
+          ]
+        },
+        "east": {
+          "texture": "#plate",
+          "uv": [
+            6,
+            5,
+            7,
+            6
+          ]
+        },
+        "west": {
+          "texture": "#plate",
+          "uv": [
+            6,
+            5,
+            7,
+            6
+          ]
+        },
+        "up": {
+          "texture": "#plate",
+          "uv": [
+            6,
+            5,
+            7,
+            6
+          ]
+        },
+        "down": {
+          "texture": "#plate",
+          "uv": [
+            6,
+            5,
+            7,
+            6
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        7,
+        6,
+        14
+      ],
+      "to": [
+        9,
+        8,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#plate",
+          "uv": [
+            7,
+            8,
+            9,
+            10
+          ]
+        },
+        "south": {
+          "texture": "#plate",
+          "uv": [
+            7,
+            8,
+            9,
+            10
+          ]
+        },
+        "east": {
+          "texture": "#plate",
+          "uv": [
+            7,
+            8,
+            9,
+            10
+          ]
+        },
+        "west": {
+          "texture": "#plate",
+          "uv": [
+            7,
+            8,
+            9,
+            10
+          ]
+        },
+        "up": {
+          "texture": "#plate",
+          "uv": [
+            7,
+            8,
+            9,
+            10
+          ]
+        },
+        "down": {
+          "texture": "#plate",
+          "uv": [
+            7,
+            8,
+            9,
+            10
+          ]
+        }
+      }
+    }
+  ],
+  "display": {
+    "gui": {
+      "rotation": [
+        30,
+        225,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    }
+  }
+}

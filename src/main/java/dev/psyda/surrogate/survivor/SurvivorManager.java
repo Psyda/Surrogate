@@ -13,6 +13,7 @@ import dev.psyda.surrogate.entity.RobotModule;
 import dev.psyda.surrogate.hazard.Hazards;
 import dev.psyda.surrogate.network.TerminalPayload;
 import dev.psyda.surrogate.prologue.Prologue;
+import dev.psyda.surrogate.registry.ModEntities;
 import dev.psyda.surrogate.registry.ModItems;
 import dev.psyda.surrogate.world.HabitatState;
 import dev.psyda.surrogate.world.Valleys;
@@ -48,6 +49,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
@@ -75,6 +77,13 @@ public class SurvivorManager extends PersistentState {
 		public boolean rescued;
 		/** Riding in a crawler cabin right now. */
 		public boolean aboard;
+		/**
+		 * Which hull they are riding in, while {@code aboard}. Two crawlers is unusual and entirely legal,
+		 * and without this a hull coupling at home takes everybody marked aboard out of its own cabin --
+		 * including the ones sitting in the other one, who are then in two places at once.
+		 */
+		@Nullable
+		public UUID hull;
 		/** The survivor has sent their plans across the port: the blueprint, a schematic, a pattern. */
 		public boolean blueprint;
 		public int nextLine;
@@ -271,11 +280,30 @@ public class SurvivorManager extends PersistentState {
 	 */
 	@Nullable
 	private static BlockPos pickRift(ServerWorld world, BlockPos origin, double angle, int min, int max) {
+		Valleys.Masks masks = Valleys.masks(world);
+		if (masks == null) return null;
+		// The bottom of the thing, anywhere. His sector is not negotiable for the others, who live in one and
+		// need to be spread around the compass, but the one man who is supposed to be at the bottom of a
+		// chasm has to be in the chasm, and the chasm goes where the noise put it: a sector sweep of half a
+		// radian either way finds nothing but the feathered edge of it, four blocks down in the open floor,
+		// which is not what a single line Novak or Reyes has about the place describes.
+		for (int step = 0; step < 24; step++) {
+			double bearing = angle + step * Math.PI / 12.0;
+			for (int d = min; d <= max; d += 8) {
+				int x = origin.getX() + (int) Math.round(Math.cos(bearing) * d);
+				int z = origin.getZ() + (int) Math.round(Math.sin(bearing) * d);
+				if (masks.rift(x, z) > 0.9) return new BlockPos(x, 0, z);
+			}
+		}
+		// Nowhere on this world is properly deep within range. Take the edge of it and say so.
 		for (double sweep : new double[]{0.0, 0.12, -0.12, 0.3, -0.3, 0.6, -0.6}) {
 			for (int d = min; d <= max; d += 8) {
 				int x = origin.getX() + (int) Math.round(Math.cos(angle + sweep) * d);
 				int z = origin.getZ() + (int) Math.round(Math.sin(angle + sweep) * d);
-				if (Valleys.inRift(world, x, z)) return new BlockPos(x, 0, z);
+				if (masks.rift(x, z) > Valleys.RIFT_EDGE) {
+					Surrogate.LOGGER.info("Valleys: no deep Rift within {} blocks; the wreck goes on the shallow edge", max);
+					return new BlockPos(x, 0, z);
+				}
 			}
 		}
 		return null;
@@ -296,6 +324,20 @@ public class SurvivorManager extends PersistentState {
 
 	private final List<Site> pending = new ArrayList<>();
 
+	/**
+	 * Whether everything a shelter is about to write is already there. A shelter is not one chunk: the apron
+	 * runs fifteen blocks west of the origin and Novak's pocket six either way, so building on the strength
+	 * of the middle chunk alone generates its neighbours synchronously in the tick that noticed.
+	 */
+	private static boolean loaded(ServerWorld world, Site site) {
+		for (int dx = -1; dx <= 1; dx++) {
+			for (int dz = -1; dz <= 1; dz++) {
+				if (!world.isChunkLoaded((site.x >> 4) + dx, (site.z >> 4) + dz)) return false;
+			}
+		}
+		return true;
+	}
+
 	public static void tick(MinecraftServer server) {
 		ServerWorld world = server.getOverworld();
 		SurvivorManager manager = get(server);
@@ -304,7 +346,7 @@ public class SurvivorManager extends PersistentState {
 			manager.pending.clear();
 			for (Site site : ready) {
 				if (site.built) continue;
-				if (!world.isChunkLoaded(site.x >> 4, site.z >> 4)) continue;
+				if (!loaded(world, site)) continue;
 				if (site.wreck) SurvivorShelter.buildWreck(world, site);
 				else SurvivorShelter.build(world, site);
 				site.built = true;
@@ -404,10 +446,16 @@ public class SurvivorManager extends PersistentState {
 	public void board(MinecraftServer server, CrawlerEntity hull, Site site) {
 		if (site.rescued || site.aboard) return;
 		ServerWorld overworld = server.getOverworld();
-		ServerWorld cabin = CrawlerDimension.world(server);
-		CrawlerInteriors.Slot slot = CrawlerInteriors.get(server).forHull(hull.getUuid());
-		if (cabin == null || slot == null || !slot.built) return;
 		Survivor who = site.survivor();
+		// Somebody may have a reason not to come out. Reyes will not open a lock that has nothing to seal
+		// against, and she says so rather than the collar simply doing nothing (docs/DESIGN-campaign.md).
+		String refusal = dev.psyda.surrogate.rescue.Rescue.boardRefusal(server, site);
+		if (refusal != null) {
+			for (ServerPlayerEntity player : CrawlerInterior.playersAboard(server, hull)) {
+				player.sendMessage(format(who, Text.translatable(refusal)), false);
+			}
+			return;
+		}
 		SurvivorEntity survivor = null;
 		for (SurvivorEntity candidate : overworld.getEntitiesByClass(SurvivorEntity.class, new Box(site.origin()).expand(12.0), e -> e.getCharacter() == who)) {
 			survivor = candidate;
@@ -417,9 +465,40 @@ public class SurvivorManager extends PersistentState {
 			Surrogate.LOGGER.warn("Crawler coupled at {}'s shelter but nobody is home", who.key());
 			return;
 		}
-		Vec3d at = Vec3d.ofBottomCenter(CrawlerInteriors.origin(slot.index).add(CrawlerRoom.PASSENGER));
+		seat(server, hull, site, survivor);
+	}
+
+	/**
+	 * Somebody carried to the hull rather than walked out of a collar. Act five's third rescue has no collar
+	 * to work through — Novak's site is a wreck on the floor of the Rift — so the last few metres of it are
+	 * a person on somebody's back and this is where they get put down.
+	 */
+	public void boardCarried(MinecraftServer server, CrawlerEntity hull, Site site, SurvivorEntity survivor) {
+		if (site.rescued || site.aboard) return;
+		seat(server, hull, site, survivor);
+	}
+
+	/** Puts one survivor in the cabin, in the next free spot, and tells everyone riding in it. */
+	private void seat(MinecraftServer server, CrawlerEntity hull, Site site, SurvivorEntity survivor) {
+		ServerWorld cabin = CrawlerDimension.world(server);
+		CrawlerInteriors.Slot slot = CrawlerInteriors.get(server).forHull(hull.getUuid());
+		if (cabin == null || slot == null || !slot.built) {
+			// A cabin is only ever built by somebody going aboard, so a hull nobody has been inside has
+			// nowhere to put a passenger. It used to lock, play the sound and bring nobody, in silence.
+			Surrogate.LOGGER.info("{} could not board: that hull has no cabin in it yet", site.survivor().key());
+			return;
+		}
+		CrawlerInterior.loadCabin(server, slot);
+		Survivor who = site.survivor();
+		BlockPos origin = CrawlerInteriors.origin(slot.index);
+		// Act five brings home three at once and the cabin has one marked passenger spot, so they fan out
+		// from it. A stack of people in one square is what happens if nobody counts who is already in here.
+		int taken = cabin.getEntitiesByClass(SurvivorEntity.class, CrawlerRoom.room(origin), e -> true).size();
+		Vec3d at = Vec3d.ofBottomCenter(origin.add(CrawlerRoom.PASSENGER).add(taken % 3, 0, taken / 3));
+		survivor.stopRiding();
 		survivor.teleport(cabin, at.x, at.y, at.z, Set.of(), 90f, 0f);
 		site.aboard = true;
+		site.hull = hull.getUuid();
 		markDirty();
 		Text message = format(who, who.line("aboard"));
 		for (ServerPlayerEntity player : CrawlerInterior.playersAboard(server, hull)) {
@@ -429,25 +508,51 @@ public class SurvivorManager extends PersistentState {
 		Surrogate.LOGGER.info("{} boarded the crawler", who.key());
 	}
 
-	/** The crawler has coupled at home: everyone riding in its cabin steps through into the pod. Rescued. */
+	/**
+	 * The crawler has coupled at home: everyone riding in its cabin steps through into the pod. Rescued.
+	 *
+	 * <p>Who is aboard is read off the saved state and not off the room. The cabin is a pocket dimension
+	 * whose chunks are only held while a player is standing in it, so a passenger put aboard from a docking
+	 * console outside the hull — which is every rescue where the player drives rather than rides — is in an
+	 * unloaded section by the time the hull gets home, and a scan of the room finds an empty room. That was
+	 * a silent loss: the collar locked, nobody stepped out, and the site stayed marked aboard for good.
+	 * Anybody the room cannot produce is put back together at the door instead.
+	 */
 	public void disembark(MinecraftServer server, CrawlerEntity hull, BlockPos door) {
 		ServerWorld overworld = server.getOverworld();
 		ServerWorld cabin = CrawlerDimension.world(server);
 		CrawlerInteriors.Slot slot = CrawlerInteriors.get(server).forHull(hull.getUuid());
 		if (cabin == null || slot == null || !slot.built) return;
+		CrawlerInterior.loadCabin(server, slot);
 		Box room = CrawlerRoom.room(CrawlerInteriors.origin(slot.index));
 		int n = 0;
-		for (SurvivorEntity survivor : cabin.getEntitiesByClass(SurvivorEntity.class, room, e -> true)) {
-			Survivor who = survivor.getCharacter();
+		for (Site site : sites) {
+			if (!site.aboard || (site.hull != null && !site.hull.equals(hull.getUuid()))) continue;
+			Survivor who = site.survivor();
 			BlockPos spot = door.east().south(n++);
 			Vec3d at = Vec3d.ofBottomCenter(spot);
-			survivor.teleport(overworld, at.x, at.y, at.z, Set.of(), -90f, 0f);
-			for (Site site : sites) {
-				if (site.survivor() == who) {
-					site.aboard = false;
-					site.rescued = true;
-				}
+			SurvivorEntity riding = null;
+			for (SurvivorEntity candidate : cabin.getEntitiesByClass(SurvivorEntity.class, room, e -> e.getCharacter() == who)) {
+				riding = candidate;
+				break;
 			}
+			if (riding != null) {
+				riding.teleport(overworld, at.x, at.y, at.z, Set.of(), -90f, 0f);
+			} else {
+				riding = ModEntities.SURVIVOR.create(overworld);
+				if (riding == null) continue;
+				riding.setCharacter(who);
+				riding.refreshPositionAndAngles(at.x, at.y, at.z, -90f, 0f);
+				overworld.spawnEntity(riding);
+				Surrogate.LOGGER.info("{} was aboard but the cabin had unloaded; put back together at the door", who.key());
+			}
+			// The entity carries its own flag, and it is the one that decides whether they still greet you
+			// like a stranger and beg for bread. Somebody driven home and not marked here spends the rest of
+			// the game asking for the thing they are standing next to.
+			riding.setRescued(true);
+			site.aboard = false;
+			site.hull = null;
+			site.rescued = true;
 			markDirty();
 			Text message = format(who, who.line("home"));
 			for (ServerPlayerEntity player : CrawlerInterior.playersAboard(server, hull)) {
@@ -457,6 +562,7 @@ public class SurvivorManager extends PersistentState {
 			broadcast(server, who, who.line("home_radio"));
 			Surrogate.LOGGER.info("{} rescued: home at {}", who.key(), spot.toShortString());
 		}
+		if (n == 0) Surrogate.LOGGER.info("Crawler coupled at home with nobody aboard it");
 	}
 
 	// ------------------------------------------------------------------ the radio
@@ -643,6 +749,7 @@ public class SurvivorManager extends PersistentState {
 			entry.putInt("Z", site.z);
 			entry.putBoolean("Built", site.built);
 			entry.putBoolean("Rescued", site.rescued);
+			if (site.hull != null) entry.putUuid("Hull", site.hull);
 			entry.putBoolean("Aboard", site.aboard);
 			entry.putBoolean("Blueprint", site.blueprint);
 			entry.putInt("NextLine", site.nextLine);
@@ -667,6 +774,7 @@ public class SurvivorManager extends PersistentState {
 			site.y = entry.getInt("Y");
 			site.built = entry.getBoolean("Built");
 			site.rescued = entry.getBoolean("Rescued");
+			if (entry.containsUuid("Hull")) site.hull = entry.getUuid("Hull");
 			site.aboard = entry.getBoolean("Aboard");
 			site.blueprint = entry.getBoolean("Blueprint");
 			site.nextLine = entry.getInt("NextLine");

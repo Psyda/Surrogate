@@ -73,6 +73,23 @@ public final class Hazards {
 		return onSallow(world) ? intensity : 0f;
 	}
 
+	/**
+	 * Start a storm now, whatever the clock said. The conference in act four calls this: the sky arriving
+	 * mid-scene is the beat, and a scripted flash that the weather did not actually agree to would leave the
+	 * player walking out of the pod into a clear afternoon.
+	 */
+	public static void forceStorm(MinecraftServer server) {
+		if (!Surrogate.CONFIG.hazards) return;
+		ServerWorld world = server.getOverworld();
+		if (!Valleys.isMesaWorld(world)) return;
+		HazardState state = HazardState.get(server);
+		if (state.stormStart >= 0) return;
+		state.stormStart = world.getTime();
+		state.markDirty();
+		warning = true;
+		announce(server, "message.surrogate.storm.warning");
+	}
+
 	/** True through the run-up only: the window in which parking is still a decision. */
 	public static boolean stormWarning(ServerWorld world) {
 		return warning && Surrogate.CONFIG.hazards && onSallow(world);

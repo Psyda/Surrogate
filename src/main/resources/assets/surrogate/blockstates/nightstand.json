@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "surrogate:block/nightstand"
+    },
+    "facing=east": {
+      "model": "surrogate:block/nightstand",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "surrogate:block/nightstand",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "surrogate:block/nightstand",
+      "y": 270
+    }
+  }
+}

@@ -85,6 +85,28 @@ public final class ModSounds {
 	public static final SoundEvent MICROWAVE_HUM = register("block.microwave_hum");
 	public static final SoundEvent MICROWAVE_DING = register("block.microwave_ding");
 
+	/** The two things in the flashback that are still switched on. */
+	public static final SoundEvent FLASHBACK_RADIO = register("flashback.radio");
+	public static final SoundEvent FLASHBACK_TELEVISION = register("flashback.television");
+	/** The rest of a house at night, and a bar, and an office: recorded effects (tools/gen_sfx.py). */
+	public static final SoundEvent FLASHBACK_CAR_PASS = register("flashback.car_pass");
+	public static final SoundEvent FLASHBACK_CAR_HORN = register("flashback.car_horn");
+	public static final SoundEvent FLASHBACK_CREAK = register("flashback.creak");
+	public static final SoundEvent FLASHBACK_FOOTSTEPS_UPSTAIRS = register("flashback.footsteps_upstairs");
+	public static final SoundEvent FLASHBACK_DOOR_UPSTAIRS = register("flashback.door_upstairs");
+	public static final SoundEvent FLASHBACK_TV_SWITCH = register("flashback.tv_switch");
+	public static final SoundEvent FLASHBACK_TV_CREDITS = register("flashback.tv_credits");
+	public static final SoundEvent FLASHBACK_NEWS_STING = register("flashback.news_sting");
+	public static final SoundEvent FLASHBACK_DART_HIT = register("flashback.dart_hit");
+	public static final SoundEvent FLASHBACK_GLASS_CLINK = register("flashback.glass_clink");
+	public static final SoundEvent FLASHBACK_FRONT_DOOR = register("flashback.front_door");
+	public static final SoundEvent FLASHBACK_FLUORESCENT_HUM = register("flashback.fluorescent_hum");
+	public static final SoundEvent FLASHBACK_PUB_MURMUR = register("flashback.pub_murmur");
+	public static final SoundEvent FLASHBACK_PIZZA_BOX = register("flashback.pizza_box");
+	public static final SoundEvent FLASHBACK_LIFT_DING = register("flashback.lift_ding");
+	public static final SoundEvent FLASHBACK_PRINTER = register("flashback.printer");
+	public static final SoundEvent FLASHBACK_LIGHT_SWITCH = register("flashback.light_switch");
+
 	/** Prefix for optional recorded voice lines: {@code surrogate:voice.<line key>}. */
 	public static final String VOICE_PREFIX = "voice.";
 

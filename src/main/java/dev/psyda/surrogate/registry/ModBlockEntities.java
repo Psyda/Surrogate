@@ -69,6 +69,14 @@ public final class ModBlockEntities {
 	public static final BlockEntityType<dev.psyda.surrogate.block.CorrodedMachineBlockEntity> CORRODED_MACHINE = Registry.register(Registries.BLOCK_ENTITY_TYPE, Surrogate.id("corroded_machine"),
 			BlockEntityType.Builder.create(dev.psyda.surrogate.block.CorrodedMachineBlockEntity::new, ModBlocks.CORRODED_MACHINE).build(null));
 
+	/** Eighteen slots in a case, a box, a fridge, a wardrobe, a bedside drawer or a filing cabinet. */
+	public static final BlockEntityType<dev.psyda.surrogate.block.HouseContainerBlockEntity> HOUSE_CONTAINER = Registry.register(Registries.BLOCK_ENTITY_TYPE, Surrogate.id("house_container"),
+			BlockEntityType.Builder.create(dev.psyda.surrogate.block.HouseContainerBlockEntity::new, ModBlocks.SUITCASE, ModBlocks.CARDBOARD_BOX,
+					ModBlocks.FRIDGE, ModBlocks.WARDROBE, ModBlocks.NIGHTSTAND, ModBlocks.FILING_CABINET).build(null));
+
+	public static final BlockEntityType<dev.psyda.surrogate.block.DogCarrierBlockEntity> DOG_CARRIER = Registry.register(Registries.BLOCK_ENTITY_TYPE, Surrogate.id("dog_carrier"),
+			BlockEntityType.Builder.create(dev.psyda.surrogate.block.DogCarrierBlockEntity::new, ModBlocks.DOG_CARRIER).build(null));
+
 	public static void register() {
 		// Any Team Reborn Energy producer or cable can push power into a dock or life support unit from any side.
 		EnergyStorage.SIDED.registerForBlockEntity((dock, direction) -> dock.getEnergyStorage(), CHARGING_DOCK);

@@ -67,6 +67,21 @@ public final class CinematicState {
 	public static final Deque<LogLine> log = new ArrayDeque<>();
 	private static final int LOG_CAP = 60;
 
+	// The conference call on the hub terminal. Two masks over CallPanel's ordinals and whoever is talking;
+	// `callAge` is what the static and the scanlines are drawn off, and `callFade` eases the grid in and out
+	// so that closing the call is not a frame of eight faces and then nothing.
+	public static int callLive;
+	public static int callSnow;
+	public static int callSpeaking = -1;
+	public static int callAge;
+	// What is drawn while the grid fades out. The masks go to zero the instant the call closes and the fade
+	// takes two seconds, so drawing from the live ones turns eight faces into eight NO CARRIER cards for the
+	// whole of it, which is a different scene ending than the one anybody wrote.
+	private static int shownLive;
+	private static int shownSnow;
+	private static float callFade;
+	private static float prevCallFade;
+
 	private static float shakeStrength;
 	private static int shakeTicks;
 	private static int shakeElapsed;
@@ -78,6 +93,10 @@ public final class CinematicState {
 	private static Perspective savedPerspective;
 
 	public static int skipHeld;
+	/** Whether the advance key was already down last tick, so a held key does not eat a whole conversation. */
+	private static boolean advanceHeld;
+	/** Whether the line on screen said it could be pressed through. */
+	private static boolean lineAdvance = true;
 
 	private CinematicState() {
 	}
@@ -98,6 +117,24 @@ public final class CinematicState {
 
 	public static boolean hasLine() {
 		return lineActive;
+	}
+
+	/** Whether the line on screen may be pressed through. False for scenes that are only their lines. */
+	public static boolean canAdvance() {
+		return lineActive && lineAdvance;
+	}
+
+	/** How far the call grid has faded in, 0 to 1. Zero when there is no call and nothing to draw. */
+	public static float call(float tickDelta) {
+		return MathHelper.lerp(tickDelta, prevCallFade, callFade);
+	}
+
+	public static int callShownLive() {
+		return shownLive;
+	}
+
+	public static int callShownSnow() {
+		return shownSnow;
 	}
 
 	public static float letterbox(float tickDelta) {
@@ -135,6 +172,11 @@ public final class CinematicState {
 			releaseCamera(MinecraftClient.getInstance());
 			lineActive = false;
 			letterboxOn = false;
+			// Every director ends a scene by sending this and nothing else, so the call has to die off it
+			// as well as off its own payload. Otherwise a skipped conference leaves eight faces on the HUD.
+			callLive = 0;
+			callSnow = 0;
+			callSpeaking = -1;
 		}
 	}
 
@@ -173,6 +215,7 @@ public final class CinematicState {
 		lineTicks = Math.max(1, payload.ticks());
 		lineElapsed = 0;
 		lineActive = true;
+		lineAdvance = payload.advance();
 		if (!textKey.isEmpty() && lineStyle != CinematicPayloads.TITLE) {
 			log.addLast(new LogLine(speakerKey, textKey, lineArg, lineStyle));
 			while (log.size() > LOG_CAP) log.removeFirst();
@@ -190,6 +233,17 @@ public final class CinematicState {
 			if (client.getSoundManager().get(voice) != null) {
 				client.getSoundManager().play(PositionedSoundInstance.master(SoundEvent.of(voice), 1.0f, 1.0f));
 			}
+		}
+	}
+
+	public static void onCall(CinematicPayloads.Call payload) {
+		if (callLive == 0 && payload.live() != 0) callAge = 0;
+		callLive = payload.live();
+		callSnow = payload.snow();
+		callSpeaking = payload.speaking();
+		if (callLive != 0) {
+			shownLive = callLive;
+			shownSnow = callSnow;
 		}
 	}
 
@@ -266,6 +320,12 @@ public final class CinematicState {
 			objectiveElapsed++;
 			if (objectiveState == CinematicPayloads.OBJECTIVE_DONE && objectiveElapsed > 70) objectiveState = CinematicPayloads.OBJECTIVE_CLEAR;
 		}
+		prevCallFade = callFade;
+		float callTarget = callLive == 0 ? 0f : 1f;
+		callFade += (callTarget - callFade) * 0.12f;
+		if (Math.abs(callTarget - callFade) < 0.004f) callFade = callTarget;
+		if (callLive != 0 || callFade > 0f) callAge++;
+
 		if (shakeElapsed < shakeTicks) shakeElapsed++;
 		if (camera != null) camera.step();
 
@@ -291,12 +351,26 @@ public final class CinematicState {
 		} else {
 			skipHeld = 0;
 		}
+		// Out of a shot the player has their hands, so the skip key is theirs to jump with and the offer is a
+		// smaller one: press on through the line you have finished reading. Edge triggered, because a held
+		// key would run the length of a conversation in a second and a half.
+		boolean advance = player != null && !locked && canAdvance() && client.currentScreen == null
+				&& client.options.sneakKey.isPressed();
+		if (advance && !advanceHeld) {
+			lineActive = false;
+			ClientPlayNetworking.send(new CinematicPayloads.Advance());
+		}
+		advanceHeld = advance;
 		// Key presses buffered while locked would all fire at once on release.
 		if (wasLocked && !locked) KeyBinding.unpressAll();
 		wasLocked = locked;
 	}
 
 	public static void reset() {
+		// The camera's own release restores the perspective it took; a disconnect in the middle of a scene
+		// skips that and used to leave the player in forced first person for the rest of the session.
+		MinecraftClient client = MinecraftClient.getInstance();
+		if (savedPerspective != null && client.options != null) client.options.setPerspective(savedPerspective);
 		hintKey = "";
 		log.clear();
 		active = false;
@@ -312,10 +386,19 @@ public final class CinematicState {
 		lineActive = false;
 		lineArg = "";
 		objectiveState = CinematicPayloads.OBJECTIVE_CLEAR;
+		callLive = 0;
+		callSnow = 0;
+		callSpeaking = -1;
+		callAge = 0;
+		shownLive = 0;
+		shownSnow = 0;
+		callFade = 0f;
+		prevCallFade = 0f;
 		shakeTicks = 0;
 		camera = null;
 		eyeSnapPending = false;
 		savedPerspective = null;
 		skipHeld = 0;
+		advanceHeld = false;
 	}
 }

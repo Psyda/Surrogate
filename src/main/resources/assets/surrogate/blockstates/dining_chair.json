@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "surrogate:block/dining_chair"
+    },
+    "facing=east": {
+      "model": "surrogate:block/dining_chair",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "surrogate:block/dining_chair",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "surrogate:block/dining_chair",
+      "y": 270
+    }
+  }
+}

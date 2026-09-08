@@ -1,14 +1,19 @@
 package dev.psyda.surrogate.world;
 
+import dev.psyda.surrogate.Surrogate;
 import dev.psyda.surrogate.block.BunkBlock;
+import dev.psyda.surrogate.block.LifeSupportBlock;
+import dev.psyda.surrogate.block.LifeSupportBlockEntity;
 import dev.psyda.surrogate.block.PropBlock;
 import dev.psyda.surrogate.registry.ModBlocks;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.block.ChestBlock;
 import net.minecraft.block.DoorBlock;
 import net.minecraft.block.enums.BedPart;
 import net.minecraft.block.enums.DoubleBlockHalf;
+import net.minecraft.inventory.Inventory;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -27,6 +32,14 @@ import java.util.List;
  *
  * <p>Coordinates are relative to the habitat origin, the same frame the pod uses, so the slab constants line
  * up without arithmetic. Rows run north to south and columns west to east.
+ *
+ * <p>Two things about the shell are load-bearing rather than decorative. The lamps hang in the top air layer
+ * with plating over them: a ceiling lamp is a twelve by two by twelve slab at the top of its cell, so one
+ * laid <em>as</em> the ceiling is not a full cube, and {@link dev.psyda.surrogate.atmosphere.Atmosphere}'s
+ * fill walked straight up through all three of them and out at the sky. And the room has a scrubber of its
+ * own, because the connecting door is airtight when shut and a sealed volume is whatever one unit can reach:
+ * without it, closing the door behind you left the bunkroom off every volume in the world, which reads to
+ * {@link dev.psyda.surrogate.atmosphere.Exposure} as standing outside.
  */
 public final class ModuleTwo {
 	/**
@@ -51,12 +64,16 @@ public final class ModuleTwo {
 	private static final int WEST = 5;
 	private static final int NORTH = -4;
 
+	/** The module's own scrubber, in the north wall of the lobby, and the collectors that run it. */
+	public static final BlockPos LIFE_SUPPORT = new BlockPos(8, 1, -4);
+
 	/**
 	 * Rows are z = -4 .. 4, columns x = 5 .. 11.
 	 *
 	 * <p>{@code #} plating, {@code .} air, {@code G} reinforced glass, {@code g} ceiling lamp, {@code =} deck
 	 * plating, {@code B}/{@code b} a bunk's head and foot, {@code L} a locker, {@code T} the table,
-	 * {@code D}/{@code d} the door into the pod.
+	 * {@code D}/{@code d} the door into the pod, {@code S} the scrubber, {@code P} a power conduit and
+	 * {@code A} a solar collector.
 	 */
 	private static final String[][] LAYERS = {
 			{ // y = 0: the floor, laid over the slab that was already there
@@ -71,7 +88,7 @@ public final class ModuleTwo {
 					"#######",
 			},
 			{ // y = 1: three bunks down each long wall, the lobby across the north end, the table at the south
-					"#######",
+					"###S###",
 					"D....L#",
 					"#b...b#",
 					"#B...B#",
@@ -81,38 +98,50 @@ public final class ModuleTwo {
 					"#B.T.B#",
 					"#######",
 			},
-			{ // y = 2: head height. A window over every second bunk, because a bunkroom with no sky is a cell
-					"#######",
+			{ // y = 2: head height. Windows over the east bunks and across the south end, which are the two
+			  // walls with anything behind them: the west wall is six inches from the pod's own plating.
+					"###P###",
 					"d.....#",
+					"#.....G",
 					"#.....#",
-					"G.....G",
+					"#.....G",
 					"#.....#",
-					"G.....G",
+					"#.....G",
 					"#.....#",
+					"##GGG##",
+			},
+			{ // y = 3: clear, with three lamps hanging off the ceiling down the corridor
+					"###P###",
+					"#.....#",
+					"#..g..#",
+					"#.....#",
+					"#..g..#",
+					"#.....#",
+					"#..g..#",
 					"#.....#",
 					"#######",
 			},
-			{ // y = 3: clear
+			{ // y = 4: the ceiling, solid, with the conduit run to the collectors along the north edge
+					"##PPP##",
 					"#######",
-					"#.....#",
-					"#.....#",
-					"#.....#",
-					"#.....#",
-					"#.....#",
-					"#.....#",
-					"#.....#",
+					"#######",
+					"#######",
+					"#######",
+					"#######",
+					"#######",
+					"#######",
 					"#######",
 			},
-			{ // y = 4: the ceiling, with three lamps down the corridor
-					"#######",
-					"#######",
-					"###g###",
-					"#######",
-					"###g###",
-					"#######",
-					"###g###",
-					"#######",
-					"#######",
+			{ // y = 5: three collectors on the north rim, over the conduits
+					"  AAA  ",
+					"       ",
+					"       ",
+					"       ",
+					"       ",
+					"       ",
+					"       ",
+					"       ",
+					"       ",
 			},
 	};
 
@@ -122,11 +151,37 @@ public final class ModuleTwo {
 	/**
 	 * Whether it is already there, so a second drop is a no-op rather than a second room.
 	 *
-	 * <p>The corner of the ceiling, not its middle: the middle of that layer is a lamp, and asking for
-	 * plating there was always false, which would have let the module be built on top of itself.
+	 * <p>The corner of the ceiling, not its middle: the middle of that layer used to be a lamp, and asking
+	 * for plating there was always false, which would have let the module be built on top of itself.
 	 */
 	public static boolean exists(ServerWorld world, BlockPos origin) {
 		return world.getBlockState(origin.add(WEST, 4, NORTH)).isOf(ModBlocks.HULL_PLATING);
+	}
+
+	/**
+	 * The two cells on the pod's side of the new doorway, emptied.
+	 *
+	 * <p>Habitats built before the pod's chest moved have it standing in exactly this spot, which turns the
+	 * housewarming's payoff into a room you can see into and not walk into. Anything with an inventory in the
+	 * way is emptied into the pod's own chest rather than voided or dropped: it is four hundred days of
+	 * someone's belongings and it is not the game's to throw on the floor.
+	 */
+	private static void clearDoorway(ServerWorld world, BlockPos origin) {
+		BlockPos chest = origin.add(HabitatBuilder.POD_CHEST);
+		for (int y = 1; y <= 2; y++) {
+			BlockPos pos = origin.add(WEST - 2, y, DOOR.getZ());
+			if (world.isAir(pos)) continue;
+			if (world.getBlockEntity(pos) instanceof Inventory inventory) {
+				// On a habitat old enough to need this, the chest's new home is bare floor. Stand one there
+				// first, so a migration ends with the belongings in a chest rather than in a heap.
+				if (world.isAir(chest)) {
+					HabitatBuilder.set(world, chest, Blocks.CHEST.getDefaultState()
+							.with(ChestBlock.FACING, Direction.WEST));
+				}
+				HabitatBuilder.moveContents(world, inventory, chest);
+			}
+			HabitatBuilder.set(world, pos, Blocks.AIR.getDefaultState());
+		}
 	}
 
 	public static void build(ServerWorld world, BlockPos origin) {
@@ -147,6 +202,7 @@ public final class ModuleTwo {
 		// only way in is to mine through your own hull.
 		HabitatBuilder.set(world, origin.add(4, 1, DOOR.getZ()), Blocks.AIR.getDefaultState());
 		HabitatBuilder.set(world, origin.add(4, 2, DOOR.getZ()), Blocks.AIR.getDefaultState());
+		clearDoorway(world, origin);
 	}
 
 	private static void place(ServerWorld world, BlockPos pos, char c, List<Runnable> deferred) {
@@ -157,6 +213,20 @@ public final class ModuleTwo {
 			case '.' -> HabitatBuilder.set(world, pos, Blocks.AIR.getDefaultState());
 			case 'g' -> HabitatBuilder.set(world, pos, ModBlocks.CEILING_LAMP.getDefaultState());
 			case 'T' -> HabitatBuilder.set(world, pos, ModBlocks.MESS_TABLE.getDefaultState());
+			case 'P' -> HabitatBuilder.set(world, pos, ModBlocks.POWER_CONDUIT.getDefaultState());
+			case 'A' -> HabitatBuilder.set(world, pos, ModBlocks.SOLAR_COLLECTOR.getDefaultState());
+			case 'S' -> {
+				HabitatBuilder.set(world, pos, ModBlocks.LIFE_SUPPORT.getDefaultState()
+						.with(LifeSupportBlock.FACING, Direction.SOUTH));
+				// Charged and already scrubbing, the way the pod's own unit lands. A module dropped with an
+				// empty scrubber is a room that poisons the first person to walk into it and shut the door.
+				deferred.add(() -> {
+					if (world.getBlockEntity(pos) instanceof LifeSupportBlockEntity unit) {
+						unit.addEnergy(Surrogate.CONFIG.lifeSupportEnergyCapacity);
+						unit.getVolume().quality = 1f;
+					}
+				});
+			}
 			case 'L' -> HabitatBuilder.set(world, pos, ModBlocks.LOCKER.getDefaultState()
 					.with(PropBlock.FACING, Direction.EAST));
 			// Bunks lie north-south with the pillow at the south end, so the foot is the northern half and

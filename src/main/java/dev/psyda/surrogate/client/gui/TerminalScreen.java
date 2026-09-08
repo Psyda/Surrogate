@@ -1,7 +1,11 @@
 package dev.psyda.surrogate.client.gui;
 
 import dev.psyda.surrogate.atmosphere.Exposure;
+import dev.psyda.surrogate.block.TerminalBlockEntity;
+import dev.psyda.surrogate.client.ClientMissionState;
 import dev.psyda.surrogate.client.ClientPilotState;
+import dev.psyda.surrogate.network.MissionPayload;
+import dev.psyda.surrogate.survivor.Survivor;
 import dev.psyda.surrogate.client.transit.TransitClientState;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -65,6 +69,12 @@ public class TerminalScreen extends Screen {
 			titles.add(I18n.translate("terminal.surrogate.survey.title"));
 			bodies.add(surveyPage(survey));
 		}
+		// The mission board, last, and only on a hub the conference in act four opened one on. It arrives on
+		// its own payload immediately before this screen, so by the time we are building pages it is here.
+		if (ClientMissionState.hasBoard() && TerminalBlockEntity.HUB.equals(unit)) {
+			titles.add(I18n.translate("terminal.surrogate.board.title"));
+			bodies.add(boardPage());
+		}
 		openedAt = Util.getMeasuringTimeMs();
 	}
 
@@ -82,6 +92,43 @@ public class TerminalScreen extends Screen {
 			out.append("  ").append(known ? I18n.translate(specimen.noteKey())
 					: I18n.translate("terminal.surrogate.survey.unread")).append("\n\n");
 		}
+		return out.toString();
+	}
+
+	/**
+	 * The campaign's checklist: everyone still out there, what their air is doing and what is in the way.
+	 *
+	 * <p>The blocked column is the whole value of the page. Six names with six states is a list; six names
+	 * with "the Rift" written next to three of them is a plan.
+	 */
+	private static String boardPage() {
+		StringBuilder out = new StringBuilder();
+		int home = 0;
+		for (MissionPayload.Row row : ClientMissionState.rows) {
+			if (row.state() == MissionPayload.HOME) home++;
+		}
+		out.append(I18n.translate("terminal.surrogate.board.header", home, ClientMissionState.rows.size())).append("\n\n");
+		for (MissionPayload.Row row : ClientMissionState.rows) {
+			Survivor who = Survivor.byId(row.survivor());
+			String state = switch (row.state()) {
+				case MissionPayload.HOME -> I18n.translate("terminal.surrogate.board.home");
+				case MissionPayload.ABOARD -> I18n.translate("terminal.surrogate.board.aboard");
+				case MissionPayload.REACHED -> I18n.translate("terminal.surrogate.board.reached");
+				default -> I18n.translate("terminal.surrogate.board.unreached");
+			};
+			String mark = row.state() == MissionPayload.HOME ? "+ " : row.state() == MissionPayload.ABOARD ? "> " : "- ";
+			out.append(mark).append(I18n.translate(who.nameKey())).append(" - ").append(state).append('\n');
+			// A scrubber reading only means something while they are still living behind it.
+			if (row.state() != MissionPayload.HOME && row.state() != MissionPayload.ABOARD && row.scrubber() >= 0) {
+				String air = I18n.translate("terminal.surrogate.board.scrubber", row.scrubber());
+				out.append(row.scrubber() < 60 ? "! " : "  ").append(air).append('\n');
+			}
+			if (!row.blocked().isEmpty()) {
+				out.append("  ").append(I18n.translate("terminal.surrogate.board.blocked", I18n.translate(row.blocked()))).append('\n');
+			}
+			out.append('\n');
+		}
+		for (String note : ClientMissionState.notes) out.append("# ").append(I18n.translate(note)).append('\n');
 		return out.toString();
 	}
 

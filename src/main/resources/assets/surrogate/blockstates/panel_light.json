@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "lit=false": {
+      "model": "surrogate:block/panel_light"
+    },
+    "lit=true": {
+      "model": "surrogate:block/panel_light_lit"
+    }
+  }
+}

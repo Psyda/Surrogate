@@ -1,0 +1,96 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "surrogate:block/photo_frame",
+    "f": "surrogate:block/photo_frame"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        3,
+        15
+      ],
+      "to": [
+        13,
+        13,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#f",
+          "uv": [
+            3,
+            3,
+            13,
+            13
+          ]
+        },
+        "south": {
+          "texture": "#f",
+          "uv": [
+            3,
+            3,
+            4,
+            4
+          ]
+        },
+        "east": {
+          "texture": "#f",
+          "uv": [
+            3,
+            3,
+            4,
+            4
+          ]
+        },
+        "west": {
+          "texture": "#f",
+          "uv": [
+            3,
+            3,
+            4,
+            4
+          ]
+        },
+        "up": {
+          "texture": "#f",
+          "uv": [
+            3,
+            3,
+            4,
+            4
+          ]
+        },
+        "down": {
+          "texture": "#f",
+          "uv": [
+            3,
+            3,
+            4,
+            4
+          ]
+        }
+      }
+    }
+  ],
+  "display": {
+    "gui": {
+      "rotation": [
+        30,
+        225,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    }
+  }
+}

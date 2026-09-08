@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "surrogate:block/calendar"
+    },
+    "facing=east": {
+      "model": "surrogate:block/calendar",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "surrogate:block/calendar",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "surrogate:block/calendar",
+      "y": 270
+    }
+  }
+}

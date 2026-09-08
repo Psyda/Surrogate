@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "surrogate:block/telephone"
+    },
+    "facing=east": {
+      "model": "surrogate:block/telephone",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "surrogate:block/telephone",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "surrogate:block/telephone",
+      "y": 270
+    }
+  }
+}

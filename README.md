@@ -273,6 +273,36 @@ valley floor it crosses. It is continuous, so together with the tables it partit
 drive: the far side is unreachable until somebody builds a bridge, and that is where the last three people
 are.
 
+## The call, and the far side
+
+The company's ship takes the payload and does not come down. Every shelter starts losing a percent of its
+scrubber a day, and two days later Halloran asks for the room: sit at the hub terminal in your own pod and
+the screen becomes eight tiles with six faces on them, which is the only time in the game that everybody is
+in one place. Marsh reads the last thing the relay ever received — a schedule with no ship on it. Okafor
+has eleven days of margin. Tanaka has a month of traces nobody wanted. A storm arrives mid-call and takes
+the far side off the band, and the argument stops. The plan is one crawler, one chassis, everybody home, and
+then a rocket the company would never have sold anyone.
+
+What it leaves behind is a **mission board** on that terminal — six names, what state each is in, what their
+air is doing and the one thing in the way of each — and a **span kit** from Sorensen's shop.
+
+Then the far side, in whatever order the ground allows:
+
+* **The bridge.** The kit surveys the gap in front of a span anchor and lays five-wide deck a course at a
+  time, out of the plating in your pockets. Five wide because the hull is. Four hundred blocks laid by hand
+  crosses the same chasm and the crawler cannot tell the difference.
+* **The road to Ceramic Row.** A vent has opened across it and a crawler does not drive through lava. There
+  is a basalt wall upstream holding it on that line and a dry basin behind the wall. Cut the wall.
+* **Clinic Nine.** Reyes' outer door is in the porch and both jambs are eaten through. Four hull plates from
+  outside, and the lock cycles. Until then she will not come out, and she says so when the collar locks.
+* **The floor of the Rift.** Novak's crawler went over the edge eleven days ago. The mist down there takes a
+  machine apart in seconds and no module answers it, so it has to be a body: a rebreather, sixty seconds,
+  and carrying a man halves your speed and does not stop the clock. Halloran refuses the run out loud until
+  Reyes is aboard, because somebody has to know what to do with him at the top.
+
+`/surrogate rescue call|skip|plan|span|flow|cut|plate|lift|tp <where>|board|status` drives all of it;
+`docs/DESIGN-campaign.md` is the whole plan.
+
 ## Chassis tools
 
 | Item | What it does |
@@ -410,6 +440,7 @@ python3 tools/smoke_test_prologue.py # headless check: the three days on the gro
 python3 tools/smoke_test_transit.py  # headless check: runs the whole week aboard the ship with a fake player in fast mode
 python3 tools/smoke_test_crawler.py  # headless check: collar door, cabin, helm drive, click-to-couple docking, bay, chair dive, the first shelter (boarding, blueprint at the port, homecoming)
 python3 tools/smoke_test_research.py # headless check: acts one and two, the three runs and the range gate at Tanaka
+python3 tools/smoke_test_campaign.py # headless check: acts four and five, the conference, the bridge, the flow, the frame and the carry
 python3 tools/seed_search.py [n] [from]        # scores n candidate seeds with no world behind them and names a winner
 python3 tools/terrain_scan.py [radius] [step]  # headless check: places the sites, drives the reachability grid from the pod to each, paints build/terrain_map.png
 gradle runClient -PquickPlay=<world> -PdevTransit=day4   # dev client straight into a world, restarting the ship week at a day
@@ -420,7 +451,9 @@ python3 tools/dev_client.py --day 5 --shots 40 --quit 2400 --fast --look 60,-6  
 
 `/surrogate prologue start|skip|day <n>|fast|status` (op level 2) replays the opening for you, cuts it short, toggles
 quarter-length timings for the next run, or reports where it is. `/surrogate research start|skip|stage <name>|fast|status`
-does the same for acts one and two. `/surrogate transit start|skip|day <1-7>|fast|status`
+does the same for acts one and two, and `/surrogate rescue call|skip|plan|span|flow|cut|plate|lift|tp <where>|board|status|reset`
+for acts four and five, where everything after `plan` opens one of act five's obstacles without driving to it.
+`/surrogate transit start|skip|day <1-7>|fast|status`
 does the same for the ship: start over, jump to the drop, jump to a day, or say where the week is. Both
 `fast` switches are the same switch. `/surrogate terrain scan|map [radius] [step]|here` reads the mesa
 valleys (see `docs/DESIGN-crawler.md`): the drives from the pod to every site and whether a crawler could take

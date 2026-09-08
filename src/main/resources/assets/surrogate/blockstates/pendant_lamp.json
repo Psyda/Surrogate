@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "lit=false": {
+      "model": "surrogate:block/pendant_lamp"
+    },
+    "lit=true": {
+      "model": "surrogate:block/pendant_lamp_lit"
+    }
+  }
+}

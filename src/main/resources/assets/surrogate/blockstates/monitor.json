@@ -1,0 +1,49 @@
+{
+  "variants": {
+    "facing=north,screen=off": {
+      "model": "surrogate:block/monitor_off"
+    },
+    "facing=north,screen=contract": {
+      "model": "surrogate:block/monitor_contract"
+    },
+    "facing=north,screen=saver": {
+      "model": "surrogate:block/monitor_saver"
+    },
+    "facing=east,screen=off": {
+      "model": "surrogate:block/monitor_off",
+      "y": 90
+    },
+    "facing=east,screen=contract": {
+      "model": "surrogate:block/monitor_contract",
+      "y": 90
+    },
+    "facing=east,screen=saver": {
+      "model": "surrogate:block/monitor_saver",
+      "y": 90
+    },
+    "facing=south,screen=off": {
+      "model": "surrogate:block/monitor_off",
+      "y": 180
+    },
+    "facing=south,screen=contract": {
+      "model": "surrogate:block/monitor_contract",
+      "y": 180
+    },
+    "facing=south,screen=saver": {
+      "model": "surrogate:block/monitor_saver",
+      "y": 180
+    },
+    "facing=west,screen=off": {
+      "model": "surrogate:block/monitor_off",
+      "y": 270
+    },
+    "facing=west,screen=contract": {
+      "model": "surrogate:block/monitor_contract",
+      "y": 270
+    },
+    "facing=west,screen=saver": {
+      "model": "surrogate:block/monitor_saver",
+      "y": 270
+    }
+  }
+}

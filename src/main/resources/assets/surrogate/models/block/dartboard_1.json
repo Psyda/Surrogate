@@ -1,0 +1,301 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "surrogate:block/dartboard",
+    "board": "surrogate:block/dartboard",
+    "dart": "surrogate:block/dart"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        2,
+        15
+      ],
+      "to": [
+        14,
+        14,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#board",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#board",
+          "uv": [
+            0,
+            7,
+            1,
+            8
+          ]
+        },
+        "east": {
+          "texture": "#board",
+          "uv": [
+            0,
+            7,
+            1,
+            8
+          ]
+        },
+        "west": {
+          "texture": "#board",
+          "uv": [
+            0,
+            7,
+            1,
+            8
+          ]
+        },
+        "up": {
+          "texture": "#board",
+          "uv": [
+            0,
+            7,
+            1,
+            8
+          ]
+        },
+        "down": {
+          "texture": "#board",
+          "uv": [
+            0,
+            7,
+            1,
+            8
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        6,
+        8,
+        14
+      ],
+      "to": [
+        7,
+        9,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#dart",
+          "uv": [
+            0,
+            7,
+            4,
+            8
+          ]
+        },
+        "south": {
+          "texture": "#dart",
+          "uv": [
+            0,
+            7,
+            4,
+            8
+          ]
+        },
+        "east": {
+          "texture": "#dart",
+          "uv": [
+            0,
+            7,
+            4,
+            8
+          ]
+        },
+        "west": {
+          "texture": "#dart",
+          "uv": [
+            0,
+            7,
+            4,
+            8
+          ]
+        },
+        "up": {
+          "texture": "#dart",
+          "uv": [
+            0,
+            7,
+            4,
+            8
+          ]
+        },
+        "down": {
+          "texture": "#dart",
+          "uv": [
+            0,
+            7,
+            4,
+            8
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        6,
+        8,
+        12.5
+      ],
+      "to": [
+        7,
+        9,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#dart",
+          "uv": [
+            5,
+            6,
+            10,
+            9
+          ]
+        },
+        "south": {
+          "texture": "#dart",
+          "uv": [
+            5,
+            6,
+            10,
+            9
+          ]
+        },
+        "east": {
+          "texture": "#dart",
+          "uv": [
+            5,
+            6,
+            10,
+            9
+          ]
+        },
+        "west": {
+          "texture": "#dart",
+          "uv": [
+            5,
+            6,
+            10,
+            9
+          ]
+        },
+        "up": {
+          "texture": "#dart",
+          "uv": [
+            5,
+            6,
+            10,
+            9
+          ]
+        },
+        "down": {
+          "texture": "#dart",
+          "uv": [
+            5,
+            6,
+            10,
+            9
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        5.5,
+        7.5,
+        11
+      ],
+      "to": [
+        7.5,
+        9.5,
+        12.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#dart",
+          "uv": [
+            13,
+            5,
+            16,
+            10
+          ]
+        },
+        "south": {
+          "texture": "#dart",
+          "uv": [
+            13,
+            5,
+            16,
+            10
+          ]
+        },
+        "east": {
+          "texture": "#dart",
+          "uv": [
+            13,
+            5,
+            16,
+            10
+          ]
+        },
+        "west": {
+          "texture": "#dart",
+          "uv": [
+            13,
+            5,
+            16,
+            10
+          ]
+        },
+        "up": {
+          "texture": "#dart",
+          "uv": [
+            13,
+            5,
+            16,
+            10
+          ]
+        },
+        "down": {
+          "texture": "#dart",
+          "uv": [
+            13,
+            5,
+            16,
+            10
+          ]
+        }
+      }
+    }
+  ],
+  "display": {
+    "gui": {
+      "rotation": [
+        30,
+        225,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    }
+  }
+}

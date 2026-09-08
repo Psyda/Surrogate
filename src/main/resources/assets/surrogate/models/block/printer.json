@@ -1,0 +1,165 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "surrogate:block/printer",
+    "p": "surrogate:block/printer",
+    "sheet": "surrogate:block/printout"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        0,
+        3
+      ],
+      "to": [
+        14,
+        6,
+        13
+      ],
+      "faces": {
+        "north": {
+          "texture": "#p",
+          "uv": [
+            0,
+            0,
+            16,
+            6
+          ]
+        },
+        "south": {
+          "texture": "#p",
+          "uv": [
+            0,
+            0,
+            16,
+            6
+          ]
+        },
+        "east": {
+          "texture": "#p",
+          "uv": [
+            0,
+            0,
+            16,
+            6
+          ]
+        },
+        "west": {
+          "texture": "#p",
+          "uv": [
+            0,
+            0,
+            16,
+            6
+          ]
+        },
+        "up": {
+          "texture": "#p",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#p",
+          "uv": [
+            0,
+            0,
+            16,
+            6
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        4,
+        6,
+        4
+      ],
+      "to": [
+        12,
+        7,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#sheet",
+          "uv": [
+            3,
+            2,
+            13,
+            3
+          ]
+        },
+        "south": {
+          "texture": "#sheet",
+          "uv": [
+            3,
+            2,
+            13,
+            3
+          ]
+        },
+        "east": {
+          "texture": "#sheet",
+          "uv": [
+            3,
+            2,
+            13,
+            3
+          ]
+        },
+        "west": {
+          "texture": "#sheet",
+          "uv": [
+            3,
+            2,
+            13,
+            3
+          ]
+        },
+        "up": {
+          "texture": "#sheet",
+          "uv": [
+            3,
+            2,
+            13,
+            15
+          ]
+        },
+        "down": {
+          "texture": "#sheet",
+          "uv": [
+            3,
+            2,
+            13,
+            3
+          ]
+        }
+      }
+    }
+  ],
+  "display": {
+    "gui": {
+      "rotation": [
+        30,
+        225,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "full=true": {
+      "model": "surrogate:block/pint_full"
+    },
+    "full=false": {
+      "model": "surrogate:block/pint_empty"
+    }
+  }
+}
