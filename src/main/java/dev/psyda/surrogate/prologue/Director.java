@@ -70,6 +70,89 @@ public abstract class Director {
 		if (onStage != null) onStage.onSkip(player);
 	}
 
+	/**
+	 * The player pressed on through a line.
+	 *
+	 * <p>Only the line is cut, never the beat after it: a script's shape is its own, and reading faster than
+	 * the estimate is not the same as asking to be somewhere else. Scripts that want a shortcut override
+	 * {@link #onSkip}.
+	 */
+	public static void advanceRequested(ServerPlayerEntity player) {
+		if (onStage != null) onStage.onAdvance(player);
+	}
+
+	protected void onAdvance(ServerPlayerEntity player) {
+		if (allowAdvance() && current != null) current.cut();
+	}
+
+	// ------------------------------------------------------------------ questions
+
+	/** The question on the table, and what came back. Null and -1 when nothing is being asked. */
+	@Nullable
+	private String askingId;
+	@Nullable
+	private Question asking;
+	private int answer = -1;
+
+	/** The player picked one, or the screen closed. @return whether anything was actually waiting for it */
+	public static boolean choicePicked(ServerPlayerEntity player, int index) {
+		if (onStage == null) return false;
+		Surrogate.LOGGER.info("Director: {} picked {} for {}", player.getGameProfile().getName(), index, onStage.askingId);
+		return onStage.answerNow(index);
+	}
+
+	/** What is being asked right now, or null. For the dev command, which has to know before it answers. */
+	@Nullable
+	public static String questionOnTheTable() {
+		return onStage == null ? null : onStage.askingId;
+	}
+
+	void askNow(Question question) {
+		askingId = question.id();
+		answer = -1;
+		asking = question;
+		send(new CinematicPayloads.Choice(question.prompt(), question.speaker(), question.options()));
+	}
+
+	boolean answerNow(int index) {
+		if (askingId == null || answer >= 0) return false;
+		answer = Math.max(0, index);
+		Question question = asking;
+		askingId = null;
+		asking = null;
+		// Take the screen down before the script moves on, or a scene that ends here ends behind a dialogue.
+		send(new CinematicPayloads.Choice("", "", List.of()));
+		if (question != null) onAnswer(question, answer);
+		return true;
+	}
+
+	boolean answered() {
+		return answer >= 0;
+	}
+
+	/** What the player said. Overridden by scripts that ask anything. */
+	protected void onAnswer(Question question, int index) {
+	}
+
+	/** Any dialogue still on somebody's screen, taken down. Called when a scene ends however it ended. */
+	protected void closeQuestion() {
+		if (askingId == null) return;
+		askingId = null;
+		asking = null;
+		send(new CinematicPayloads.Choice("", "", List.of()));
+	}
+
+	/**
+	 * Whether this script's lines may be pressed through.
+	 *
+	 * <p>True for everything that is a conversation. A script overrides it to false when its lines are the
+	 * scene rather than the delivery of it — where reading on is not a courtesy but a way of missing the
+	 * whole thing, usually by leaning on sneak without meaning anything by it.
+	 */
+	protected boolean allowAdvance() {
+		return true;
+	}
+
 	/** {@code player} used a field radio; a script may be waiting for exactly that. */
 	public static void radioUsed(ServerPlayerEntity player) {
 		if (onStage != null) onStage.onRadioUsed(player);
@@ -131,7 +214,15 @@ public abstract class Director {
 	// ------------------------------------------------------------------ ticking
 
 	protected void tick() {
-		if (player() == null) return;
+		ServerPlayerEntity watching = player();
+		if (watching == null) return;
+		// A shot held over a death screen is a shot nobody is ever going to be handed back: the respawn puts
+		// a new body in the world and the camera is still bolted to the scenery. Give it back and let the
+		// script carry on; whatever it was showing is over either way.
+		if (holding && !watching.isAlive()) {
+			Surrogate.LOGGER.warn("Director: player died mid-shot at {}, releasing the camera", currentLabel());
+			endCinematic();
+		}
 		if (startDelay > 0) {
 			startDelay--;
 			return;
@@ -245,6 +336,25 @@ public abstract class Director {
 		beats.add(new Beat.Line(null, "", fullKey, CinematicPayloads.NARRATION, -1, true, ""));
 	}
 
+	/**
+	 * A question, and the script held until it is answered.
+	 *
+	 * <p>{@code id} is what the answer is filed under, {@code prompt} and {@code options} are lang keys.
+	 * Scripts read the result back with {@link #onAnswer}, which is called once, with the index picked.
+	 */
+	protected void ask(java.util.function.Supplier<Question> question, int timeout) {
+		beats.add(new Beat.Ask(question, fast ? Math.max(100, timeout / 4) : timeout));
+	}
+
+	/** One question: what the answer is filed under, who is asking, and the lang keys for all of it. */
+	public record Question(String id, String prompt, String speaker, List<String> options) {
+	}
+
+	/** Narration whose key depends on something the player has not decided yet. Empty means say nothing. */
+	protected void narrationOf(java.util.function.Supplier<String> fullKey) {
+		beats.add(new Beat.Dynamic(fullKey, CinematicPayloads.NARRATION));
+	}
+
 	protected void alert(String fullKey, String subKey, int ticks) {
 		beats.add(new Beat.Line(null, subKey, fullKey, CinematicPayloads.ALERT, ticks, true, ""));
 	}
@@ -310,6 +420,13 @@ public abstract class Director {
 	protected void until(BooleanSupplier condition, int timeout, @Nullable Crew nudgeWho, @Nullable String nudgeKey, int nudgeAfter, @Nullable Runnable onTimeout) {
 		int nudge = fast ? Math.min(nudgeAfter, 60) : nudgeAfter;
 		beats.add(new Beat.Until(condition, timeout, nudgeWho, nudgeKey, nudge, onTimeout));
+	}
+
+	/** Waits for the player, with something other than a line as the nudge: a horn outside, a light going off. */
+	protected void until(BooleanSupplier condition, int timeout, int nudgeAfter, @Nullable Runnable onNudge, @Nullable Runnable onTimeout) {
+		int nudge = fast ? Math.min(nudgeAfter, 60) : nudgeAfter;
+		int limit = fast ? Math.max(100, timeout / 4) : timeout;
+		beats.add(new Beat.Until(condition, limit, null, null, nudge, onTimeout, onNudge));
 	}
 
 	protected void branch(BooleanSupplier condition, Beat... then) {
@@ -401,6 +518,7 @@ public abstract class Director {
 
 	/** Everything back to normal on the client: camera, bars, fade, objective. */
 	protected void resetClient() {
+		closeQuestion();
 		holding = false;
 		release();
 		send(new CinematicPayloads.Objective("", CinematicPayloads.OBJECTIVE_CLEAR));
@@ -414,7 +532,7 @@ public abstract class Director {
 		if (player == null) return 1;
 		if (ticks < 0) ticks = lineTicks(textKey);
 		String voice = ModSounds.VOICE_PREFIX + textKey.replaceFirst("^[a-z]+\\.surrogate\\.", "");
-		send(new CinematicPayloads.Line(speakerKey, textKey, style, ticks, voice, arg));
+		send(new CinematicPayloads.Line(speakerKey, textKey, style, ticks, voice, arg, allowAdvance()));
 		if (chat) {
 			MutableText message = switch (style) {
 				case CinematicPayloads.RADIO -> Text.literal("[RADIO] ").formatted(Formatting.DARK_AQUA);

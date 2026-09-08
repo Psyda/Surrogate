@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "facing=north,occupied=false": {
+      "model": "surrogate:block/dog_carrier"
+    },
+    "facing=north,occupied=true": {
+      "model": "surrogate:block/dog_carrier_dog"
+    },
+    "facing=east,occupied=false": {
+      "model": "surrogate:block/dog_carrier",
+      "y": 90
+    },
+    "facing=east,occupied=true": {
+      "model": "surrogate:block/dog_carrier_dog",
+      "y": 90
+    },
+    "facing=south,occupied=false": {
+      "model": "surrogate:block/dog_carrier",
+      "y": 180
+    },
+    "facing=south,occupied=true": {
+      "model": "surrogate:block/dog_carrier_dog",
+      "y": 180
+    },
+    "facing=west,occupied=false": {
+      "model": "surrogate:block/dog_carrier",
+      "y": 270
+    },
+    "facing=west,occupied=true": {
+      "model": "surrogate:block/dog_carrier_dog",
+      "y": 270
+    }
+  }
+}

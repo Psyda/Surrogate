@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "surrogate:block/office_chair"
+    },
+    "facing=east": {
+      "model": "surrogate:block/office_chair",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "surrogate:block/office_chair",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "surrogate:block/office_chair",
+      "y": 270
+    }
+  }
+}

@@ -1,0 +1,174 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "surrogate:block/bar_side",
+    "top": "surrogate:block/bar_top",
+    "front": "surrogate:block/bar_front",
+    "side": "surrogate:block/bar_side"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        13,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#side"
+        },
+        "south": {
+          "texture": "#side"
+        },
+        "east": {
+          "texture": "#side"
+        },
+        "west": {
+          "texture": "#side"
+        },
+        "up": {
+          "texture": "#top",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#side"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        0,
+        2
+      ],
+      "to": [
+        16,
+        13,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#front",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#side"
+        },
+        "east": {
+          "texture": "#side"
+        },
+        "west": {
+          "texture": "#side"
+        },
+        "up": {
+          "texture": "#side"
+        },
+        "down": {
+          "texture": "#side"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        2,
+        0
+      ],
+      "to": [
+        16,
+        3,
+        1
+      ],
+      "faces": {
+        "north": {
+          "texture": "#front",
+          "uv": [
+            0,
+            14,
+            16,
+            15
+          ]
+        },
+        "south": {
+          "texture": "#front",
+          "uv": [
+            0,
+            14,
+            16,
+            15
+          ]
+        },
+        "east": {
+          "texture": "#front",
+          "uv": [
+            0,
+            14,
+            16,
+            15
+          ]
+        },
+        "west": {
+          "texture": "#front",
+          "uv": [
+            0,
+            14,
+            16,
+            15
+          ]
+        },
+        "up": {
+          "texture": "#front",
+          "uv": [
+            0,
+            14,
+            16,
+            15
+          ]
+        },
+        "down": {
+          "texture": "#front",
+          "uv": [
+            0,
+            14,
+            16,
+            15
+          ]
+        }
+      }
+    }
+  ],
+  "display": {
+    "gui": {
+      "rotation": [
+        30,
+        225,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    }
+  }
+}

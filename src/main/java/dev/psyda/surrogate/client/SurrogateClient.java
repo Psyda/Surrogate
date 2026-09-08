@@ -102,6 +102,8 @@ public class SurrogateClient implements ClientModInitializer {
 		EntityRendererRegistry.register(ModEntities.SURVIVOR, SurvivorEntityRenderer::new);
 		EntityRendererRegistry.register(ModEntities.CREW, CrewEntityRenderer::new);
 		EntityRendererRegistry.register(ModEntities.CAMERA, EmptyEntityRenderer::new);
+		EntityRendererRegistry.register(ModEntities.SEAT, EmptyEntityRenderer::new);
+		EntityRendererRegistry.register(ModEntities.DART, net.minecraft.client.render.entity.FlyingItemEntityRenderer::new);
 		BlockEntityRendererFactories.register(ModBlockEntities.DIVE_CHAIR, DiveChairRenderer::new);
 		BlockEntityRendererFactories.register(ModBlockEntities.CHARGING_DOCK, ChargingDockRenderer::new);
 		BlockEntityRendererFactories.register(ModBlockEntities.VEHICLE_FABRICATOR, dev.psyda.surrogate.client.render.VehicleFabricatorRenderer::new);
@@ -119,6 +121,8 @@ public class SurrogateClient implements ClientModInitializer {
 
 		// The void the ship crosses: its own sky, and nothing vanilla would draw there.
 		DimensionRenderingRegistry.registerDimensionEffects(Surrogate.id("transit"), new TransitDimensionEffects());
+		DimensionRenderingRegistry.registerDimensionEffects(Surrogate.id("dream"),
+				new dev.psyda.surrogate.client.flashback.DreamDimensionEffects());
 		DimensionRenderingRegistry.registerSkyRenderer(TransitDimension.WORLD, new TransitSkyRenderer());
 
 		ClientPlayNetworking.registerGlobalReceiver(PilotStatusPayload.ID, (payload, context) -> ClientPilotState.update(payload));
@@ -139,6 +143,19 @@ public class SurrogateClient implements ClientModInitializer {
 		// the client state as it builds its pages rather than opening blank and filling in a tick later.
 		ClientPlayNetworking.registerGlobalReceiver(dev.psyda.surrogate.network.MissionPayload.ID,
 				(payload, context) -> dev.psyda.surrogate.client.ClientMissionState.onPayload(payload));
+		// A question opens the screen; an empty one takes it down again, which is how a script that has moved
+		// on (or been skipped) closes a dialogue it is no longer waiting for.
+		ClientPlayNetworking.registerGlobalReceiver(CinematicPayloads.Choice.ID, (payload, context) -> {
+			if (payload.options().isEmpty()) {
+				if (context.client().currentScreen instanceof dev.psyda.surrogate.client.gui.ChoiceScreen) {
+					context.client().setScreen(null);
+				}
+			} else {
+				context.client().setScreen(new dev.psyda.surrogate.client.gui.ChoiceScreen(payload));
+			}
+		});
+		ClientPlayNetworking.registerGlobalReceiver(dev.psyda.surrogate.network.DocumentPayload.ID,
+				(payload, context) -> context.client().setScreen(new dev.psyda.surrogate.client.gui.DocumentScreen(payload)));
 		ClientPlayNetworking.registerGlobalReceiver(TerminalPayload.ID, (payload, context) -> context.client().setScreen(new TerminalScreen(payload.unit(), payload.survey())));
 		ClientPlayNetworking.registerGlobalReceiver(CrawlerPayloads.State.ID, (payload, context) -> CrawlerClientState.onState(payload));
 		ClientPlayNetworking.registerGlobalReceiver(CrawlerPayloads.Scan.ID, (payload, context) -> CrawlerClientState.onScan(payload));

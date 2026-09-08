@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "surrogate:block/wardrobe"
+    },
+    "facing=east": {
+      "model": "surrogate:block/wardrobe",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "surrogate:block/wardrobe",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "surrogate:block/wardrobe",
+      "y": 270
+    }
+  }
+}

@@ -1,27 +1,24 @@
 package dev.psyda.surrogate.block;
 
 import com.mojang.serialization.MapCodec;
+import net.minecraft.block.BedBlock;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ShapeContext;
-import net.minecraft.block.enums.BedPart;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.item.ItemStack;
-import net.minecraft.state.StateManager;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.entity.Entity;
 import net.minecraft.state.property.DirectionProperty;
 import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.Properties;
-import net.minecraft.util.BlockMirror;
-import net.minecraft.util.BlockRotation;
+import net.minecraft.util.DyeColor;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldAccess;
 import net.minecraft.world.WorldView;
+import net.minecraft.block.enums.BedPart;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
@@ -29,83 +26,54 @@ import java.util.Map;
 /**
  * A crew bunk: two blocks long, like the beds it stands beside. A one-block bunk read as a dog bed.
  *
- * <p>It is furniture, not a spawn point. Nobody sleeps through a night on Sallow in a room that needs its
- * scrubber watched, and the pod's own bed is the one that sets a spawn.
+ * <p>It is a real bed. It was furniture for a while — the shape of one with none of the behaviour — and the
+ * six of them in {@link dev.psyda.surrogate.world.ModuleTwo} are the whole point of the housewarming, so a
+ * room of things that cannot be slept in was the wrong answer twice over. Extending {@link BedBlock} is what
+ * buys that: the night, the spawn point, the head and foot pair, and {@code OCCUPIED}, which is the flag a
+ * survivor's brain will claim a bunk with once they are living up here. The model is the only thing kept
+ * back from vanilla — beds are drawn by a block entity renderer and this one is drawn from its own JSON, so
+ * the render type is forced back to {@code MODEL} and no block entity is made for it.
+ *
+ * <p>It does not bounce, either. A bed is a mattress and this is a steel frame with a pad on it.
  */
-public class BunkBlock extends Block {
-	public static final MapCodec<BunkBlock> CODEC = createCodec(BunkBlock::new);
+public class BunkBlock extends BedBlock {
+	public static final MapCodec<BedBlock> CODEC = createCodec(BunkBlock::new);
 	public static final DirectionProperty FACING = Properties.HORIZONTAL_FACING;
 	public static final EnumProperty<BedPart> PART = Properties.BED_PART;
 
 	private static final Map<Direction, VoxelShape> SHAPES = ShapeUtil.horizontal(Block.createCuboidShape(0, 0, 0, 16, 9, 16));
 
 	public BunkBlock(Settings settings) {
-		super(settings);
-		setDefaultState(getStateManager().getDefaultState().with(FACING, Direction.NORTH).with(PART, BedPart.FOOT));
+		// The dye colour only ever reaches the vanilla bed renderer, which never runs for this block.
+		super(DyeColor.LIGHT_GRAY, settings);
 	}
 
 	@Override
-	public MapCodec<BunkBlock> getCodec() {
+	public MapCodec<BedBlock> getCodec() {
 		return CODEC;
 	}
 
+	/** Drawn from {@code blockstates/bunk.json}, not by the bed renderer. */
 	@Override
-	protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-		builder.add(FACING, PART);
+	protected BlockRenderType getRenderType(BlockState state) {
+		return BlockRenderType.MODEL;
 	}
 
-	/** The head goes one step further along the way the player is facing; both halves need room. */
+	/**
+	 * None. {@link BedBlock} makes a {@code BedBlockEntity} for its colour, and {@code BlockEntityType.BED}
+	 * does not list this block, so one saved here would be dropped with a warning on every chunk load.
+	 */
 	@Nullable
 	@Override
-	public BlockState getPlacementState(ItemPlacementContext ctx) {
-		Direction facing = ctx.getHorizontalPlayerFacing();
-		BlockPos head = ctx.getBlockPos().offset(facing);
-		World world = ctx.getWorld();
-		if (!world.getBlockState(head).canReplace(ctx) || !world.getWorldBorder().contains(head)) return null;
-		return getDefaultState().with(FACING, facing).with(PART, BedPart.FOOT);
+	public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+		return null;
 	}
 
+	/** Bolted to the deck: both halves want something under them. */
 	@Override
-	public void onPlaced(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
-		super.onPlaced(world, pos, state, placer, stack);
-		if (world.isClient) return;
-		BlockPos head = pos.offset(state.get(FACING));
-		world.setBlockState(head, state.with(PART, BedPart.HEAD), Block.NOTIFY_ALL);
-	}
-
-	/** Breaking either half takes the other with it, the way a bed does. */
-	@Override
-	public BlockState getStateForNeighborUpdate(BlockState state, Direction direction, BlockState neighborState, WorldAccess world, BlockPos pos, BlockPos neighborPos) {
-		if (direction == partDirection(state)) {
-			return neighborState.isOf(this) && neighborState.get(PART) != state.get(PART)
-					? state : net.minecraft.block.Blocks.AIR.getDefaultState();
-		}
-		return state;
-	}
-
-	@Override
-	public BlockState onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
-		// Break the half the player did not hit, without dropping a second item for it.
-		if (!world.isClient && player.isCreative()) {
-			BlockPos other = pos.offset(partDirection(state));
-			BlockState otherState = world.getBlockState(other);
-			if (otherState.isOf(this) && otherState.get(PART) != state.get(PART)) {
-				world.setBlockState(other, net.minecraft.block.Blocks.AIR.getDefaultState(), Block.NOTIFY_ALL | Block.SKIP_DROPS);
-			}
-		}
-		return super.onBreak(world, pos, state, player);
-	}
-
-	@Override
-	public boolean canPlaceAt(BlockState state, WorldView world, BlockPos pos) {
+	protected boolean canPlaceAt(BlockState state, WorldView world, BlockPos pos) {
 		return world.getBlockState(pos.down()).isSideSolidFullSquare(world, pos.down(), Direction.UP)
 				|| world.getBlockState(pos.down()).isOf(this);
-	}
-
-	/** Which way the other half of this bunk lies. */
-	private static Direction partDirection(BlockState state) {
-		Direction facing = state.get(FACING);
-		return state.get(PART) == BedPart.FOOT ? facing : facing.getOpposite();
 	}
 
 	@Override
@@ -113,13 +81,15 @@ public class BunkBlock extends Block {
 		return SHAPES.get(state.get(FACING));
 	}
 
+	// ------------------------------------------------------------------ not a trampoline
+
 	@Override
-	protected BlockState rotate(BlockState state, BlockRotation rotation) {
-		return state.with(FACING, rotation.rotate(state.get(FACING)));
+	public void onLandedUpon(World world, BlockState state, BlockPos pos, Entity entity, float fallDistance) {
+		entity.handleFallDamage(fallDistance, 1.0f, world.getDamageSources().fall());
 	}
 
 	@Override
-	protected BlockState mirror(BlockState state, BlockMirror mirror) {
-		return state.rotate(mirror.getRotation(state.get(FACING)));
+	public void onEntityLand(BlockView world, Entity entity) {
+		entity.setVelocity(entity.getVelocity().multiply(1.0, 0.0, 1.0));
 	}
 }

@@ -115,6 +115,21 @@ public final class ModEntities {
 					.maxTrackingRange(10)
 					.build("lantern_slug"));
 
+	/** Something to sit on: invisible, weightless, alive only while somebody is on it. */
+	public static final EntityType<dev.psyda.surrogate.entity.SeatEntity> SEAT = Registry.register(Registries.ENTITY_TYPE, Surrogate.id("seat"),
+			EntityType.Builder.<dev.psyda.surrogate.entity.SeatEntity>create(dev.psyda.surrogate.entity.SeatEntity::new, SpawnGroup.MISC)
+					.dimensions(0.01f, 0.01f)
+					.maxTrackingRange(8)
+					.build("seat"));
+
+	/** A dart in flight, between a hand and the board. */
+	public static final EntityType<dev.psyda.surrogate.entity.DartEntity> DART = Registry.register(Registries.ENTITY_TYPE, Surrogate.id("dart"),
+			EntityType.Builder.<dev.psyda.surrogate.entity.DartEntity>create(dev.psyda.surrogate.entity.DartEntity::new, SpawnGroup.MISC)
+					.dimensions(0.25f, 0.25f)
+					.maxTrackingRange(4)
+					.trackingTickInterval(10)
+					.build("dart"));
+
 	/** Client-side cinematic camera. Never spawned in a world, never saved. */
 	public static final EntityType<CameraEntity> CAMERA = Registry.register(Registries.ENTITY_TYPE, Surrogate.id("camera"),
 			EntityType.Builder.create(CameraEntity::new, SpawnGroup.MISC)

@@ -1,0 +1,97 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "surrogate:block/dartboard",
+    "board": "surrogate:block/dartboard",
+    "dart": "surrogate:block/dart"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        2,
+        15
+      ],
+      "to": [
+        14,
+        14,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#board",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#board",
+          "uv": [
+            0,
+            7,
+            1,
+            8
+          ]
+        },
+        "east": {
+          "texture": "#board",
+          "uv": [
+            0,
+            7,
+            1,
+            8
+          ]
+        },
+        "west": {
+          "texture": "#board",
+          "uv": [
+            0,
+            7,
+            1,
+            8
+          ]
+        },
+        "up": {
+          "texture": "#board",
+          "uv": [
+            0,
+            7,
+            1,
+            8
+          ]
+        },
+        "down": {
+          "texture": "#board",
+          "uv": [
+            0,
+            7,
+            1,
+            8
+          ]
+        }
+      }
+    }
+  ],
+  "display": {
+    "gui": {
+      "rotation": [
+        30,
+        225,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    }
+  }
+}

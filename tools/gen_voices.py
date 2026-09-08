@@ -39,6 +39,10 @@ API = "https://api.elevenlabs.io/v1"
 SCRIPTS = {
     "transit": (os.path.join(JAVA, "transit", "Transit.java"), "cinematic.surrogate.transit."),
     "prologue": (os.path.join(JAVA, "prologue", "Prologue.java"), "cinematic.surrogate.prologue."),
+    # The housewarming is a Director like the other two and its lines were never on this list, so the whole
+    # scene has been text-only since it was written. The conference, the assay and the research runs are in
+    # the same position and are not here yet: they speak through their own helpers rather than say/radio.
+    "housewarming": (os.path.join(JAVA, "errand", "Housewarming.java"), "cinematic.surrogate.housewarming."),
 }
 CREW_LETTERS = {"C": "castellanos", "F": "ferreira", "T": "teague", "H": "halloran", "M": "marsh"}
 STYLE_OF = {"say": "speech", "line": "speech", "radio": "radio", "intercom": "intercom", "system": "system", "until": "speech", "nudge": "speech"}
@@ -49,6 +53,8 @@ FILTERS = {
     "intercom": "highpass=f=180,lowpass=f=5200,aecho=0.6:0.25:18:0.18,acompressor=threshold=-16dB:ratio=3,volume=2dB,alimiter=limit=0.9",
     "system": "highpass=f=90,acompressor=threshold=-14dB:ratio=2.5,alimiter=limit=0.95",
     "speech": "alimiter=limit=0.95",
+    # A television across a room: a small speaker, a little boxy, and a touch of the room it is in.
+    "television": "highpass=f=200,lowpass=f=4200,aecho=0.5:0.2:12:0.12,acompressor=threshold=-18dB:ratio=3,volume=2dB,alimiter=limit=0.9",
 }
 
 
@@ -91,7 +97,9 @@ def collect_lines(cast, lang):
                 if m:
                     style = m.group(1).lower()
             lines[prefix + line_key] = (who, style, lang.get(prefix + line_key, ""))
-        for who, line_key in re.findall(r"until\([^;]*?, ([A-Z]|Crew\.[A-Z]+), \"([a-z0-9_]+)\", \d+", src):
+        # The nudge delay may be a literal or a named constant; both are the same beat as far as this is
+        # concerned, and insisting on a digit quietly dropped every nudge written with a constant.
+        for who, line_key in re.findall(r"until\([^;]*?, ([A-Z]|Crew\.[A-Z]+), \"([a-z0-9_]+)\", \w+", src):
             who = letters.get(who, who.replace("Crew.", "").lower())
             lines.setdefault(prefix + line_key, (who, "radio" if name == "prologue" else "speech", lang.get(prefix + line_key, "")))
         for who, line_key in re.findall(r"rest\(\"([a-z0-9_]+)\", ([A-Z])\)", src):
@@ -256,6 +264,8 @@ def cmd_render(cast, lang, who_list, force, dry):
         if who_list and who not in who_list:
             continue
         spoken = speakable(text)
+        # A character can insist on a delivery: the television is a television whatever the line looks like.
+        style = spec.get("style", style)
         vk = voice_key(lang_key)
         out = os.path.join(VOICE_DIR, vk + ".ogg")
         print_ = fingerprint(spec["voice"], spec.get("model", model), settings_for(spec.get("model", model), spec["settings"], cast), spoken, style)

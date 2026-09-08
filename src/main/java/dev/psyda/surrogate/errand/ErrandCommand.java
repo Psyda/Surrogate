@@ -9,6 +9,7 @@ import dev.psyda.surrogate.fauna.Specimen;
 import dev.psyda.surrogate.registry.ModEntities;
 import dev.psyda.surrogate.world.HabitatState;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.decoration.ArmorStandEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
@@ -57,6 +58,7 @@ public final class ErrandCommand {
 				.then(CommandManager.literal("tp")
 						.then(CommandManager.argument("errand", StringArgumentType.word()).suggests(ERRANDS)
 								.executes(context -> teleport(context.getSource(), name(context)))))
+				.then(CommandManager.literal("lift").executes(context -> lift(context.getSource())))
 				.then(CommandManager.literal("done")
 						.then(CommandManager.argument("errand", StringArgumentType.word()).suggests(ERRANDS)
 								.executes(context -> done(context.getSource(), name(context)))))
@@ -146,6 +148,32 @@ public final class ErrandCommand {
 		BlockPos at = Errands.locate(server, errand);
 		source.sendFeedback(() -> Text.literal("Started " + errand.key()
 				+ (at == null ? "" : " at " + at.toShortString())), true);
+		return 1;
+	}
+
+	/**
+	 * Picks up the burial's body, or puts it down again. The errand's own way in is a right-click on an
+	 * armour stand while driving a chassis, which is two things a headless test cannot do and a nuisance
+	 * to set up by hand; the interesting half of that errand is everything after the lift.
+	 */
+	private static int lift(ServerCommandSource source) {
+		ServerPlayerEntity player = source.getPlayer();
+		if (player == null) {
+			source.sendError(Text.literal("Run this as a player."));
+			return 0;
+		}
+		ErrandState errands = ErrandState.get(source.getServer());
+		ArmorStandEntity stand = Errands.body(source.getServer(), errands);
+		if (stand == null) {
+			source.sendError(Text.literal("No body placed. Try: surrogate errand start burial"));
+			return 0;
+		}
+		boolean carried = !stand.hasVehicle();
+		if (!Errands.lift(player, errands, stand)) {
+			source.sendError(Text.literal("The burial is not open, or is already done."));
+			return 0;
+		}
+		source.sendFeedback(() -> Text.literal(carried ? "Lifted the body." : "Put the body down."), true);
 		return 1;
 	}
 
@@ -263,10 +291,10 @@ public final class ErrandCommand {
 			// the roof first, and say so rather than spawning one to die if there is not one.
 			if (type == ModEntities.LANTERN_SLUG) {
 				BlockPos roof = ceilingAbove(world, spot);
-				if (roof == null) {
-					source.sendError(Text.literal("No ceiling within 12 blocks. Stand in a cave, or build one."));
-					return made;
-				}
+				// The spot is scattered three blocks either way, so one of a batch can easily land under open
+				// sky while the rest are under a roof. Skip that one and try the next; giving up on the whole
+				// batch made a working command look broken whenever the dice went that way.
+				if (roof == null) continue;
 				mob.setNoGravity(true);
 				mob.refreshPositionAndAngles(roof.getX() + 0.5, roof.getY() + 0.55, roof.getZ() + 0.5,
 						world.random.nextFloat() * 360f, 0f);
@@ -277,6 +305,10 @@ public final class ErrandCommand {
 			if (world.spawnEntity(mob)) made++;
 		}
 		int spawned = made;
+		if (spawned == 0 && type == ModEntities.LANTERN_SLUG) {
+			source.sendError(Text.literal("No ceiling within 12 blocks. Stand in a cave, or build one."));
+			return 0;
+		}
 		source.sendFeedback(() -> Text.literal("Spawned " + spawned + " " + species + " at " + at.toShortString()), false);
 		return spawned;
 	}

@@ -51,7 +51,8 @@ public class CrewEntityRenderer extends MobEntityRenderer<CrewEntity, CrewEntity
 
 	@Override
 	protected boolean hasLabel(CrewEntity entity) {
-		// No floating names in a shot: the camera is somebody else's eye.
-		return !entity.isCollapsed() && !CinematicState.isCameraDetached() && super.hasLabel(entity);
+		// No floating names in a shot: the camera is somebody else's eye. And none over the flashback's
+		// people at all: a name tag over somebody who has no name was the largest thing on the screen.
+		return !entity.isCollapsed() && !entity.getCharacter().faceless() && !CinematicState.isCameraDetached() && super.hasLabel(entity);
 	}
 }

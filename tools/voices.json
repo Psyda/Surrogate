@@ -110,6 +110,36 @@
       "approved": true,
       "approval": "user 2026-09-05: v3 voices approved; Marsh recast from Roger (too flat) to Chris by Claude, replace if it stands out"
     },
+    "television": {
+      "name": "The evening news, on the set in the living room and over the bar. Measured, a little bored, through a small speaker.",
+      "voice": "onwK4e9ZLuTAKqWW03F9",
+      "model": "eleven_multilingual_v2",
+      "style": "television",
+      "settings": {
+        "stability": 0.6,
+        "similarity_boost": 0.75,
+        "style": 0.2,
+        "use_speaker_boost": true
+      },
+      "sample": "Departing Ceres orbit on Thursday with twelve surrogate pilots aboard, bound for the assay at Sallow.",
+      "approved": false,
+      "approval": "Claude 2026-09-07: premade newsreader voice (Daniel) for the television; swap if it stands out"
+    },
+    "advert": {
+      "name": "The advert after the news. Warm, confident, and selling four years of your life.",
+      "voice": "nPczCjzI2devNBz1zQrb",
+      "model": "eleven_multilingual_v2",
+      "style": "television",
+      "settings": {
+        "stability": 0.45,
+        "similarity_boost": 0.75,
+        "style": 0.5,
+        "use_speaker_boost": true
+      },
+      "sample": "Behind on payments? Four years on the surrogate programme clears every qualifying debt. Terms apply. Sleep well.",
+      "approved": false,
+      "approval": "Claude 2026-09-07: premade voice (Brian) for the advert; swap if it stands out"
+    },
     "okafor": {
       "name": "Dr. Ada Okafor, Greenhouse Station. Warm, wry, alone with tomatoes.",
       "voice": "cgSgspJ2msm6clMCkdW9",
@@ -132,6 +162,8 @@
   },
   "speakers": {
     "_comment": "Lang key prefixes to characters, for lines the scripts do not name a speaker for.",
+    "cinematic.surrogate.flashback.tv": "television",
+    "cinematic.surrogate.flashback.ad": "advert",
     "cinematic.surrogate.transit.ship": "ship",
     "cinematic.surrogate.prologue.pod": "ship",
     "survivor.surrogate.okafor": "okafor",

@@ -2453,6 +2453,16 @@ LANG.update({
 })
 print("acts four and five done")
 
+
+# ======================================================================================
+# The flashback: Earth, 2189 (tools/gen_house_data.py)
+# ======================================================================================
+# Models, block states, loot tables, tags and lang for the house, the office and the bar live in their own
+# module so they can be regenerated on their own while the rooms are being furnished.
+import gen_house_data  # noqa: E402
+
+LANG.update(gen_house_data.generate())
+
 lang_path = os.path.join(ASSETS, "lang", "en_us.json")
 with open(lang_path, encoding="utf-8") as f:
     lang = json.load(f)

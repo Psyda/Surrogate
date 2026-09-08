@@ -1,0 +1,96 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "surrogate:block/printout",
+    "paper": "surrogate:block/printout"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        0,
+        3
+      ],
+      "to": [
+        13,
+        1,
+        13
+      ],
+      "faces": {
+        "north": {
+          "texture": "#paper",
+          "uv": [
+            3,
+            2,
+            13,
+            3
+          ]
+        },
+        "south": {
+          "texture": "#paper",
+          "uv": [
+            3,
+            2,
+            13,
+            3
+          ]
+        },
+        "east": {
+          "texture": "#paper",
+          "uv": [
+            3,
+            2,
+            13,
+            3
+          ]
+        },
+        "west": {
+          "texture": "#paper",
+          "uv": [
+            3,
+            2,
+            13,
+            3
+          ]
+        },
+        "up": {
+          "texture": "#paper",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#paper",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    }
+  ],
+  "display": {
+    "gui": {
+      "rotation": [
+        30,
+        225,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    }
+  }
+}

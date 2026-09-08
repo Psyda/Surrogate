@@ -296,6 +296,201 @@
     ],
     "subtitle": "subtitles.surrogate.borer_lunge"
   },
+  "flashback.radio": {
+    "sounds": [
+      {
+        "name": "surrogate:flashback/radio"
+      }
+    ],
+    "subtitle": "subtitles.surrogate.flashback_radio"
+  },
+  "flashback.television": {
+    "sounds": [
+      {
+        "name": "surrogate:flashback/television"
+      }
+    ],
+    "subtitle": "subtitles.surrogate.flashback_television"
+  },
+  "flashback.car_pass": {
+    "sounds": [
+      {
+        "name": "surrogate:flashback/car_pass"
+      }
+    ],
+    "subtitle": "subtitles.surrogate.flashback_car_pass"
+  },
+  "flashback.car_horn": {
+    "sounds": [
+      {
+        "name": "surrogate:flashback/car_horn"
+      }
+    ],
+    "subtitle": "subtitles.surrogate.flashback_car_horn"
+  },
+  "flashback.creak": {
+    "sounds": [
+      {
+        "name": "surrogate:flashback/creak"
+      }
+    ],
+    "subtitle": "subtitles.surrogate.flashback_creak"
+  },
+  "flashback.footsteps_upstairs": {
+    "sounds": [
+      {
+        "name": "surrogate:flashback/footsteps_upstairs"
+      }
+    ],
+    "subtitle": "subtitles.surrogate.flashback_footsteps_upstairs"
+  },
+  "flashback.door_upstairs": {
+    "sounds": [
+      {
+        "name": "surrogate:flashback/door_upstairs"
+      }
+    ],
+    "subtitle": "subtitles.surrogate.flashback_door_upstairs"
+  },
+  "flashback.front_door": {
+    "sounds": [
+      {
+        "name": "surrogate:flashback/front_door"
+      }
+    ],
+    "subtitle": "subtitles.surrogate.flashback_front_door"
+  },
+  "flashback.tv_switch": {
+    "sounds": [
+      {
+        "name": "surrogate:flashback/tv_switch"
+      }
+    ],
+    "subtitle": "subtitles.surrogate.flashback_tv_switch"
+  },
+  "flashback.tv_credits": {
+    "sounds": [
+      {
+        "name": "surrogate:flashback/tv_credits",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.surrogate.flashback_tv_credits"
+  },
+  "flashback.news_sting": {
+    "sounds": [
+      {
+        "name": "surrogate:flashback/news_sting"
+      }
+    ],
+    "subtitle": "subtitles.surrogate.flashback_news_sting"
+  },
+  "flashback.dart_hit": {
+    "sounds": [
+      {
+        "name": "surrogate:flashback/dart_hit"
+      }
+    ],
+    "subtitle": "subtitles.surrogate.flashback_dart_hit"
+  },
+  "flashback.glass_clink": {
+    "sounds": [
+      {
+        "name": "surrogate:flashback/glass_clink"
+      }
+    ],
+    "subtitle": "subtitles.surrogate.flashback_glass_clink"
+  },
+  "flashback.pub_murmur": {
+    "sounds": [
+      {
+        "name": "surrogate:flashback/pub_murmur",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.surrogate.flashback_pub_murmur"
+  },
+  "flashback.fluorescent_hum": {
+    "sounds": [
+      {
+        "name": "surrogate:flashback/fluorescent_hum",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.surrogate.flashback_fluorescent_hum"
+  },
+  "flashback.lift_ding": {
+    "sounds": [
+      {
+        "name": "surrogate:flashback/lift_ding"
+      }
+    ],
+    "subtitle": "subtitles.surrogate.flashback_lift_ding"
+  },
+  "flashback.printer": {
+    "sounds": [
+      {
+        "name": "surrogate:flashback/printer"
+      }
+    ],
+    "subtitle": "subtitles.surrogate.flashback_printer"
+  },
+  "flashback.pizza_box": {
+    "sounds": [
+      {
+        "name": "surrogate:flashback/pizza_box"
+      }
+    ],
+    "subtitle": "subtitles.surrogate.flashback_pizza_box"
+  },
+  "flashback.light_switch": {
+    "sounds": [
+      {
+        "name": "surrogate:flashback/light_switch"
+      }
+    ],
+    "subtitle": "subtitles.surrogate.flashback_light_switch"
+  },
+  "voice.flashback.ad_1": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/flashback.ad_1",
+        "stream": true
+      }
+    ]
+  },
+  "voice.flashback.ad_2": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/flashback.ad_2",
+        "stream": true
+      }
+    ]
+  },
+  "voice.flashback.tv_1": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/flashback.tv_1",
+        "stream": true
+      }
+    ]
+  },
+  "voice.flashback.tv_2": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/flashback.tv_2",
+        "stream": true
+      }
+    ]
+  },
+  "voice.flashback.tv_3": {
+    "sounds": [
+      {
+        "name": "surrogate:voice/flashback.tv_3",
+        "stream": true
+      }
+    ]
+  },
   "voice.halloran.radio.1": {
     "sounds": [
       {

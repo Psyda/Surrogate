@@ -19,6 +19,10 @@ public final class ModComponents {
 	public static final ComponentType<NbtCompound> ROBOT_DATA = register("robot_data",
 			ComponentType.<NbtCompound>builder().codec(NbtCompound.CODEC).packetCodec(PacketCodecs.NBT_COMPOUND).build());
 
+	/** A whole saved animal, in a dog carrier that has been picked up. */
+	public static final ComponentType<NbtCompound> PET_DATA = register("pet_data",
+			ComponentType.<NbtCompound>builder().codec(NbtCompound.CODEC).packetCodec(PacketCodecs.NBT_COMPOUND).build());
+
 	/** Robot targeted by an uplink card. */
 	public static final ComponentType<UplinkTarget> UPLINK_TARGET = register("uplink_target",
 			ComponentType.<UplinkTarget>builder().codec(UplinkTarget.CODEC).packetCodec(UplinkTarget.PACKET_CODEC).build());

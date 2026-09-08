@@ -137,29 +137,171 @@ def check_errands(rcon):
     # The housewarming is a scene rather than a flag, so it has to be watched rather than poked. Fast mode
     # quarters every wait in it; the drop still takes its own hundred and ten ticks because that is a
     # particle column and not a script wait.
+    #
+    # Halfway through it stops and waits for the player to come outside, which is the point of the scene —
+    # the two visitors have suits and the player does not — so the test has to actually go out to the pad.
+    # A fake player will not cycle an airlock, so he is put on the pad instead; what is being checked is that
+    # the scene notices and carries on, not that Carpet can work a door.
+    home = rows.get("housewarming", {}).get("where", "")
+    m = re.match(r"(-?\d+), *(-?\d+), *(-?\d+)", home)
+    if not m:
+        check("housewarming builds module two", False, f"no habitat position in {home!r}")
+        return
+    hx, hy, hz = (int(m.group(1)), int(m.group(2)), int(m.group(3)))
+
     rcon.cmd(AS + "surrogate prologue fast")
     rcon.cmd(AS + "surrogate errand start housewarming")
     start = time.time()
     state = ""
-    while time.time() - start < 180:
+    outside = False
+    while time.time() - start < 240:
         time.sleep(5)
+        # Once they are done talking, go and stand with them. Sent more than once because the fake player
+        # drifts and the scene only asks the question while it is on that beat.
+        if time.time() - start > 20:
+            rcon.cmd(f"{OW}tp Steve {hx + 1.5} {hy + 1} {hz + 10.5}")
+            outside = True
         rows, _ = errand_rows(rcon)
         state = rows.get("housewarming", {}).get("state", "missing")
         if state == "done":
             break
+    check("housewarming waits for the player outside", outside)
     check("housewarming finishes", state == "done", f"{state} after {int(time.time() - start)}s")
 
     # And it has to have left a room behind: the errand is the module, not the conversation.
-    home = rows.get("housewarming", {}).get("where", "")
-    m = re.match(r"(-?\d+), *(-?\d+), *(-?\d+)", home)
-    if m:
-        hx, hy, hz = (int(m.group(1)), int(m.group(2)), int(m.group(3)))
-        out = rcon.cmd(f"{OW}execute if block {hx + 5} {hy + 4} {hz - 4} surrogate:hull_plating")
-        check("housewarming builds module two", "Test passed" in out, out[:90])
-        bunk = rcon.cmd(f"{OW}execute if block {hx + 6} {hy + 1} {hz - 1} surrogate:bunk")
-        check("module two has bunks in it", "Test passed" in bunk, bunk[:90])
+    out = rcon.cmd(f"{OW}execute if block {hx + 5} {hy + 4} {hz - 4} surrogate:hull_plating")
+    check("housewarming builds module two", "Test passed" in out, out[:90])
+    bunk = rcon.cmd(f"{OW}execute if block {hx + 6} {hy + 1} {hz - 1} surrogate:bunk")
+    check("module two has bunks in it", "Test passed" in bunk, bunk[:90])
+    # The room the errand is for has to be a room: a scrubber of its own, a lid over every lamp, and a way
+    # in from the pod that is not through the furniture. All three were broken at once and all three read
+    # as the same symptom, which is a bunkroom that poisons whoever sleeps in it.
+    unit = rcon.cmd(f"{OW}execute if block {hx + 8} {hy + 1} {hz - 4} surrogate:life_support")
+    check("module two has its own scrubber", "Test passed" in unit, unit[:90])
+    lid = rcon.cmd(f"{OW}execute if block {hx + 8} {hy + 4} {hz - 2} surrogate:hull_plating")
+    check("module two is capped over the lamps", "Test passed" in lid, lid[:90])
+    lamp = rcon.cmd(f"{OW}execute if block {hx + 8} {hy + 3} {hz - 2} surrogate:ceiling_lamp")
+    check("module two lamps hang under the cap", "Test passed" in lamp, lamp[:90])
+    # The one that actually proves it. A scrubber only says sealed when its own flood fill came back without
+    # reaching the sky, so this is the atmosphere code's opinion of the room rather than the test's opinion
+    # of the blueprint — and the room used to fail it three times over, once per lamp. Scans are on a phase
+    # offset by position, so give both units a couple of intervals to get round to it.
+    time.sleep(12)
+    for name, ox, oz in (("module two", 8, -4), ("the pod", 0, -4)):
+        seal = rcon.cmd(f"{OW}execute if block {hx + ox} {hy + 1} {hz + oz} surrogate:life_support[sealed=true]")
+        check(f"{name} holds pressure", "Test passed" in seal, seal[:110])
+    for cell, y in (("lower", 1), ("upper", 2)):
+        way = rcon.cmd(f"{OW}execute if block {hx + 3} {hy + y} {hz - 3} air")
+        check(f"doorway into module two is clear ({cell})", "Test passed" in way, way[:90])
+
+    # Six bunks are the whole payoff of the errand, and for a while they were furniture: a bed-shaped block
+    # that could not be slept in. Stand on one, look down, use it, and ask the block whether it is occupied —
+    # which only a real bed tracks, and only when somebody is actually asleep in it.
+    bunk_x, bunk_y, bunk_z = hx + 6, hy + 1, hz - 1
+    rcon.cmd(f"{OW}time set midnight")
+    # Three things about driving a fake player at a block, all of which cost a run here:
+    #   * `look at <x y z>` is the only aim Carpet takes. `look down` and the cardinals return nothing and
+    #     leave him pointed wherever he was, so the use after it hits air.
+    #   * Aim from above. A bunk is nine sixteenths tall, so a ray from a standing eye two blocks away sails
+    #     over the top of it and lands on the wall behind.
+    #   * Block centres are arithmetic, never f"{x}.5" — the centre of block -202 is -201.5, so the string
+    #     form names the block next door everywhere west or north of the origin, which is most of this map.
+    # Each of the three reads exactly like the mod refusing the interaction.
+    rcon.cmd(f"{OW}tp Steve {bunk_x + 0.5} {bunk_y + 1} {bunk_z + 0.5}")
+    time.sleep(1)
+    rcon.cmd(f"{OW}player Steve look at {bunk_x + 0.5} {bunk_y + 0.2} {bunk_z + 0.5}")
+    time.sleep(1)
+    rcon.cmd(f"{OW}player Steve use once")
+    time.sleep(2)
+    slept = rcon.cmd(f"{OW}execute if block {bunk_x} {bunk_y} {bunk_z} surrogate:bunk[occupied=true]")
+    check("a bunk can be slept in", "Test passed" in slept, slept[:110])
+    rcon.cmd(f"{OW}time set day")
+    time.sleep(1)
+
+
+def check_burial(rcon):
+    """The one errand with an action of its own: lift the body, carry it away, raise a marker over it.
+
+    Driven the long way rather than through `errand done`, because the two things that were wrong with it
+    were both in that path — the marker was taken out of the hand and never put anywhere, and any click
+    counted whether or not there was ground under it. A flag test would have passed the whole time.
+
+    Every selector here goes through AS. An `execute in <dimension>` keeps the *source's* position, and the
+    source is RCON, which sits at world spawn: a `distance=..24` written the obvious way measures from there
+    and matches nothing, a thousand blocks from the thing it is looking for.
+    """
+    rows, _ = errand_rows(rcon)
+    where = rows.get("burial", {}).get("where", "")
+    m = re.match(r"(-?\d+), *(-?\d+), *(-?\d+)", where)
+    if not m:
+        check("burial: body placed in the world", False, where)
+        return
+    bx, bz = int(m.group(1)), int(m.group(3))
+    # Reyes is a long way off, so her chunks have to be held open before anything is placed or read there.
+    rcon.cmd(f"{OW}forceload add {bx - 48} {bz - 48} {bx + 48} {bz + 48}")
+    time.sleep(3)
+    # Re-open it now the ground is real: the first placement happened in an unloaded chunk and put the body
+    # at the world bottom, which is a fair thing for a test to notice and a bad thing to then bury.
+    rcon.cmd(AS + "surrogate errand start burial")
+    time.sleep(3)
+    rows, _ = errand_rows(rcon)
+    where = rows.get("burial", {}).get("where", "")
+    m = re.match(r"(-?\d+), *(-?\d+), *(-?\d+)", where)
+    by = int(m.group(2)) if m else 0
+    check("burial: body is on the surface", by > 0, f"y={by}")
+
+    rcon.cmd(AS + "surrogate errand tp burial")
+    time.sleep(3)
+    if not ensure_player(rcon):
+        check("burial: player at the body", False)
+        rcon.cmd(f"{OW}forceload remove {bx - 48} {bz - 48} {bx + 48} {bz + 48}")
+        return
+    pos = player_pos(rcon)
+    gy = int(pos[1])
+    # Somewhere that is not her doorstep, on ground the test laid itself so the click cannot land on a slope.
+    gx, gz = bx + 24, bz + 24
+    # Three courses thick, because the grave block is ash and ash falls: one course over open terrain drops
+    # the whole thing out from under the marker the moment it is laid.
+    rcon.cmd(f"{OW}fill {gx - 2} {gy - 3} {gz - 2} {gx + 2} {gy - 1} {gz + 2} surrogate:caustic_sandstone")
+    rcon.cmd(f"{OW}fill {gx - 2} {gy} {gz - 2} {gx + 2} {gy + 2} {gz + 2} air")
+    # Body and player over to it, in that order, so nothing has to survive being teleported while ridden.
+    rcon.cmd(AS + f"tp @e[type=minecraft:armor_stand,limit=1,sort=nearest,distance=..24] {gx + 0.5} {gy} {gz + 0.5}")
+    rcon.cmd(f"{OW}tp Steve {gx + 0.5} {gy} {gz + 0.5}")
+    time.sleep(2)
+    # Lift him. Through `errand lift`, which runs the errand's own code: the in-game way in is a right-click
+    # on an armour stand from a chassis, and Carpet's fake player cannot land a click on an entity.
+    lifted = rcon.cmd(AS + "surrogate errand lift")
+    time.sleep(1)
+    check("burial: the body can be lifted", "Lifted" in lifted, lifted[:110] or "(no reply)")
+
+    rcon.cmd(f"{OW}item replace entity Steve weapon.mainhand with surrogate:survey_marker")
+    time.sleep(1)
+    rcon.cmd(f"{OW}player Steve look at {gx + 0.5} {gy - 0.5} {gz + 0.5}")
+    time.sleep(1)
+    rcon.cmd(f"{OW}player Steve use once")
+    time.sleep(2)
+
+    # Found rather than assumed. Where the marker lands depends on which face the fake player's ray struck,
+    # and being a block out is not the errand getting it wrong — what matters is that a marker went up and
+    # that the ground directly under it was opened.
+    found = None
+    for y in range(gy + 1, gy - 3, -1):
+        if "Test passed" in rcon.cmd(f"{OW}execute if block {gx} {y} {gz} surrogate:survey_marker"):
+            found = y
+            break
+    check("burial: the marker is raised", found is not None,
+          f"standing at {gx}, {found}, {gz}" if found is not None else f"nothing in the column at {gx}, {gz}")
+    if found is not None:
+        grave = rcon.cmd(f"{OW}execute if block {gx} {found - 1} {gz} surrogate:ash")
+        check("burial: the ground is opened under it", "Test passed" in grave, grave[:110])
     else:
-        check("housewarming builds module two", False, f"no habitat position in {home!r}")
+        check("burial: the ground is opened under it", False, "no marker to look under")
+    gone = rcon.cmd(AS + "execute if entity @e[type=minecraft:armor_stand,distance=..8]")
+    check("burial: the body goes into it", "Test passed" not in gone, gone[:110])
+    rows, _ = errand_rows(rcon)
+    check("burial: finishes on the marker", rows.get("burial", {}).get("state") == "done",
+          rows.get("burial", {}).get("state", "missing"))
+    rcon.cmd(f"{OW}forceload remove {bx - 48} {bz - 48} {bx + 48} {bz + 48}")
 
 
 def check_teleports(rcon):
@@ -204,8 +346,11 @@ def check_fauna(rcon):
     pos = player_pos(rcon)
     x, y, z = int(pos[0]), int(pos[1]), int(pos[2])
     # A slug hangs from a ceiling and one with no ceiling lets go and dies within a second, which is the
-    # design. So it gets a roof three blocks up before it is asked for.
-    rcon.cmd(f"{OW}fill {x - 3} {y + 3} {z - 3} {x + 3} {y + 3} {z + 3} surrogate:hull_plating")
+    # design. So it gets a roof three blocks up before it is asked for. Wider than it looks like it needs to
+    # be: the spawn scatters each one up to three blocks off the player, and the player has usually drifted a
+    # block or two from where this was read, so a seven-wide roof leaves spots outside it.
+    rcon.cmd(f"{OW}fill {x - 8} {y + 3} {z - 8} {x + 8} {y + 3} {z + 8} surrogate:hull_plating")
+    rcon.cmd(f"{OW}fill {x - 8} {y + 1} {z - 8} {x + 8} {y + 2} {z + 8} air")
     time.sleep(1)
     for kind in SPECIES:
         before = entity_count(rcon, kind)
@@ -288,7 +433,10 @@ def main():
     if stale:
         print("a dev server is still running; refusing to start another:", stale)
         return 1
-    prepare_run_dir({"transit": False, "prologue": False})
+    # The flashback is off for this run. It fires on sleeping within two days of landing, which is
+    # exactly what the bunk check below does, and a scene that teleports the player into another
+    # dimension halfway through would take every check after it with it. Its own test covers it.
+    prepare_run_dir({"transit": False, "prologue": False, "flashback": False})
     log = open(LOG, "w", encoding="utf-8")
     wrapper = "gradlew.bat" if os.name == "nt" else "./gradlew"
     proc = subprocess.Popen([os.path.join(ROOT, wrapper), "runServer", "-PwithCarpet", "--console=plain"],
@@ -313,6 +461,8 @@ def main():
         check_errands(rcon)
         print("---- teleports ----")
         check_teleports(rcon)
+        print("---- burial ----")
+        check_burial(rcon)
         print("---- fauna ----")
         check_fauna(rcon)
         print("---- survey network ----")

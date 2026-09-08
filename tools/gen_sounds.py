@@ -633,6 +633,63 @@ EVENTS.update({
 })
 
 
+# --------------------------------------------------------------------------------------
+# The flashback: two things left switched on in an empty room (2026-09-07)
+# --------------------------------------------------------------------------------------
+def flashback_radio():
+    """Eight bars of something cheerful through a four inch speaker.
+
+    Band limited hard at both ends and given a little valve warmth, because the point is not the tune — it is
+    that a tune is coming out of an object, in a room, on a planet where nothing has played music in four
+    hundred days."""
+    notes = [392.0, 440.0, 494.0, 587.0, 494.0, 440.0, 392.0, 330.0]
+    beat = 0.36
+    out = np.zeros(seconds(beat * len(notes)))
+    for i, freq in enumerate(notes):
+        n = seconds(beat * 0.92)
+        start = seconds(beat * i)
+        tone = 0.6 * sine(freq, n) + 0.25 * sine(freq * 2.0, n) + 0.12 * sine(freq * 3.0, n)
+        bass = 0.3 * sine(freq / 2.0, n)
+        out[start:start + n] += (tone + bass) * env(n, 0.02, 0.22)
+    speaker = bandpass(out, 260, 3400)
+    hiss = 0.05 * bandpass(white(len(out)), 800, 5000)
+    return (speaker + hiss) * 0.8
+
+
+def flashback_television():
+    """Somebody else's evening, two rooms away: voices with the words filed off, and a laugh at the end."""
+    n = seconds(3.0)
+    # Speech is a buzz at about a hundred hertz with a slow envelope on it. Through a wall it is only ever
+    # the envelope that survives, so that is all this is.
+    buzz = 0.5 * sine(108.0, n) + 0.3 * sine(216.0, n) + 0.2 * bandpass(white(n), 300, 1400)
+    cadence = lowpass(np.abs(white(n)), 6.0)
+    cadence = cadence / (np.max(cadence) + 1e-9)
+    speech = buzz * (0.15 + 0.85 * cadence)
+    laugh = np.zeros(n)
+    tail = seconds(0.9)
+    burst = bandpass(white(tail), 400, 2600) * lowpass(np.abs(white(tail)), 14.0) * 6.0
+    laugh[n - tail:] = burst
+    return lowpass(mix(speech, laugh * 0.5), 2600) * env(n, 0.2, 0.6)
+
+
+EFFECTS.update({
+    "flashback/radio": flashback_radio,
+    "flashback/television": flashback_television,
+})
+EVENTS.update({
+    "flashback.radio": ("flashback/radio", "subtitles.surrogate.flashback_radio", False),
+    "flashback.television": ("flashback/television", "subtitles.surrogate.flashback_television", False),
+})
+# The rest of the house, the office and the bar are recordings rather than synthesis: tools/gen_sfx.py
+# writes them with ElevenLabs, and this only lists them. The long loops stream.
+for _name, _stream in (("car_pass", False), ("car_horn", False), ("creak", False), ("footsteps_upstairs", False),
+                       ("door_upstairs", False), ("front_door", False), ("tv_switch", False), ("tv_credits", True),
+                       ("news_sting", False), ("dart_hit", False), ("glass_clink", False), ("pub_murmur", True),
+                       ("fluorescent_hum", True), ("lift_ding", False), ("printer", False), ("pizza_box", False),
+                       ("light_switch", False)):
+    EVENTS["flashback." + _name] = ("flashback/" + _name, "subtitles.surrogate.flashback_" + _name, _stream)
+
+
 def main():
     if shutil.which("ffmpeg") is None:
         print("ffmpeg not found on PATH", file=sys.stderr)

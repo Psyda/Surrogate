@@ -93,6 +93,10 @@ public final class CinematicState {
 	private static Perspective savedPerspective;
 
 	public static int skipHeld;
+	/** Whether the advance key was already down last tick, so a held key does not eat a whole conversation. */
+	private static boolean advanceHeld;
+	/** Whether the line on screen said it could be pressed through. */
+	private static boolean lineAdvance = true;
 
 	private CinematicState() {
 	}
@@ -113,6 +117,11 @@ public final class CinematicState {
 
 	public static boolean hasLine() {
 		return lineActive;
+	}
+
+	/** Whether the line on screen may be pressed through. False for scenes that are only their lines. */
+	public static boolean canAdvance() {
+		return lineActive && lineAdvance;
 	}
 
 	/** How far the call grid has faded in, 0 to 1. Zero when there is no call and nothing to draw. */
@@ -206,6 +215,7 @@ public final class CinematicState {
 		lineTicks = Math.max(1, payload.ticks());
 		lineElapsed = 0;
 		lineActive = true;
+		lineAdvance = payload.advance();
 		if (!textKey.isEmpty() && lineStyle != CinematicPayloads.TITLE) {
 			log.addLast(new LogLine(speakerKey, textKey, lineArg, lineStyle));
 			while (log.size() > LOG_CAP) log.removeFirst();
@@ -341,6 +351,16 @@ public final class CinematicState {
 		} else {
 			skipHeld = 0;
 		}
+		// Out of a shot the player has their hands, so the skip key is theirs to jump with and the offer is a
+		// smaller one: press on through the line you have finished reading. Edge triggered, because a held
+		// key would run the length of a conversation in a second and a half.
+		boolean advance = player != null && !locked && canAdvance() && client.currentScreen == null
+				&& client.options.sneakKey.isPressed();
+		if (advance && !advanceHeld) {
+			lineActive = false;
+			ClientPlayNetworking.send(new CinematicPayloads.Advance());
+		}
+		advanceHeld = advance;
 		// Key presses buffered while locked would all fire at once on release.
 		if (wasLocked && !locked) KeyBinding.unpressAll();
 		wasLocked = locked;
@@ -379,5 +399,6 @@ public final class CinematicState {
 		eyeSnapPending = false;
 		savedPerspective = null;
 		skipHeld = 0;
+		advanceHeld = false;
 	}
 }

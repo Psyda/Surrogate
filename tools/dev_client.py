@@ -21,15 +21,21 @@ RUN = os.path.join(ROOT, "run")
 
 
 def keep_running_unfocused():
-    """The game pauses when it loses focus, which freezes a scene that is being watched from another window."""
+    """The game pauses when it loses focus, which freezes a scene that is being watched from another window.
+
+    Written back with explicit LF endings and no translation layer. Joining on os.linesep and writing in text
+    mode wrote CR LF and then translated the LF again, so every run turned each CR LF into CR CR LF, which
+    reads back as two lines. The file doubled its blank lines on each launch until the game stopped
+    understanding it. The blank filter below repairs a file already in that state."""
     options = os.path.join(RUN, "options.txt")
     if not os.path.exists(options):
         return
     with open(options, encoding="utf-8") as f:
-        lines = [line for line in f.read().splitlines() if not line.startswith("pauseOnLostFocus:")]
+        lines = [line for line in f.read().splitlines()
+                 if line.strip() and not line.startswith("pauseOnLostFocus:")]
     lines.append("pauseOnLostFocus:false")
-    with open(options, "w", encoding="utf-8") as f:
-        f.write(os.linesep.join(lines) + os.linesep)
+    with open(options, "w", encoding="utf-8", newline="\n") as f:
+        f.write("\n".join(lines) + "\n")
 
 
 def main():

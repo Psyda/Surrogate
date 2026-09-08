@@ -26,6 +26,10 @@ public final class ModNetworking {
 		PayloadTypeRegistry.playS2C().register(SurveyPayloads.Survey.ID, SurveyPayloads.Survey.CODEC);
 		PayloadTypeRegistry.playS2C().register(HazardPayload.ID, HazardPayload.CODEC);
 		PayloadTypeRegistry.playC2S().register(CinematicPayloads.Skip.ID, CinematicPayloads.Skip.CODEC);
+		PayloadTypeRegistry.playC2S().register(CinematicPayloads.Advance.ID, CinematicPayloads.Advance.CODEC);
+		PayloadTypeRegistry.playS2C().register(CinematicPayloads.Choice.ID, CinematicPayloads.Choice.CODEC);
+		PayloadTypeRegistry.playS2C().register(DocumentPayload.ID, DocumentPayload.CODEC);
+		PayloadTypeRegistry.playC2S().register(CinematicPayloads.Choice.Picked.ID, CinematicPayloads.Choice.Picked.CODEC);
 		PayloadTypeRegistry.playS2C().register(CrawlerPayloads.State.ID, CrawlerPayloads.State.CODEC);
 		PayloadTypeRegistry.playS2C().register(CrawlerPayloads.Scan.ID, CrawlerPayloads.Scan.CODEC);
 		PayloadTypeRegistry.playS2C().register(CrawlerPayloads.Camera.ID, CrawlerPayloads.Camera.CODEC);
@@ -45,6 +49,9 @@ public final class ModNetworking {
 			}
 		});
 		ServerPlayNetworking.registerGlobalReceiver(CinematicPayloads.Skip.ID, (payload, context) -> Director.skipRequested(context.player()));
+		ServerPlayNetworking.registerGlobalReceiver(CinematicPayloads.Advance.ID, (payload, context) -> Director.advanceRequested(context.player()));
+		ServerPlayNetworking.registerGlobalReceiver(CinematicPayloads.Choice.Picked.ID,
+				(payload, context) -> Director.choicePicked(context.player(), payload.index()));
 	}
 
 	private ModNetworking() {

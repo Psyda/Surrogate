@@ -1,0 +1,30 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:black_concrete",
+    "minecraft:polished_deepslate",
+    "minecraft:polished_blackstone_bricks",
+    "minecraft:oak_planks",
+    "minecraft:dark_oak_planks",
+    "minecraft:white_wool",
+    "minecraft:light_gray_concrete",
+    "minecraft:gray_concrete",
+    "minecraft:white_concrete",
+    "minecraft:glass_pane",
+    "minecraft:red_stained_glass",
+    "minecraft:oak_stairs",
+    "minecraft:oak_fence",
+    "minecraft:oak_door",
+    "minecraft:spruce_door",
+    "minecraft:dark_oak_door",
+    "minecraft:iron_door",
+    "minecraft:oak_wall_sign",
+    "minecraft:soul_lantern",
+    "minecraft:lantern",
+    "minecraft:sea_lantern",
+    "minecraft:shroomlight",
+    "minecraft:ochre_froglight",
+    "surrogate:wallpaper_stripe",
+    "surrogate:wallpaper_floral"
+  ]
+}

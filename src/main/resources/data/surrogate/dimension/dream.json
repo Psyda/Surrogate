@@ -1,0 +1,17 @@
+{
+  "type": "surrogate:dream",
+  "generator": {
+    "type": "minecraft:flat",
+    "settings": {
+      "biome": "surrogate:dream",
+      "layers": [
+        {
+          "block": "minecraft:air",
+          "height": 1
+        }
+      ],
+      "features": false,
+      "lakes": false
+    }
+  }
+}

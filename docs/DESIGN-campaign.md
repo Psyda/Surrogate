@@ -64,6 +64,14 @@ and Reyes' shelters are built from the belt kit — sloped ceramic roof, gutters
 bare metal — because they live where it rains. Novak has no shelter at all: he is in a wrecked crawler on the
 floor of the Rift, and act five is the only thing that reaches him.
 
+Every shelter has a **porch**: a two-cell airlock chamber bolted onto the south wall, inner door in the wall
+and outer door in the far face. It is not decoration. Both of the shelters the player is asked to repair are
+damaged in their *outer* wall — Sorensen's one missing plate, Reyes' whole eaten frame — and a hole in a wall
+is an untight block, so with a single door those two were standing in open air on a planet that empties a
+lung in ten seconds, radioing about it. In a porch the inner door holds, they are alive, and what is broken
+is the lock: it will not cycle against open sky. That is the actual reason neither of them has walked out,
+and it is why plating the frame from outside is the thing that frees them.
+
 ## Act I: the Neighbours
 
 Two people within a chassis walk, three research runs, and the errands that fill the days between them. This
@@ -190,9 +198,9 @@ The three rescues, in the order the world allows:
    cannot pass a lava channel. Cut it upstream, drop the wall, let it pond, and bridge the crust. He hands
    over the cladding pattern through the port before he will even discuss boarding, because he wants you to
    get home.
-2. **Reyes, behind her own airlock.** Clinic Nine's outer door blew in a storm and the frame is
-   `breached_plating` from top to bottom. Plate it from outside, cycle it, and she walks aboard. She is a
-   doctor and she asks about Novak before she asks about herself.
+2. **Reyes, behind her own airlock.** Clinic Nine's outer door blew in a storm and its frame — the far face
+   of the porch, not her own wall — is `breached_plating` from top to bottom. Plate it from outside, cycle
+   it, and she walks aboard. She is a doctor and she asks about Novak before she asks about herself.
 3. **Novak, at the bottom of the Rift.** His crawler went over the edge eleven days ago. The wreck is under
    an overhang on the chasm floor, in acid mist that takes a chassis apart in seconds and that a hull cannot
    reach. So the player does it **as a body**: park as close as the ledges allow, put on a **rebreather**,
@@ -340,6 +348,11 @@ and `Errands` are the whole of it; the design note for the animals two of them n
 [DESIGN-fauna.md](DESIGN-fauna.md), and for the reward tier three of them unlock,
 [DESIGN-survey.md](DESIGN-survey.md).
 
+There is one more optional thing that is not an errand and is not on this table, because it does not ask for
+anything and cannot be failed: **the flashback**, on the first or second night the player sleeps down here.
+It is the only scene the player authors rather than watches, and the only one where something they made
+crosses back out of a cutscene into the world. [DESIGN-flashback.md](DESIGN-flashback.md).
+
 Nothing here asks the player to press accept. Each one is offered on the radio when its gate opens and
 finishes when the world says it has, which means a player who wandered into finishing one without noticing
 still gets the credit, because they did the thing.
@@ -351,7 +364,7 @@ still gets the credit, because they did the thing.
 | **Okafor's Survey** | Mid | Okafor | A reading of all eight subjects on the table |
 | **Ballast** | Mid | — | The cat has gone. Carry her home. |
 | **Tanaka's Cable** | Mid | Tanaka | A vent has opened under her power run; cap it with a geothermal tap |
-| **Outside Clinic Nine** | Late | Reyes | Carry the body somewhere that is not her window and raise a marker |
+| **Outside Clinic Nine** | Late | Reyes | Carry the body somewhere that is not her window and raise a marker over it |
 | **Ceramic Row** | Late | Brandt | Three corroded machines in the belt, put back with plates |
 | **Brandt's Ark** | Late | Brandt | One of each living species, alive, in a crate |
 
@@ -360,18 +373,25 @@ still gets the credit, because they did the thing.
 The one that pays for being neighbourly, and the only errand whose gate is another errand rather than an act.
 
 Help Okafor and Sorensen both. The next time you are inside your own base you are told you are further past
-tired than you noticed. Sleep. You wake up with two chassis standing in your pod, because neither of them has
-a body that can walk here and both of them wanted to say thank you in person, near enough.
+tired than you noticed. Sleep. You wake up with the two of them standing in your pod, in person, helmets
+under their arms — they drove over and they let themselves in, because your airlock has been keyed to both of
+them since the day you got the port working.
 
 They have been talking about you. What they have decided is that the orbital platform still has your second
 module in a rack with your habitat's number stencilled on it, that it has been there four hundred days,
 that nobody will send it down for one signature — and that three registered sites requesting the same
 manifest line is a different question entirely.
 
-Then everyone goes outside and watches it come down. `ModuleTwo` builds on the plated slab east of the pod
-that has been empty since the prologue: six bunks, a table, lockers, and a door cut through the pod's east
-wall. That slab has been sitting there the whole game with Halloran's draft of what it was meant to be on the
-terminal beside it.
+Then they walk out and wait on the pad, and **the scene stops until you follow them**. They can cross fifty
+metres of open ground because they own suits and you do not; the only way you get out there is the chair and
+the chassis, which is the thing the whole game is about. It is the one errand that makes the player do it,
+and it costs ninety seconds. If they are left standing out there long enough they give up on the audience and
+tell you about it over the radio afterwards; the module lands either way.
+
+`ModuleTwo` builds on the plated slab east of the pod that has been empty since the prologue: six bunks, a
+table, lockers, a scrubber and collectors of its own, and a door cut through the pod's east wall. That slab
+has been sitting there the whole game with Halloran's draft of what it was meant to be on the terminal
+beside it.
 
 Six bunks is not a coincidence. Act five brings home six people.
 

@@ -1,0 +1,96 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "surrogate:block/wall_clock",
+    "c": "surrogate:block/wall_clock"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        3,
+        15
+      ],
+      "to": [
+        13,
+        13,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#c",
+          "uv": [
+            2,
+            2,
+            14,
+            14
+          ]
+        },
+        "south": {
+          "texture": "#c",
+          "uv": [
+            2,
+            8,
+            3,
+            9
+          ]
+        },
+        "east": {
+          "texture": "#c",
+          "uv": [
+            2,
+            8,
+            3,
+            9
+          ]
+        },
+        "west": {
+          "texture": "#c",
+          "uv": [
+            2,
+            8,
+            3,
+            9
+          ]
+        },
+        "up": {
+          "texture": "#c",
+          "uv": [
+            2,
+            8,
+            3,
+            9
+          ]
+        },
+        "down": {
+          "texture": "#c",
+          "uv": [
+            2,
+            8,
+            3,
+            9
+          ]
+        }
+      }
+    }
+  ],
+  "display": {
+    "gui": {
+      "rotation": [
+        30,
+        225,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    }
+  }
+}

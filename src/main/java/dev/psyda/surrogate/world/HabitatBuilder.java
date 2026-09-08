@@ -37,6 +37,7 @@ import net.minecraft.block.enums.DoorHinge;
 import net.minecraft.block.enums.DoubleBlockHalf;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.WrittenBookContentComponent;
+import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -46,6 +47,7 @@ import net.minecraft.text.RawFilteredPair;
 import net.minecraft.text.Text;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
@@ -72,6 +74,8 @@ public final class HabitatBuilder {
 	public static final Vec3d ROBOT_PAD = new Vec3d(1.5, 1, 10.5);
 	/** The company's sample crate, by the outer door. */
 	public static final BlockPos ASSAY_CRATE = new BlockPos(2, 1, 8);
+	/** The pod's own chest, beside the furnace on the east wall. Clear of the doorway module two cuts. */
+	public static final BlockPos POD_CHEST = new BlockPos(3, 1, 0);
 	/** The plated slab east of the pod where module two was meant to go; the room the crew want to build. */
 	public static final BlockPos FOUNDATION_MIN = new BlockPos(5, 0, -4);
 	public static final BlockPos FOUNDATION_MAX = new BlockPos(11, 0, 4);
@@ -103,12 +107,16 @@ public final class HabitatBuilder {
 					"   ###   ",
 					"   ###   ",
 					"   ###   "},
-			{ // y = 1: furniture against the east wall; conduits in the north wall bring roof power to the dock and life support
+			{ // y = 1: furniture against the east wall; conduits in the north wall bring roof power to the dock and life support.
+			  // The north end of that wall (x=3, z=-3) stays clear: it is the far side of the doorway
+			  // ModuleTwo cuts when the second room lands, and the chest used to stand in it, so the
+			  // housewarming ended with a new bunkroom you could see into and not walk into. It lives
+			  // beside the furnace now, which is where the rest of the kitchen is anyway.
 					"###PL####",
-					"#wwK...X#",
+					"#wwK....#",
 					"#ww....T#",
 					"#pp....f#",
-					"#pp.....#",
+					"#pp....X#",
 					"#.......#",
 					"#C.....b#",
 					"#......B#",
@@ -116,7 +124,7 @@ public final class HabitatBuilder {
 					"   #.#   ",
 					"   #.#   ",
 					"   #D#   "},
-			{ // y = 2: the site terminal above the chest, windows in the east and south walls
+			{ // y = 2: the site terminal in the north wall, windows in the east and south walls
 					"###PP#M##",
 					"#.......#",
 					"#.......G",
@@ -207,6 +215,12 @@ public final class HabitatBuilder {
 			BlockPos origin = findSite(world, start);
 			build(world, origin, "habitat", true);
 			state.origin = origin;
+			// The day the pod appeared is the day they landed, whether or not a prologue said so. Only the
+			// prologue used to set this, so on a world with it turned off it stayed -1 forever and anything
+			// counting days since the landing — the flashback, for one — silently never happened. The
+			// prologue overwrites it a moment later on the worlds that have one, which is correct: it knows
+			// the hour as well as the day.
+			if (state.landedDay < 0L) state.landedDay = world.getTimeOfDay() / 24000L;
 			state.markDirty();
 			world.setSpawnPos(origin.up(), 180f);
 			Surrogate.LOGGER.info("Built the starter habitat at {}", origin);
@@ -496,6 +510,42 @@ public final class HabitatBuilder {
 
 	public static BlockPos surface(ServerWorld world, BlockPos column) {
 		return world.getTopPosition(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, column);
+	}
+
+	/**
+	 * Everything in {@code from} into whatever is at {@code into}, and whatever will not fit onto the floor
+	 * in front of it. For moving a container out of the way of something the world is about to build through:
+	 * the stacks are somebody's, and neither voiding them nor scattering them across a sealed room is an
+	 * answer. A missing or full target falls back to the ground, which is at least visible.
+	 */
+	public static void moveContents(ServerWorld world, Inventory from, BlockPos into) {
+		Inventory target = world.getBlockEntity(into) instanceof Inventory inventory ? inventory : null;
+		for (int slot = 0; slot < from.size(); slot++) {
+			ItemStack stack = from.removeStack(slot);
+			if (stack.isEmpty()) continue;
+			if (target != null) stack = insert(target, stack);
+			if (!stack.isEmpty()) ItemScatterer.spawn(world, into.getX() + 0.5, into.getY() + 1, into.getZ() + 0.5, stack);
+		}
+		from.markDirty();
+		if (target != null) target.markDirty();
+	}
+
+	/** One stack into the first slots that will take it. Returns what would not fit. */
+	private static ItemStack insert(Inventory target, ItemStack stack) {
+		for (int slot = 0; slot < target.size() && !stack.isEmpty(); slot++) {
+			ItemStack there = target.getStack(slot);
+			if (there.isEmpty()) {
+				target.setStack(slot, stack);
+				return ItemStack.EMPTY;
+			}
+			if (!ItemStack.areItemsAndComponentsEqual(there, stack)) continue;
+			int room = Math.min(there.getMaxCount(), target.getMaxCountPerStack()) - there.getCount();
+			int moved = Math.min(room, stack.getCount());
+			if (moved <= 0) continue;
+			there.increment(moved);
+			stack.decrement(moved);
+		}
+		return stack;
 	}
 
 	// ------------------------------------------------------------------ signs and books

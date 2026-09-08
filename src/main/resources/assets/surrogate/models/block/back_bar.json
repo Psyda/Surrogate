@@ -1,0 +1,440 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "surrogate:block/walnut",
+    "mirror": "surrogate:block/back_bar",
+    "shelf": "surrogate:block/walnut",
+    "bottles": "surrogate:block/bottles"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        15
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#mirror",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#shelf"
+        },
+        "east": {
+          "texture": "#shelf"
+        },
+        "west": {
+          "texture": "#shelf"
+        },
+        "up": {
+          "texture": "#shelf"
+        },
+        "down": {
+          "texture": "#shelf"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        0,
+        10
+      ],
+      "to": [
+        16,
+        1,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#shelf"
+        },
+        "south": {
+          "texture": "#shelf"
+        },
+        "east": {
+          "texture": "#shelf"
+        },
+        "west": {
+          "texture": "#shelf"
+        },
+        "up": {
+          "texture": "#shelf"
+        },
+        "down": {
+          "texture": "#shelf"
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        1,
+        12
+      ],
+      "to": [
+        3,
+        8,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#bottles",
+          "uv": [
+            0,
+            0,
+            3,
+            8
+          ]
+        },
+        "south": {
+          "texture": "#bottles",
+          "uv": [
+            0,
+            0,
+            3,
+            8
+          ]
+        },
+        "east": {
+          "texture": "#bottles",
+          "uv": [
+            0,
+            0,
+            3,
+            8
+          ]
+        },
+        "west": {
+          "texture": "#bottles",
+          "uv": [
+            0,
+            0,
+            3,
+            8
+          ]
+        },
+        "up": {
+          "texture": "#bottles",
+          "uv": [
+            0,
+            0,
+            3,
+            1
+          ]
+        },
+        "down": {
+          "texture": "#bottles",
+          "uv": [
+            0,
+            0,
+            3,
+            8
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        4,
+        1,
+        12
+      ],
+      "to": [
+        6,
+        8,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#bottles",
+          "uv": [
+            3,
+            0,
+            6,
+            8
+          ]
+        },
+        "south": {
+          "texture": "#bottles",
+          "uv": [
+            3,
+            0,
+            6,
+            8
+          ]
+        },
+        "east": {
+          "texture": "#bottles",
+          "uv": [
+            3,
+            0,
+            6,
+            8
+          ]
+        },
+        "west": {
+          "texture": "#bottles",
+          "uv": [
+            3,
+            0,
+            6,
+            8
+          ]
+        },
+        "up": {
+          "texture": "#bottles",
+          "uv": [
+            3,
+            0,
+            6,
+            1
+          ]
+        },
+        "down": {
+          "texture": "#bottles",
+          "uv": [
+            3,
+            0,
+            6,
+            8
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        7,
+        1,
+        12
+      ],
+      "to": [
+        9,
+        8,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#bottles",
+          "uv": [
+            6,
+            0,
+            9,
+            8
+          ]
+        },
+        "south": {
+          "texture": "#bottles",
+          "uv": [
+            6,
+            0,
+            9,
+            8
+          ]
+        },
+        "east": {
+          "texture": "#bottles",
+          "uv": [
+            6,
+            0,
+            9,
+            8
+          ]
+        },
+        "west": {
+          "texture": "#bottles",
+          "uv": [
+            6,
+            0,
+            9,
+            8
+          ]
+        },
+        "up": {
+          "texture": "#bottles",
+          "uv": [
+            6,
+            0,
+            9,
+            1
+          ]
+        },
+        "down": {
+          "texture": "#bottles",
+          "uv": [
+            6,
+            0,
+            9,
+            8
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        10,
+        1,
+        12
+      ],
+      "to": [
+        12,
+        8,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#bottles",
+          "uv": [
+            9,
+            0,
+            12,
+            8
+          ]
+        },
+        "south": {
+          "texture": "#bottles",
+          "uv": [
+            9,
+            0,
+            12,
+            8
+          ]
+        },
+        "east": {
+          "texture": "#bottles",
+          "uv": [
+            9,
+            0,
+            12,
+            8
+          ]
+        },
+        "west": {
+          "texture": "#bottles",
+          "uv": [
+            9,
+            0,
+            12,
+            8
+          ]
+        },
+        "up": {
+          "texture": "#bottles",
+          "uv": [
+            9,
+            0,
+            12,
+            1
+          ]
+        },
+        "down": {
+          "texture": "#bottles",
+          "uv": [
+            9,
+            0,
+            12,
+            8
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        13,
+        1,
+        12
+      ],
+      "to": [
+        15,
+        8,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#bottles",
+          "uv": [
+            12,
+            0,
+            15,
+            8
+          ]
+        },
+        "south": {
+          "texture": "#bottles",
+          "uv": [
+            12,
+            0,
+            15,
+            8
+          ]
+        },
+        "east": {
+          "texture": "#bottles",
+          "uv": [
+            12,
+            0,
+            15,
+            8
+          ]
+        },
+        "west": {
+          "texture": "#bottles",
+          "uv": [
+            12,
+            0,
+            15,
+            8
+          ]
+        },
+        "up": {
+          "texture": "#bottles",
+          "uv": [
+            12,
+            0,
+            15,
+            1
+          ]
+        },
+        "down": {
+          "texture": "#bottles",
+          "uv": [
+            12,
+            0,
+            15,
+            8
+          ]
+        }
+      }
+    }
+  ],
+  "display": {
+    "gui": {
+      "rotation": [
+        30,
+        225,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    }
+  }
+}

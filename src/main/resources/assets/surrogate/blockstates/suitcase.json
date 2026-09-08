@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "facing=north,on_bed=false": {
+      "model": "surrogate:block/suitcase"
+    },
+    "facing=north,on_bed=true": {
+      "model": "surrogate:block/suitcase_on_bed"
+    },
+    "facing=east,on_bed=false": {
+      "model": "surrogate:block/suitcase",
+      "y": 90
+    },
+    "facing=east,on_bed=true": {
+      "model": "surrogate:block/suitcase_on_bed",
+      "y": 90
+    },
+    "facing=south,on_bed=false": {
+      "model": "surrogate:block/suitcase",
+      "y": 180
+    },
+    "facing=south,on_bed=true": {
+      "model": "surrogate:block/suitcase_on_bed",
+      "y": 180
+    },
+    "facing=west,on_bed=false": {
+      "model": "surrogate:block/suitcase",
+      "y": 270
+    },
+    "facing=west,on_bed=true": {
+      "model": "surrogate:block/suitcase_on_bed",
+      "y": 270
+    }
+  }
+}

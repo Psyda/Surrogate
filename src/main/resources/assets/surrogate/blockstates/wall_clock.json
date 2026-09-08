@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "facing=north,late=false": {
+      "model": "surrogate:block/wall_clock"
+    },
+    "facing=north,late=true": {
+      "model": "surrogate:block/wall_clock_late"
+    },
+    "facing=east,late=false": {
+      "model": "surrogate:block/wall_clock",
+      "y": 90
+    },
+    "facing=east,late=true": {
+      "model": "surrogate:block/wall_clock_late",
+      "y": 90
+    },
+    "facing=south,late=false": {
+      "model": "surrogate:block/wall_clock",
+      "y": 180
+    },
+    "facing=south,late=true": {
+      "model": "surrogate:block/wall_clock_late",
+      "y": 180
+    },
+    "facing=west,late=false": {
+      "model": "surrogate:block/wall_clock",
+      "y": 270
+    },
+    "facing=west,late=true": {
+      "model": "surrogate:block/wall_clock_late",
+      "y": 270
+    }
+  }
+}

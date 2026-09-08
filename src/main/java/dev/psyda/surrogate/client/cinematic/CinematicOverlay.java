@@ -76,6 +76,7 @@ public final class CinematicOverlay {
 		if (CinematicState.hasLine()) renderLine(context, font, width, height, barHeight, delta);
 		renderObjective(context, font, width, delta);
 		if (CinematicState.isInputLocked()) renderSkip(context, font, width, height, barHeight);
+		else if (CinematicState.canAdvance()) renderAdvance(context, font, width, height);
 	}
 
 	// ------------------------------------------------------------------ subtitles
@@ -374,6 +375,17 @@ public final class CinematicOverlay {
 			context.fill(x, y + 10, x + textWidth, y + 12, 0xFF333333);
 			context.fill(x, y + 10, x + (int) (textWidth * progress), y + 12, 0xFFDDDDDD);
 		}
+	}
+
+	/**
+	 * The quieter half of the skip prompt: what to press to read on, shown only while a line is up and the
+	 * player has their hands. Dimmer than the hold-to-skip bar and with no progress on it, because it is one
+	 * press and it only ever costs the rest of a subtitle.
+	 */
+	private static void renderAdvance(DrawContext context, TextRenderer font, int width, int height) {
+		MinecraftClient client = MinecraftClient.getInstance();
+		Text hint = Text.translatable("cinematic.surrogate.advance", client.options.sneakKey.getBoundKeyLocalizedText());
+		context.drawTextWithShadow(font, hint, width - font.getWidth(hint) - 10, height - 22, 0xFF6A6A6A);
 	}
 
 	private static int withAlpha(int rgb, float alpha) {

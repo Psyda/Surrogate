@@ -33,7 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A survivor's shelter: a cramped sealed box with a dead scrubber, a bed, a chest and one airlock door,
+ * A survivor's shelter: a cramped sealed box with a dead scrubber, a bed, a chest and an airlock porch,
  * and the survivor standing in the middle of it. A chassis port sits in the south wall beside the door
  * (a chassis talks to the room through it without anyone opening anything), and a docking collar in the
  * west wall with a levelled apron in front of it, so a crawler can back on and take the survivor aboard.
@@ -42,26 +42,40 @@ import java.util.List;
  * <p>There are two kits. Everywhere on the near side gets the plating box; the acid belt past the Rift gets
  * the ceramic one, which is the same room under a sloped roof. Novak has neither: his site is a wreck.
  *
- * <p>Columns run x = -3..3, rows run z = -3..3 with north at the top.
+ * <p>Columns run x = -3..3, rows run z = -3..3 with north at the top. The porch is the exception: it hangs
+ * off the south wall outside that grid, at x = -1..1 and z = 4..6, and it is what makes the two damaged
+ * shelters make sense. Sorensen's missing plate and Reyes' eaten frame are holes in a wall — an airtight
+ * block that is not there — so with a single door between them and the room, both of those people were
+ * standing in the open air of a planet that kills a lung in ten seconds and reporting it by radio. In a
+ * porch the hole is in the outer wall: the inner door holds, they are alive, and the lock will not cycle
+ * against open sky, which is the actual reason neither of them has walked out. Plate it from outside and it
+ * cycles.
  */
 public final class SurvivorShelter {
 	/** The lower half of the collar door, in the west wall. */
 	public static final BlockPos COLLAR = new BlockPos(-3, 1, 0);
 	/** The chassis port, in the south wall east of the airlock. */
 	public static final BlockPos PORT = new BlockPos(2, 1, 3);
+	/** The porch: three wide and three deep off the south wall, with the outer door in the far face. */
+	private static final int PORCH_HALF_X = 1;
+	private static final int PORCH_NEAR_Z = 4;
+	private static final int PORCH_FAR_Z = 6;
+	private static final int PORCH_ROOF_Y = 3;
+	/** The lower half of the outer door, which is the one that will not cycle while the frame is open. */
+	public static final BlockPos OUTER_DOOR = new BlockPos(0, 1, PORCH_FAR_Z);
 	/**
-	 * The plate over Sorensen's airlock that let go. Only his shelter has it, and it is one of act one's
-	 * errands (docs/DESIGN-campaign.md): until somebody puts a hull plate on it he is holding his breath.
+	 * The plate over Sorensen's porch that let go. Only his shelter has it, and it is one of act one's
+	 * errands (docs/DESIGN-campaign.md): until somebody puts a hull plate on it his lock will not cycle.
 	 */
-	public static final BlockPos BREACH = new BlockPos(1, 2, 3);
+	public static final BlockPos BREACH = new BlockPos(1, 2, PORCH_FAR_Z);
 	/**
 	 * Clinic Nine's frame. Her outer door is lying in the porch and both jambs are eaten through, top and
 	 * bottom, which is four plates from outside and the reason she has not left in nineteen days
 	 * (docs/DESIGN-campaign.md, act five). Only Reyes has these.
 	 */
 	public static final BlockPos[] FRAME = {
-			new BlockPos(-1, 1, 3), new BlockPos(1, 1, 3),
-			new BlockPos(-1, 2, 3), new BlockPos(1, 2, 3)};
+			new BlockPos(-1, 1, PORCH_FAR_Z), new BlockPos(1, 1, PORCH_FAR_Z),
+			new BlockPos(-1, 2, PORCH_FAR_Z), new BlockPos(1, 2, PORCH_FAR_Z)};
 	/** The overhang around Novak's wreck: half its width, half its depth, and its ceiling. */
 	private static final int POCKET_X = 6;
 	private static final int POCKET_Z = 5;
@@ -210,6 +224,7 @@ public final class SurvivorShelter {
 				}
 			}
 		}
+		porch(world, origin, site, deferred);
 		deferred.forEach(Runnable::run);
 
 		// Sorensen's outer frame is one plate short. It goes in after the glyphs, over the wall they laid.
@@ -231,6 +246,8 @@ public final class SurvivorShelter {
 			int z = random.nextBetween(-7, 7);
 			if (Math.abs(x) <= 3 && Math.abs(z) <= 3) continue;
 			if (x < -3) continue;
+			// Nor on the porch roof, which the heightmap is perfectly happy to call the ground.
+			if (Math.abs(x) <= PORCH_HALF_X && z >= PORCH_NEAR_Z && z <= PORCH_FAR_Z) continue;
 			BlockPos surface = world.getTopPosition(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, origin.add(x, 0, z));
 			if (world.getBlockState(surface).isAir() && world.getBlockState(surface.down()).isSolidBlock(world, surface.down())) {
 				set(world, surface, ModBlocks.SCRAP_HEAP.getDefaultState());
@@ -344,6 +361,34 @@ public final class SurvivorShelter {
 			case 'w' -> set(world, pos, roof(Direction.WEST));
 			default -> throw new IllegalArgumentException("Unknown shelter glyph " + c);
 		}
+	}
+
+	/**
+	 * The airlock porch, bolted onto the south wall over the strip the levelling already cleared: two cells
+	 * of chamber, a roof, and an outer door in the far face facing the way the inner one does.
+	 *
+	 * <p>Built out of the same material as the room it hangs off, so the belt's shelters get a brick one. It
+	 * is not in the glyph grid because it is not in the grid's footprint, and stretching a seven by seven
+	 * kit to cover a three by three annexe would have cost more to read than this.
+	 */
+	private static void porch(ServerWorld world, BlockPos origin, SurvivorManager.Site site, List<Runnable> deferred) {
+		BlockState wall = site.belt ? Blocks.BRICKS.getDefaultState() : ModBlocks.HULL_PLATING.getDefaultState();
+		for (int z = PORCH_NEAR_Z; z <= PORCH_FAR_Z; z++) {
+			for (int x = -PORCH_HALF_X; x <= PORCH_HALF_X; x++) {
+				set(world, origin.add(x, 0, z), wall);
+				set(world, origin.add(x, PORCH_ROOF_Y, z), wall);
+				// The lane down the middle is the chamber; everything either side of it, and the far face, is
+				// wall. The one hole in the far face is the door, which goes in with the other pairs.
+				boolean lane = x == 0 && z < PORCH_FAR_Z;
+				for (int y = 1; y < PORCH_ROOF_Y; y++) {
+					set(world, origin.add(x, y, z), lane ? Blocks.AIR.getDefaultState() : wall);
+				}
+			}
+		}
+		deferred.add(() -> {
+			set(world, origin.add(OUTER_DOOR), door(DoubleBlockHalf.LOWER));
+			set(world, origin.add(OUTER_DOOR).up(), door(DoubleBlockHalf.UPPER));
+		});
 	}
 
 	/** A course of the sloped roof, falling away towards {@code towards}. */

@@ -263,6 +263,26 @@ def check_loot_and_recipes():
         note("no loot table", "blockstates/" + name, "data/loot_table/blocks/" + name + ".json")
 
 
+def check_registered_blocks():
+    """Every block registered in Java needs a blockstate file.
+
+    The other way round from every check above, and the reason it exists: this file walks *outward* from the
+    blockstates, so a block that has no blockstate at all is a block nothing here ever looks at. In game it
+    is a black and magenta cube with no complaint in any log. Read the registrations out of the source rather
+    than the registry, because that does not need a running game.
+    """
+    java = os.path.join(ROOT, "src", "main", "java", "dev", "psyda", "surrogate", "registry", "ModBlocks.java")
+    states = os.path.join(ASSETS, "blockstates")
+    if not os.path.isfile(java) or not os.path.isdir(states):
+        return
+    have = {os.path.splitext(f)[0] for f in os.listdir(states)}
+    with open(java, encoding="utf-8") as f:
+        source = f.read()
+    for name in sorted(set(re.findall(r'register\("([a-z0-9_]+)"', source))):
+        if name not in have:
+            note("no blockstate", "ModBlocks." + name, "assets/blockstates/" + name + ".json")
+
+
 def check_orphan_models(used_models):
     """Models nothing points at.
 
@@ -321,6 +341,7 @@ def main():
     check_lang()
     check_every_key_literal()
     check_loot_and_recipes()
+    check_registered_blocks()
     check_orphan_models(used_models)
     check_orphan_textures(used_textures)
 

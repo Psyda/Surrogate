@@ -126,6 +126,12 @@ public class SurrogateConfig {
 	 * Rift, the vent across the road to Ceramic Row and the pocket at the bottom of the chasm.
 	 */
 	public boolean rescue = true;
+	/**
+	 * The flashback: the night before the contract, dreamt the first or second time the player sleeps on the
+	 * planet. It is the only scene the player authors rather than watches, so it is also the only one that
+	 * hands them their own inventory back afterwards, and the switch is here in case that ever goes wrong.
+	 */
+	public boolean flashback = true;
 	/** Surface days between the ship not coming down and Halloran asking for the room. */
 	public int conferenceAfterDays = 2;
 	public int prologueObjectiveTimeoutTicks = 1500;

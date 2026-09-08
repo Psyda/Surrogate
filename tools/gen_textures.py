@@ -46,6 +46,19 @@ PAL = {
     "u": (55, 48, 163, 255),     # indigo dark (card)
     "U": (99, 102, 241, 255),    # indigo
     "a": (10, 12, 16, 255),      # panel black
+    # Earth, 2189. Nothing on Sallow is any of these colours, which is the whole reason the flashback works:
+    # the palette above is steel and copper and cyan, and a room painted out of the one below reads as a
+    # different planet before a single line is spoken.
+    "1": (232, 220, 196, 255),   # wallpaper cream
+    "2": (198, 176, 142, 255),   # wallpaper stripe
+    "3": (186, 120, 128, 255),   # faded rose
+    "4": (74, 50, 33, 255),      # walnut, dark
+    "5": (120, 82, 52, 255),     # walnut
+    "6": (166, 122, 82, 255),    # walnut, light
+    "7": (58, 38, 28, 255),      # bakelite
+    "8": (198, 158, 84, 255),    # brass
+    "9": (176, 214, 210, 255),   # screen glow
+    "0": (196, 46, 60, 255),     # bar neon
 }
 
 
@@ -2684,4 +2697,23 @@ paint_survivor("reyes", (208, 210, 214, 255), (198, 64, 64, 255))
 paint_survivor("novak", (74, 92, 98, 255), (232, 172, 60, 255))
 print("span kit and the last two suits done")
 
+# Okafor and Sorensen come to the housewarming in person rather than sending their chassis, so the scripted
+# side of them needs a skin as well as the shelter side: the same suit and the same trim, because it is the
+# same person in the same suit, and a visitor who changed colour walking through your door is a different
+# visitor. On the end, like everything else added since, because every panel() draws from one noise stream
+# and a call inserted in the middle repaints every texture after it.
+paint_survivor("okafor", (222, 122, 47, 255), (250, 210, 90, 255), prefix="crew")
+paint_survivor("sorensen", (52, 96, 170, 255), (200, 210, 230, 255), prefix="crew")
+print("the two housewarming visitors done")
+
 print("done")
+
+
+# --------------------------------------------------------------------------------------
+# The flashback: a house on Earth, 2189, and everything in it worth stealing (tools/gen_house.py)
+# --------------------------------------------------------------------------------------
+# Painted by its own module, with its own random stream, so a couch can be repainted without re-rolling the
+# noise of every hull plate above. Kept last so nothing here can shift anything else.
+import gen_house  # noqa: E402
+
+gen_house.paint_all()

@@ -21,6 +21,17 @@ public abstract class Beat {
 	/** @return true once this beat is finished and the next one may start */
 	abstract boolean tick(Director d);
 
+	/**
+	 * The player asked to move on.
+	 *
+	 * <p>Only beats that are purely waiting on a clock answer this. A walk, an objective or a drop is
+	 * waiting on the world instead, and cutting one of those short would finish a scene by skipping the
+	 * thing it was about — which is what the hold-to-skip key is for, and that goes through
+	 * {@link Director#onSkip} where each script decides what its own shortcut means.
+	 */
+	void cut() {
+	}
+
 	/** A named point the director can jump to. */
 	public static final class Label extends Beat {
 		final String name;
@@ -112,6 +123,12 @@ public abstract class Beat {
 			}
 		}
 
+		/** Read to the end of it already. Leaves the eight tick tail so the next line does not tread on it. */
+		@Override
+		void cut() {
+			if (elapsed < duration) elapsed = duration;
+		}
+
 		@Override
 		boolean tick(Director d) {
 			if (!wait) return true;
@@ -126,6 +143,80 @@ public abstract class Beat {
 		}
 	}
 
+	/**
+	 * A line whose key is not known when the script is built.
+	 *
+	 * <p>The flashback needs this: half its narration is about a room the player has not chosen yet, so the
+	 * key cannot be baked into a {@link Line} at construction the way every other scene's can. Waits for its
+	 * own reading time, like a line, and can be pressed through, like a line.
+	 */
+	public static final class Dynamic extends Beat {
+		private final java.util.function.Supplier<String> key;
+		private final int style;
+		private int duration;
+		private int elapsed;
+
+		public Dynamic(java.util.function.Supplier<String> key, int style) {
+			this.key = key;
+			this.style = style;
+		}
+
+		@Override
+		void start(Director d) {
+			String resolved = key.get();
+			duration = resolved.isEmpty() ? 1 : d.sendLine("", resolved, style, -1, false, "");
+			elapsed = 0;
+		}
+
+		@Override
+		void cut() {
+			if (elapsed < duration) elapsed = duration;
+		}
+
+		@Override
+		boolean tick(Director d) {
+			return ++elapsed >= duration + 8;
+		}
+	}
+
+	/**
+	 * A question with answers, and the script stopped until one of them is picked.
+	 *
+	 * <p>The only beat that waits on a decision rather than on a clock or a position. It cannot be pressed
+	 * through — {@link #cut()} is not overridden — because the whole point of it is that somebody chose.
+	 */
+	public static final class Ask extends Beat {
+		private final java.util.function.Supplier<Director.Question> question;
+		private final int timeout;
+		private int elapsed;
+
+		public Ask(java.util.function.Supplier<Director.Question> question, int timeout) {
+			this.question = question;
+			this.timeout = timeout;
+		}
+
+		@Override
+		void start(Director d) {
+			elapsed = 0;
+			// Resolved here rather than at construction: half the questions in the flashback are about a room
+			// the player had not chosen when the script was written down.
+			d.askNow(question.get());
+		}
+
+		@Override
+		boolean tick(Director d) {
+			if (d.answered()) return true;
+			// Somebody who walks away from the question has answered it by walking away, and the script has
+			// to carry on either way: the first option is what a person who says nothing has said.
+			if (timeout > 0 && ++elapsed >= timeout) {
+				Surrogate.LOGGER.info("Director: question answered itself after {} ticks", elapsed);
+				d.answerNow(0);
+				return true;
+			}
+			return false;
+		}
+	}
+
 	/** Waits for something the player does, nagging once on the way and giving up after a while. */
 	public static final class Until extends Beat {
 		private final BooleanSupplier condition;
@@ -137,16 +228,24 @@ public abstract class Beat {
 		private final int nudgeAfter;
 		@Nullable
 		private final Runnable onTimeout;
+		/** A nudge that is not a line: a car horn, a light going off. Used when no crew member is there to speak. */
+		@Nullable
+		private final Runnable onNudge;
 		private int elapsed;
 		private boolean nudged;
 
 		public Until(BooleanSupplier condition, int timeout, @Nullable Crew nudgeWho, @Nullable String nudgeKey, int nudgeAfter, @Nullable Runnable onTimeout) {
+			this(condition, timeout, nudgeWho, nudgeKey, nudgeAfter, onTimeout, null);
+		}
+
+		public Until(BooleanSupplier condition, int timeout, @Nullable Crew nudgeWho, @Nullable String nudgeKey, int nudgeAfter, @Nullable Runnable onTimeout, @Nullable Runnable onNudge) {
 			this.condition = condition;
 			this.timeout = timeout;
 			this.nudgeWho = nudgeWho;
 			this.nudgeKey = nudgeKey;
 			this.nudgeAfter = nudgeAfter;
 			this.onTimeout = onTimeout;
+			this.onNudge = onNudge;
 		}
 
 		@Override
@@ -159,9 +258,14 @@ public abstract class Beat {
 		boolean tick(Director d) {
 			if (condition.getAsBoolean()) return true;
 			elapsed++;
-			if (!nudged && nudgeWho != null && nudgeKey != null && nudgeAfter > 0 && elapsed >= nudgeAfter) {
-				nudged = true;
-				d.nudge(nudgeWho, nudgeKey);
+			if (!nudged && nudgeAfter > 0 && elapsed >= nudgeAfter) {
+				if (nudgeWho != null && nudgeKey != null) {
+					nudged = true;
+					d.nudge(nudgeWho, nudgeKey);
+				} else if (onNudge != null) {
+					nudged = true;
+					onNudge.run();
+				}
 			}
 			if (timeout > 0 && elapsed >= timeout) {
 				if (onTimeout != null) onTimeout.run();

@@ -97,8 +97,12 @@ public final class CinematicPayloads {
 	 * A subtitle. {@code speaker} and {@code text} are translation keys (either may be empty), {@code voice}
 	 * is a sound id the client plays if it has such a sound, so recorded lines can be dropped in later, and
 	 * {@code arg} is an optional format argument for the text (or, for chapters, the subtitle).
+	 *
+	 * <p>{@code advance} is whether the player may press on through this one. It rides on the line rather
+	 * than on the scene because it is a fact about the subtitle, and because the client has to know it to
+	 * decide whether to offer the prompt: a prompt for a key that does nothing is worse than no prompt.
 	 */
-	public record Line(String speaker, String text, int style, int ticks, String voice, String arg) implements CustomPayload {
+	public record Line(String speaker, String text, int style, int ticks, String voice, String arg, boolean advance) implements CustomPayload {
 		public static final Id<Line> ID = new Id<>(Surrogate.id("cinematic_line"));
 		public static final PacketCodec<ByteBuf, Line> CODEC = PacketCodec.of((p, buf) -> {
 			PacketCodecs.STRING.encode(buf, p.speaker);
@@ -107,8 +111,9 @@ public final class CinematicPayloads {
 			VarInts.write(buf, p.ticks);
 			PacketCodecs.STRING.encode(buf, p.voice);
 			PacketCodecs.STRING.encode(buf, p.arg);
+			buf.writeBoolean(p.advance);
 		}, buf -> new Line(PacketCodecs.STRING.decode(buf), PacketCodecs.STRING.decode(buf), VarInts.read(buf), VarInts.read(buf),
-				PacketCodecs.STRING.decode(buf), PacketCodecs.STRING.decode(buf)));
+				PacketCodecs.STRING.decode(buf), PacketCodecs.STRING.decode(buf), buf.readBoolean()));
 
 		@Override
 		public Id<? extends CustomPayload> getId() {
@@ -195,10 +200,68 @@ public final class CinematicPayloads {
 		}
 	}
 
+	/**
+	 * Server to client: a question with answers, for the player to pick one of.
+	 *
+	 * <p>The only place in the game where a script waits on a decision rather than on a position. The
+	 * flashback asks these; everything else says its piece and carries on. {@code prompt} and {@code options}
+	 * are translation keys, and the answer comes back as {@link Choice.Picked} with an index into them.
+	 */
+	public record Choice(String prompt, String speaker, List<String> options) implements CustomPayload {
+		public static final Id<Choice> ID = new Id<>(Surrogate.id("cinematic_choice"));
+		public static final PacketCodec<ByteBuf, Choice> CODEC = PacketCodec.of((p, buf) -> {
+			PacketCodecs.STRING.encode(buf, p.prompt);
+			PacketCodecs.STRING.encode(buf, p.speaker);
+			VarInts.write(buf, p.options.size());
+			for (String option : p.options) PacketCodecs.STRING.encode(buf, option);
+		}, buf -> {
+			String prompt = PacketCodecs.STRING.decode(buf);
+			String speaker = PacketCodecs.STRING.decode(buf);
+			int count = VarInts.read(buf);
+			List<String> options = new java.util.ArrayList<>(count);
+			for (int i = 0; i < count; i++) options.add(PacketCodecs.STRING.decode(buf));
+			return new Choice(prompt, speaker, List.copyOf(options));
+		});
+
+		@Override
+		public Id<? extends CustomPayload> getId() {
+			return ID;
+		}
+
+		/** Client to server: which of them. A negative index means the question went unanswered. */
+		public record Picked(int index) implements CustomPayload {
+			public static final Id<Picked> ID = new Id<>(Surrogate.id("cinematic_choice_picked"));
+			public static final PacketCodec<ByteBuf, Picked> CODEC =
+					PacketCodec.of((p, buf) -> VarInts.write(buf, p.index), buf -> new Picked(VarInts.read(buf)));
+
+			@Override
+			public Id<? extends CustomPayload> getId() {
+				return ID;
+			}
+		}
+	}
+
 	/** Client to server: the player held the skip key. */
 	public record Skip() implements CustomPayload {
 		public static final Id<Skip> ID = new Id<>(Surrogate.id("cinematic_skip"));
 		public static final PacketCodec<ByteBuf, Skip> CODEC = PacketCodec.unit(new Skip());
+
+		@Override
+		public Id<? extends CustomPayload> getId() {
+			return ID;
+		}
+	}
+
+	/**
+	 * Client to server: the player pressed on through the line they were reading.
+	 *
+	 * <p>Separate from {@link Skip}, which is held rather than pressed and takes the whole scene. This one
+	 * only ever shortens the subtitle that is on screen, and only outside a shot — inside one the player has
+	 * no hands and the hold-to-skip prompt is the offer instead.
+	 */
+	public record Advance() implements CustomPayload {
+		public static final Id<Advance> ID = new Id<>(Surrogate.id("cinematic_advance"));
+		public static final PacketCodec<ByteBuf, Advance> CODEC = PacketCodec.unit(new Advance());
 
 		@Override
 		public Id<? extends CustomPayload> getId() {

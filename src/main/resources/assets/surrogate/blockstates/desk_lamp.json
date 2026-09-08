@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "surrogate:block/desk_lamp"
+    },
+    "facing=east": {
+      "model": "surrogate:block/desk_lamp",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "surrogate:block/desk_lamp",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "surrogate:block/desk_lamp",
+      "y": 270
+    }
+  }
+}
